@@ -1,0 +1,57 @@
+•	Tên website: mamnonthaonguyenxanh.com
+•	Mục tiêu: Kết nối phụ huynh – Xây dựng uy tín – Tuyển sinh hiệu quả – Lan tỏa giá trị giáo dục
+•	Đối tượng truy cập:
+o	Phụ huynh có con trong độ tuổi 0–6
+o	Cộng đồng giáo viên, nhà tuyển dụng
+o	Cơ quan quản lý giáo dục
+________________________________________ 2. CẤU TRÚC WEBSITE
+1. TRANG CHỦ
+•	Banner động (ảnh/video trường, học sinh, sự kiện)
+•	Các mảng nổi bật:
+o	Triết lý giáo dục
+o	Chương trình học tích hợp (Montessori, Glenn Doman, STEAM…)
+o	Tin tức nổi bật / thông báo tuyển sinh
+2. GIỚI THIỆU
+•	Lịch sử hình thành – sứ mệnh – tầm nhìn – giá trị cốt lõi
+•	Đội ngũ ban giám hiệu, giáo viên
+•	Cơ sở vật chất – video tham quan trường
+•	Thành tích & các mốc quan trọng
+3. CHƯƠNG TRÌNH HỌC
+•	Các khối lớp (Nhà trẻ – Mẫu giáo – Lớn)
+•	Mô tả phương pháp giáo dục tích hợp
+•	Mục tiêu phát triển trẻ theo từng độ tuổi
+4. HOẠT ĐỘNG – SỰ KIỆN
+•	Lịch sự kiện hàng tháng
+•	Hình ảnh hoạt động (ngày hội, dã ngoại, lễ hội nước…)
+•	Video clip tổng hợp
+5. THƯ VIỆN PHỤ HUYNH
+•	Góc tư vấn (Dinh dưỡng, phát triển kỹ năng…)
+•	Tài liệu tải về (thực đơn tuần, kế hoạch học tập)
+•	Câu hỏi thường gặp
+6. TUYỂN SINH
+•	Thông tin các lớp, chỉ tiêu tuyển sinh
+•	Mẫu đăng ký online
+•	Chính sách ưu đãi học phí
+•	Tư vấn trực tuyến
+7. TIN TỨC – TRUYỀN THÔNG
+•	Bài viết truyền cảm hứng: “Giáo dục bằng trái tim”
+•	Tin hoạt động nội bộ – đối ngoại
+•	Chia sẻ từ phụ huynh, giáo viên
+8. LIÊN HỆ
+•	Bản đồ Google Map
+•	Thông tin liên hệ
+•	Nút chat trực tuyến (Messenger/Zalo/Hotline)
+________________________________________
+⚙️ 3. CHỨC NĂNG WEBSITE
+1. Quản trị nội dung (CMS)
+•	Giao diện thân thiện để cập nhật tin bài, hình ảnh
+•	Phân quyền: Quản trị – Giáo viên – Kế toán – Tuyển sinh
+2. Đăng ký tuyển sinh online
+•	Form thông minh: gửi mail + lưu Google Sheet
+•	Gửi SMS/Zalo xác nhận cho phụ huynh
+3. Tự động hóa
+•	Tích hợp Zalo OA hoặc Fanpage Chat
+•	Tích hợp Google Calendar, Drive cho phụ huynh
+4. Tối ưu SEO & tốc độ
+•	Thân thiện với công cụ tìm kiếm
+•	Responsive: hiển thị đẹp trên điện thoại
