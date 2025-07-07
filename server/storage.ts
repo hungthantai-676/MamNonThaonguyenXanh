@@ -255,7 +255,8 @@ export class MemStorage implements IStorage {
       ...insertArticle, 
       id, 
       publishedAt: new Date(),
-      isPublished: true 
+      isPublished: true,
+      imageUrl: insertArticle.imageUrl || null
     };
     this.articles.set(id, article);
     return article;
@@ -268,7 +269,13 @@ export class MemStorage implements IStorage {
 
   async createTestimonial(insertTestimonial: InsertTestimonial): Promise<Testimonial> {
     const id = this.currentId++;
-    const testimonial: Testimonial = { ...insertTestimonial, id };
+    const testimonial: Testimonial = { 
+      ...insertTestimonial, 
+      id,
+      isPublished: insertTestimonial.isPublished ?? true,
+      avatar: insertTestimonial.avatar || null,
+      rating: insertTestimonial.rating ?? 5
+    };
     this.testimonials.set(id, testimonial);
     return testimonial;
   }
@@ -284,7 +291,11 @@ export class MemStorage implements IStorage {
 
   async createProgram(insertProgram: InsertProgram): Promise<Program> {
     const id = this.currentId++;
-    const program: Program = { ...insertProgram, id };
+    const program: Program = { 
+      ...insertProgram, 
+      id,
+      isActive: insertProgram.isActive ?? true
+    };
     this.programs.set(id, program);
     return program;
   }
@@ -300,7 +311,12 @@ export class MemStorage implements IStorage {
 
   async createActivity(insertActivity: InsertActivity): Promise<Activity> {
     const id = this.currentId++;
-    const activity: Activity = { ...insertActivity, id };
+    const activity: Activity = { 
+      ...insertActivity, 
+      id,
+      imageUrl: insertActivity.imageUrl || null,
+      isActive: insertActivity.isActive ?? true
+    };
     this.activities.set(id, activity);
     return activity;
   }
@@ -316,7 +332,8 @@ export class MemStorage implements IStorage {
       ...insertForm, 
       id, 
       submittedAt: new Date(),
-      status: "pending"
+      status: "pending",
+      notes: insertForm.notes || null
     };
     this.admissionForms.set(id, form);
     return form;
