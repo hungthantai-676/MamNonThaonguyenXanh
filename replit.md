@@ -128,23 +128,34 @@ The application uses the following main entities:
 
 ## Admin Panel Features
 
-### Authentication
+### Easy Access
+- **Access**: Click "Quản trị" in header or footer
 - **Login URL**: `/admin/login`
 - **Username**: `admin`
 - **Password**: `admin123`
-- Simple session-based authentication with localStorage token
+- Simple client-side authentication for easy access
 
-### Dashboard Features
-1. **Cài đặt chung**: Update contact information (phone, email, address, Google Maps)
-2. **Bài viết**: Create and manage news articles with categories
-3. **Chương trình**: View program details and update tuition fees
-4. **Hoạt động**: View and manage school activities
+### Dashboard Features (5 Tabs)
+1. **📞 Liên hệ**: Update contact info (phone, email, address, Google Maps)
+2. **🖼️ Ảnh/Video**: Upload images and videos directly from device
+   - Logo upload with preview
+   - Banner upload with preview  
+   - Video upload with preview
+   - All formats supported, auto-resizing
+3. **📰 Bài viết**: Create articles with image upload
+   - Title, content, category selection
+   - Direct image upload from device
+   - Instant publishing
+4. **📚 Chương trình**: View programs and tuition fees
+5. **🎯 Hoạt động**: View school activities and events
 
-### How to Use Admin Panel
-1. Navigate to `/admin/login`
-2. Enter credentials: username=`admin`, password=`admin123`
-3. Access dashboard to manage content
-4. Changes are immediately reflected on the website
+### User-Friendly Features
+- Drag & drop file upload
+- Instant image/video preview
+- Emoji icons for easy navigation
+- Mobile responsive design
+- Vietnamese interface
+- One-click save/publish
 
 ## Changelog
 

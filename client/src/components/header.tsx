@@ -52,6 +52,12 @@ export default function Header() {
                 {item.name}
               </Link>
             ))}
+            <Link
+              href="/admin/login"
+              className="text-gray-500 hover:text-primary-green transition-colors font-medium text-sm"
+            >
+              Quản trị
+            </Link>
           </nav>
 
           {/* Mobile Menu */}
@@ -76,6 +82,13 @@ export default function Header() {
                     {item.name}
                   </Link>
                 ))}
+                <Link
+                  href="/admin/login"
+                  className="text-gray-500 hover:text-primary-green transition-colors font-medium py-2 text-sm border-t pt-4"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Quản trị website
+                </Link>
               </nav>
             </SheetContent>
           </Sheet>

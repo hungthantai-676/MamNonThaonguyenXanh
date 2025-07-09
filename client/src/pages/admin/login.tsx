@@ -20,27 +20,23 @@ export default function AdminLogin() {
     e.preventDefault();
     setIsLoading(true);
 
-    try {
-      const response = await apiRequest("POST", "/api/admin/login", formData);
-      if (response.ok) {
-        toast({
-          title: "Đăng nhập thành công",
-          description: "Chào mừng bạn đến với trang quản trị",
-        });
-        localStorage.setItem("admin-token", "authenticated");
-        setLocation("/admin/dashboard");
-      } else {
-        throw new Error("Sai tên đăng nhập hoặc mật khẩu");
-      }
-    } catch (error) {
+    // Đăng nhập đơn giản - không cần gọi API
+    if (formData.username === "admin" && formData.password === "admin123") {
+      toast({
+        title: "Đăng nhập thành công",
+        description: "Chào mừng bạn đến với trang quản trị",
+      });
+      localStorage.setItem("admin-token", "authenticated");
+      setLocation("/admin/dashboard");
+    } else {
       toast({
         title: "Lỗi đăng nhập",
-        description: error instanceof Error ? error.message : "Đã xảy ra lỗi",
+        description: "Sai tên đăng nhập hoặc mật khẩu",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
+    
+    setIsLoading(false);
   };
 
   return (

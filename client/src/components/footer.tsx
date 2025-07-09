@@ -76,10 +76,17 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-gray-700 mt-8 pt-8 text-center">
-          <p className="text-gray-400">
-            © 2024 Mầm Non Thảo Nguyên Xanh. Tất cả quyền được bảo lưu.
-          </p>
+        <div className="border-t border-gray-700 mt-8 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <p className="text-gray-400">
+              © 2024 Mầm Non Thảo Nguyên Xanh. Tất cả quyền được bảo lưu.
+            </p>
+            <div className="text-xs text-gray-500 mt-2 md:mt-0">
+              <Link href="/admin/login" className="hover:text-primary-green transition-colors">
+                Quản trị website (admin/admin123)
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
