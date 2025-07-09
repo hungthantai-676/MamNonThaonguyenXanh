@@ -97,7 +97,11 @@ export default function Contact() {
                     <i className="fab fa-zalo mr-2"></i>
                     Chat Zalo
                   </Button>
-                  <Button variant="outline" className="border-primary-green text-primary-green hover:bg-primary-green hover:text-white">
+                  <Button 
+                    variant="outline" 
+                    className="border-primary-green text-primary-green hover:bg-primary-green hover:text-white"
+                    onClick={() => window.open('tel:0856318686', '_self')}
+                  >
                     <i className="fas fa-phone mr-2"></i>
                     Gọi ngay
                   </Button>
@@ -127,7 +131,7 @@ export default function Contact() {
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
             <div className="h-96 relative">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.8!2d105.97!3d20.25!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjDCsDE1JzAwLjAiTiAxMDXCsDU4JzEyLjAiRQ!5e0!3m2!1svi!2s!4v1625000000000!5m2!1svi!2s"
+                src="https://maps.google.com/maps?q=Lý+Thái+Tổ,+Phù+Vân,+Ninh+Bình,+Vietnam&output=embed"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}

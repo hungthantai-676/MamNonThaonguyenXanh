@@ -9,7 +9,7 @@ export default function Footer() {
             <div className="flex items-center space-x-3 mb-6">
               <div className="w-12 h-12 rounded-full flex items-center justify-center">
                 <img 
-                  src="/attached_assets/image_1752061878998.png" 
+                  src="/images/logo.png" 
                   alt="Mầm Non Thảo Nguyên Xanh Logo" 
                   className="w-12 h-12 object-contain"
                 />
