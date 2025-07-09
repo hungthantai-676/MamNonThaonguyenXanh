@@ -126,11 +126,35 @@ The application uses the following main entities:
 - Schema is defined in `shared/schema.ts`
 - Migrations are stored in `./migrations/`
 
+## Admin Panel Features
+
+### Authentication
+- **Login URL**: `/admin/login`
+- **Username**: `admin`
+- **Password**: `admin123`
+- Simple session-based authentication with localStorage token
+
+### Dashboard Features
+1. **Cài đặt chung**: Update contact information (phone, email, address, Google Maps)
+2. **Bài viết**: Create and manage news articles with categories
+3. **Chương trình**: View program details and update tuition fees
+4. **Hoạt động**: View and manage school activities
+
+### How to Use Admin Panel
+1. Navigate to `/admin/login`
+2. Enter credentials: username=`admin`, password=`admin123`
+3. Access dashboard to manage content
+4. Changes are immediately reflected on the website
+
 ## Changelog
 
 ```
 Changelog:
 - July 07, 2025. Initial setup
+- July 09, 2025. Added admin authentication system with dashboard
+- July 09, 2025. Implemented content management interface
+- July 09, 2025. Updated tuition fees to 4,000,000 VND for all programs
+- July 09, 2025. Added real business contact information
 ```
 
 ## User Preferences

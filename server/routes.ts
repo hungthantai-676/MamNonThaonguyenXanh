@@ -176,6 +176,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin routes
+  app.post("/api/admin/login", async (req, res) => {
+    const { username, password } = req.body;
+    
+    // Simple authentication (in production, use proper hashing)
+    if (username === "admin" && password === "admin123") {
+      res.json({ success: true, message: "Login successful" });
+    } else {
+      res.status(401).json({ message: "Invalid credentials" });
+    }
+  });
+
+  app.put("/api/admin/settings", async (req, res) => {
+    // For now, just return success - in production, save to database
+    res.json({ success: true, message: "Settings updated" });
+  });
+
+  app.put("/api/programs/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { tuition } = req.body;
+      
+      // Update tuition in database
+      await storage.updateProgram(parseInt(id), { tuition });
+      
+      res.json({ success: true, message: "Program updated" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update program" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

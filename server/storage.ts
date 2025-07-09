@@ -22,6 +22,7 @@ export interface IStorage {
   getPrograms(): Promise<Program[]>;
   getProgram(id: number): Promise<Program | undefined>;
   createProgram(program: InsertProgram): Promise<Program>;
+  updateProgram(id: number, program: Partial<InsertProgram>): Promise<Program>;
   
   // Activity methods
   getActivities(): Promise<Activity[]>;
@@ -115,6 +116,15 @@ export class DatabaseStorage implements IStorage {
     const [program] = await db
       .insert(programs)
       .values({ ...insertProgram, isActive: insertProgram.isActive ?? true })
+      .returning();
+    return program;
+  }
+
+  async updateProgram(id: number, programData: Partial<InsertProgram>): Promise<Program> {
+    const [program] = await db
+      .update(programs)
+      .set(programData)
+      .where(eq(programs.id, id))
       .returning();
     return program;
   }
