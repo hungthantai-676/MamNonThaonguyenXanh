@@ -7,8 +7,12 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center space-x-3 mb-6">
-              <div className="w-12 h-12 bg-primary-green rounded-full flex items-center justify-center">
-                <i className="fas fa-seedling text-white text-xl"></i>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center">
+                <img 
+                  src="/attached_assets/image_1752061878998.png" 
+                  alt="Mầm Non Thảo Nguyên Xanh Logo" 
+                  className="w-12 h-12 object-contain"
+                />
               </div>
               <div>
                 <h3 className="font-bold text-xl">Mầm Non Thảo Nguyên Xanh</h3>
@@ -58,15 +62,15 @@ export default function Footer() {
             <div className="space-y-3">
               <div className="flex items-start space-x-3">
                 <i className="fas fa-map-marker-alt text-primary-green mt-1"></i>
-                <p className="text-gray-400 text-sm">123 Đường ABC, Phường XYZ, Quận 1, TP. Hồ Chí Minh</p>
+                <p className="text-gray-400 text-sm">Toà nhà Thảo Nguyên Xanh, đường Lý Thái Tổ, tổ 4, phường Phù Vân, tỉnh Ninh Bình</p>
               </div>
               <div className="flex items-center space-x-3">
                 <i className="fas fa-phone text-primary-green"></i>
-                <p className="text-gray-400">0901 234 567</p>
+                <p className="text-gray-400">0856318686</p>
               </div>
               <div className="flex items-center space-x-3">
                 <i className="fas fa-envelope text-primary-green"></i>
-                <p className="text-gray-400">info@mamnonthaonguyenxanh.com</p>
+                <p className="text-gray-400">mamnonthaonguyenxanh@gmail.com</p>
               </div>
             </div>
           </div>

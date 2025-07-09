@@ -25,8 +25,12 @@ export default function Header() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-primary-green rounded-full flex items-center justify-center">
-              <i className="fas fa-seedling text-white text-xl"></i>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center">
+              <img 
+                src="/attached_assets/image_1752061878998.png" 
+                alt="Mầm Non Thảo Nguyên Xanh Logo" 
+                className="w-12 h-12 object-contain"
+              />
             </div>
             <div>
               <h1 className="font-bold text-xl text-dark-gray">Mầm Non Thảo Nguyên Xanh</h1>

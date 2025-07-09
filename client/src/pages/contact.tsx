@@ -32,8 +32,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-dark-gray mb-1">Địa chỉ</h3>
-                    <p className="text-gray-600">123 Đường ABC, Phường XYZ, Quận 1, TP. Hồ Chí Minh</p>
-                    <p className="text-gray-600">Cơ sở 2: 456 Đường DEF, Phường UVW, Quận 3, TP. Hồ Chí Minh</p>
+                    <p className="text-gray-600">Toà nhà Thảo Nguyên Xanh, đường Lý Thái Tổ, tổ 4, phường Phù Vân, tỉnh Ninh Bình</p>
                   </div>
                 </div>
 
@@ -43,9 +42,8 @@ export default function Contact() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-dark-gray mb-1">Điện thoại</h3>
-                    <p className="text-gray-600">Hotline: 0901 234 567</p>
-                    <p className="text-gray-600">Văn phòng: 028 3456 7890</p>
-                    <p className="text-gray-600">Tuyển sinh: 0901 234 568</p>
+                    <p className="text-gray-600">Hotline: 0856318686</p>
+                    <p className="text-gray-600">Tuyển sinh: 0856318686</p>
                   </div>
                 </div>
 
@@ -55,9 +53,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-dark-gray mb-1">Email</h3>
-                    <p className="text-gray-600">info@mamnonthaonguyenxanh.com</p>
-                    <p className="text-gray-600">tuyensinh@mamnonthaonguyenxanh.com</p>
-                    <p className="text-gray-600">hoatdong@mamnonthaonguyenxanh.com</p>
+                    <p className="text-gray-600">mamnonthaonguyenxanh@gmail.com</p>
                   </div>
                 </div>
 
@@ -127,14 +123,19 @@ export default function Contact() {
             </p>
           </div>
 
-          {/* Map Placeholder */}
+          {/* Google Maps */}
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div className="h-96 bg-gray-200 flex items-center justify-center relative">
-              <div className="text-center">
-                <i className="fas fa-map-marker-alt text-gray-400 text-4xl mb-4"></i>
-                <p className="text-gray-600 font-medium">Google Maps sẽ được tích hợp tại đây</p>
-                <p className="text-sm text-gray-500 mt-2">123 Đường ABC, Phường XYZ, Quận 1, TP. Hồ Chí Minh</p>
-              </div>
+            <div className="h-96 relative">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.8!2d105.97!3d20.25!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjDCsDE1JzAwLjAiTiAxMDXCsDU4JzEyLjAiRQ!5e0!3m2!1svi!2s!4v1625000000000!5m2!1svi!2s"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen={true}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Vị trí Mầm Non Thảo Nguyên Xanh"
+              ></iframe>
               
               {/* Overlay with directions */}
               <div className="absolute top-4 left-4 bg-white rounded-lg shadow-md p-4">
@@ -142,11 +143,11 @@ export default function Contact() {
                 <div className="space-y-2 text-sm text-gray-600">
                   <div className="flex items-center">
                     <i className="fas fa-bus text-primary-green mr-2"></i>
-                    <span>Xe buýt: Tuyến 01, 02, 15</span>
+                    <span>Xe buýt: Tuyến liên tỉnh</span>
                   </div>
                   <div className="flex items-center">
                     <i className="fas fa-motorcycle text-primary-green mr-2"></i>
-                    <span>Grab/Be từ Q1: 15-20 phút</span>
+                    <span>Grab/Be từ trung tâm: 10-15 phút</span>
                   </div>
                   <div className="flex items-center">
                     <i className="fas fa-car text-primary-green mr-2"></i>
@@ -154,46 +155,43 @@ export default function Contact() {
                   </div>
                 </div>
               </div>
+
+              {/* Quick Direction Link */}
+              <div className="absolute bottom-4 right-4">
+                <a
+                  href="https://maps.app.goo.gl/wJHJx4pxpZ1FmmoG9"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-primary-green hover:bg-primary-green/90 text-white px-4 py-2 rounded-lg shadow-md transition-colors flex items-center"
+                >
+                  <i className="fas fa-directions mr-2"></i>
+                  Chỉ đường
+                </a>
+              </div>
             </div>
           </div>
 
-          {/* Location Cards */}
-          <div className="grid md:grid-cols-2 gap-8 mt-8">
+          {/* Location Card */}
+          <div className="max-w-2xl mx-auto mt-8">
             <Card className="hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-center mb-4">
                   <div className="w-12 h-12 bg-primary-green rounded-full flex items-center justify-center mr-4">
-                    <span className="text-white font-bold">1</span>
+                    <i className="fas fa-school text-white"></i>
                   </div>
-                  <h3 className="font-semibold text-xl text-dark-gray">Cơ sở 1 - Chính</h3>
+                  <h3 className="font-semibold text-xl text-dark-gray">Mầm Non Thảo Nguyên Xanh</h3>
                 </div>
                 <div className="space-y-2 text-gray-600">
-                  <p><i className="fas fa-map-marker-alt text-primary-green mr-2"></i>123 Đường ABC, Phường XYZ, Quận 1</p>
-                  <p><i className="fas fa-phone text-primary-green mr-2"></i>028 3456 7890</p>
-                  <p><i className="fas fa-users text-primary-green mr-2"></i>200 học sinh</p>
+                  <p><i className="fas fa-map-marker-alt text-primary-green mr-2"></i>Toà nhà Thảo Nguyên Xanh, đường Lý Thái Tổ, tổ 4, phường Phù Vân, tỉnh Ninh Bình</p>
+                  <p><i className="fas fa-phone text-primary-green mr-2"></i>0856318686</p>
+                  <p><i className="fas fa-envelope text-primary-green mr-2"></i>mamnonthaonguyenxanh@gmail.com</p>
                   <p><i className="fas fa-graduation-cap text-primary-green mr-2"></i>Lớp Nhà trẻ, Mẫu giáo, Lớp lớn</p>
                 </div>
-                <Button className="w-full mt-4 bg-primary-green hover:bg-primary-green/90 text-white">
-                  Xem đường đi
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-secondary-blue rounded-full flex items-center justify-center mr-4">
-                    <span className="text-white font-bold">2</span>
-                  </div>
-                  <h3 className="font-semibold text-xl text-dark-gray">Cơ sở 2</h3>
-                </div>
-                <div className="space-y-2 text-gray-600">
-                  <p><i className="fas fa-map-marker-alt text-secondary-blue mr-2"></i>456 Đường DEF, Phường UVW, Quận 3</p>
-                  <p><i className="fas fa-phone text-secondary-blue mr-2"></i>028 3456 7891</p>
-                  <p><i className="fas fa-users text-secondary-blue mr-2"></i>100 học sinh</p>
-                  <p><i className="fas fa-graduation-cap text-secondary-blue mr-2"></i>Lớp Mẫu giáo, Lớp lớn</p>
-                </div>
-                <Button className="w-full mt-4 bg-secondary-blue hover:bg-secondary-blue/90 text-white">
+                <Button 
+                  className="w-full mt-4 bg-primary-green hover:bg-primary-green/90 text-white"
+                  onClick={() => window.open('https://maps.app.goo.gl/wJHJx4pxpZ1FmmoG9', '_blank')}
+                >
+                  <i className="fas fa-directions mr-2"></i>
                   Xem đường đi
                 </Button>
               </CardContent>
