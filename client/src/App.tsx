@@ -14,6 +14,7 @@ import News from "@/pages/news";
 import Contact from "@/pages/contact";
 import AdminLogin from "@/pages/admin/login";
 import AdminDashboard from "@/pages/admin/dashboard";
+import AdminAccess from "@/pages/admin-access";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 
@@ -31,6 +32,7 @@ function Router() {
           <Route path="/admission" component={Admission} />
           <Route path="/news" component={News} />
           <Route path="/contact" component={Contact} />
+          <Route path="/admin-access" component={AdminAccess} />
           <Route path="/admin/login" component={AdminLogin} />
           <Route path="/admin/dashboard" component={AdminDashboard} />
           <Route component={NotFound} />
