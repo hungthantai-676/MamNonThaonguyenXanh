@@ -1,9 +1,9 @@
 import Hero from "@/components/hero";
 import Features from "@/components/features";
 import Testimonials from "@/components/testimonials";
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Article, Program, Activity } from "@shared/schema";
@@ -274,6 +274,24 @@ export default function Home() {
       </section>
 
       <Testimonials />
+      
+      {/* Admin Access Section */}
+      <section className="py-12 bg-gray-100">
+        <div className="container mx-auto px-4 text-center">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-md mx-auto">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4">🔧 Quản trị website</h3>
+            <p className="text-gray-600 mb-6">Dành cho quản trị viên</p>
+            <Link href="/admin/login">
+              <Button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-lg">
+                Đăng nhập Admin
+              </Button>
+            </Link>
+            <div className="mt-4 text-xs text-gray-500">
+              <p>Tài khoản: admin | Mật khẩu: admin123</p>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
