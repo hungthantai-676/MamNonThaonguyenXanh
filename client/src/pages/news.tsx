@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -79,9 +80,11 @@ export default function News() {
                   <p className="text-lg text-gray-600 mb-6">
                     {displayArticles[0].excerpt}
                   </p>
-                  <Button className="bg-primary-green hover:bg-primary-green/90 text-white">
-                    Đọc bài viết đầy đủ
-                  </Button>
+                  <Link href={`/news/${displayArticles[0].id}`}>
+                    <Button className="bg-primary-green hover:bg-primary-green/90 text-white">
+                      Đọc bài viết đầy đủ
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>
