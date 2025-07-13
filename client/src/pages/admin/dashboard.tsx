@@ -268,7 +268,7 @@ export default function AdminDashboard() {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="contact" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-10">
+          <TabsList className="grid w-full grid-cols-11">
             <TabsTrigger value="contact">📞 Liên hệ</TabsTrigger>
             <TabsTrigger value="media">🖼️ Ảnh/Video</TabsTrigger>
             <TabsTrigger value="homepage">🏠 Trang chủ</TabsTrigger>
@@ -279,6 +279,7 @@ export default function AdminDashboard() {
             <TabsTrigger value="programs">📚 Chương trình</TabsTrigger>
             <TabsTrigger value="activities">🎯 Hoạt động</TabsTrigger>
             <TabsTrigger value="media-covers">📺 Báo chí</TabsTrigger>
+            <TabsTrigger value="social-media">🌐 Mạng xã hội</TabsTrigger>
           </TabsList>
 
           <TabsContent value="contact">
@@ -1112,6 +1113,35 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="social-media">
+            <Card>
+              <CardHeader>
+                <CardTitle>🌐 Mạng xã hội</CardTitle>
+                <CardDescription>Quản lý các kênh mạng xã hội của trường</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="text-center p-8 bg-gray-50 rounded-lg">
+                    <p className="text-lg font-semibold mb-4">🔧 Chức năng quản lý mạng xã hội</p>
+                    <p className="text-gray-600 mb-4">
+                      Tính năng này sẽ cho phép bạn:
+                    </p>
+                    <ul className="text-left max-w-md mx-auto space-y-2 text-gray-700">
+                      <li>• Thêm và chỉnh sửa liên kết Facebook</li>
+                      <li>• Quản lý kênh YouTube</li>
+                      <li>• Cập nhật tài khoản Instagram</li>
+                      <li>• Thay đổi số lượng người theo dõi</li>
+                      <li>• Bật/tắt hiển thị từng kênh</li>
+                    </ul>
+                    <p className="text-sm text-gray-500 mt-4">
+                      Các kênh mạng xã hội sẽ hiển thị trên trang chủ để phụ huynh có thể theo dõi
+                    </p>
                   </div>
                 </div>
               </CardContent>

@@ -1,6 +1,7 @@
 import Hero from "@/components/hero";
 import Features from "@/components/features";
 import Testimonials from "@/components/testimonials";
+import SocialMediaSection from "@/components/social-media-section";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
@@ -274,6 +275,7 @@ export default function Home() {
       </section>
 
       <Testimonials />
+      <SocialMediaSection />
       
       {/* Admin Access Section */}
       <section className="py-12 bg-gray-100">

@@ -131,6 +131,17 @@ export const mediaCovers = pgTable("media_covers", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const socialMediaLinks = pgTable("social_media_links", {
+  id: serial("id").primaryKey(),
+  platform: text("platform").notNull(),
+  url: text("url").notNull(),
+  displayName: text("display_name"),
+  followers: integer("followers").default(0),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -185,6 +196,12 @@ export const insertMediaCoverSchema = createInsertSchema(mediaCovers).omit({
   createdAt: true,
 });
 
+export const insertSocialMediaLinkSchema = createInsertSchema(socialMediaLinks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Article = typeof articles.$inferSelect;
@@ -207,3 +224,5 @@ export type AdmissionStep = typeof admissionSteps.$inferSelect;
 export type InsertAdmissionStep = z.infer<typeof insertAdmissionStepSchema>;
 export type MediaCover = typeof mediaCovers.$inferSelect;
 export type InsertMediaCover = z.infer<typeof insertMediaCoverSchema>;
+export type SocialMediaLink = typeof socialMediaLinks.$inferSelect;
+export type InsertSocialMediaLink = z.infer<typeof insertSocialMediaLinkSchema>;

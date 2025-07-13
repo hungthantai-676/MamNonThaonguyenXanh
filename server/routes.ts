@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { 
   insertArticleSchema, insertTestimonialSchema, insertProgramSchema, 
   insertActivitySchema, insertAdmissionFormSchema, insertContactFormSchema,
-  insertAdmissionStepSchema, insertMediaCoverSchema
+  insertAdmissionStepSchema, insertMediaCoverSchema, insertSocialMediaLinkSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -22,6 +22,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/articles/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid article ID" });
+      }
       console.log('API - Fetching article with ID:', id);
       const article = await storage.getArticle(id);
       console.log('API - Article found:', article ? 'Yes' : 'No');
@@ -334,6 +337,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete media cover" });
+    }
+  });
+
+  // Social media routes
+  app.get("/api/social-media", async (req, res) => {
+    try {
+      const socialLinks = await storage.getSocialMediaLinks();
+      res.set('Cache-Control', 'public, max-age=300'); // 5 minutes cache
+      res.json(socialLinks);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch social media links" });
+    }
+  });
+
+  app.post("/api/social-media", async (req, res) => {
+    try {
+      const parsed = insertSocialMediaLinkSchema.parse(req.body);
+      const link = await storage.createSocialMediaLink(parsed);
+      res.status(201).json(link);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid social media link data" });
+    }
+  });
+
+  app.put("/api/social-media/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const parsed = insertSocialMediaLinkSchema.partial().parse(req.body);
+      const link = await storage.updateSocialMediaLink(id, parsed);
+      res.json(link);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid social media link data" });
+    }
+  });
+
+  app.delete("/api/social-media/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteSocialMediaLink(id);
+      res.json({ message: "Social media link deleted" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete social media link" });
     }
   });
 

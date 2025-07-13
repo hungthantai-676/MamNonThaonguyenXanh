@@ -1,4 +1,4 @@
-import { users, articles, testimonials, programs, activities, admissionForms, contactForms, chatMessages, notifications, admissionSteps, mediaCovers, type User, type InsertUser, type Article, type InsertArticle, type Testimonial, type InsertTestimonial, type Program, type InsertProgram, type Activity, type InsertActivity, type AdmissionForm, type InsertAdmissionForm, type ContactForm, type InsertContactForm, type ChatMessage, type InsertChatMessage, type Notification, type InsertNotification, type AdmissionStep, type InsertAdmissionStep, type MediaCover, type InsertMediaCover } from "@shared/schema";
+import { users, articles, testimonials, programs, activities, admissionForms, contactForms, chatMessages, notifications, admissionSteps, mediaCovers, socialMediaLinks, type User, type InsertUser, type Article, type InsertArticle, type Testimonial, type InsertTestimonial, type Program, type InsertProgram, type Activity, type InsertActivity, type AdmissionForm, type InsertAdmissionForm, type ContactForm, type InsertContactForm, type ChatMessage, type InsertChatMessage, type Notification, type InsertNotification, type AdmissionStep, type InsertAdmissionStep, type MediaCover, type InsertMediaCover, type SocialMediaLink, type InsertSocialMediaLink } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
@@ -66,6 +66,13 @@ export interface IStorage {
   createMediaCover(cover: InsertMediaCover): Promise<MediaCover>;
   updateMediaCover(id: number, cover: Partial<InsertMediaCover>): Promise<MediaCover>;
   deleteMediaCover(id: number): Promise<void>;
+  
+  // Social media methods
+  getSocialMediaLinks(): Promise<SocialMediaLink[]>;
+  getSocialMediaLink(id: number): Promise<SocialMediaLink | undefined>;
+  createSocialMediaLink(link: InsertSocialMediaLink): Promise<SocialMediaLink>;
+  updateSocialMediaLink(id: number, link: Partial<InsertSocialMediaLink>): Promise<SocialMediaLink>;
+  deleteSocialMediaLink(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -339,6 +346,36 @@ export class DatabaseStorage implements IStorage {
       .update(mediaCovers)
       .set({ isActive: false })
       .where(eq(mediaCovers.id, id));
+  }
+
+  async getSocialMediaLinks(): Promise<SocialMediaLink[]> {
+    return await db.select().from(socialMediaLinks).where(eq(socialMediaLinks.isActive, true));
+  }
+
+  async getSocialMediaLink(id: number): Promise<SocialMediaLink | undefined> {
+    const [link] = await db.select().from(socialMediaLinks).where(eq(socialMediaLinks.id, id));
+    return link || undefined;
+  }
+
+  async createSocialMediaLink(insertLink: InsertSocialMediaLink): Promise<SocialMediaLink> {
+    const [link] = await db
+      .insert(socialMediaLinks)
+      .values(insertLink)
+      .returning();
+    return link;
+  }
+
+  async updateSocialMediaLink(id: number, linkData: Partial<InsertSocialMediaLink>): Promise<SocialMediaLink> {
+    const [link] = await db
+      .update(socialMediaLinks)
+      .set({ ...linkData, updatedAt: new Date() })
+      .where(eq(socialMediaLinks.id, id))
+      .returning();
+    return link;
+  }
+
+  async deleteSocialMediaLink(id: number): Promise<void> {
+    await db.delete(socialMediaLinks).where(eq(socialMediaLinks.id, id));
   }
 }
 
