@@ -47,10 +47,11 @@ export default function Header() {
                 href={item.href}
                 className={cn(
                   "text-dark-gray hover:text-primary-green transition-colors font-medium",
-                  location === item.href && "text-primary-green"
+                  location === item.href && "text-primary-green",
+                  item.name === "Quản trị" && "bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600"
                 )}
               >
-                {item.name}
+                {item.name === "Quản trị" ? "🔧 Quản trị" : item.name}
               </Link>
             ))}
 
