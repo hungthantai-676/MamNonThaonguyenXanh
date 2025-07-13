@@ -1,5 +1,6 @@
 import { WebClient } from "@slack/web-api";
 import type { ServiceRegistration } from "@shared/schema";
+import { sendServiceRegistrationEmail } from "./email";
 
 // Slack notification system
 export class NotificationService {
@@ -14,6 +15,15 @@ export class NotificationService {
   async sendServiceRegistrationNotification(registration: ServiceRegistration) {
     const notifications = [];
 
+    // Send email notification (priority method)
+    try {
+      await sendServiceRegistrationEmail(registration);
+      notifications.push('Email notification sent');
+      console.log('📧 Email notification sent successfully');
+    } catch (error) {
+      console.error('❌ Failed to send email notification:', error);
+    }
+
     // Send Slack notification if configured
     if (this.slack && process.env.SLACK_CHANNEL_ID) {
       try {
@@ -23,8 +33,9 @@ export class NotificationService {
           ...message
         });
         notifications.push('Slack notification sent');
+        console.log('📱 Slack notification sent successfully');
       } catch (error) {
-        console.error('Failed to send Slack notification:', error);
+        console.error('❌ Failed to send Slack notification:', error);
       }
     }
 

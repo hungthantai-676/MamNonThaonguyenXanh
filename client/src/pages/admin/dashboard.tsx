@@ -32,6 +32,44 @@ export default function AdminDashboard() {
   const { data: mediaCovers } = useQuery<MediaCover[]>({ queryKey: ["/api/media-covers"] });
   const { data: serviceRegistrations } = useQuery<ServiceRegistration[]>({ queryKey: ["/api/service-registrations"] });
 
+  // Test Email Button Component
+  const TestEmailButton = () => {
+    const [isLoading, setIsLoading] = useState(false);
+
+    const testEmail = async () => {
+      setIsLoading(true);
+      try {
+        const response = await apiRequest("POST", "/api/test-email");
+        if (response.ok) {
+          toast({
+            title: "Thành công",
+            description: "Email test đã được gửi về mamnonthaonguyenxanh@gmail.com",
+          });
+        } else {
+          toast({
+            title: "Lỗi",
+            description: "Không thể gửi email test. Vui lòng kiểm tra cấu hình email.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Lỗi",
+          description: "Không thể gửi email test. Vui lòng thử lại.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    return (
+      <Button onClick={testEmail} disabled={isLoading} className="bg-blue-600 hover:bg-blue-700">
+        {isLoading ? "Đang gửi..." : "📧 Test Email"}
+      </Button>
+    );
+  };
+
   // Form states
   const [contactInfo, setContactInfo] = useState({
     phone: "0856318686",
@@ -1207,6 +1245,17 @@ export default function AdminDashboard() {
                       <p><strong>Bước 2:</strong> Nhấn nút "🧪 Test Tư vấn tâm lý" hoặc "🧪 Test Tư vấn dinh dưỡng"</p>
                       <p><strong>Bước 3:</strong> Quay lại đây để xem đăng ký mới trong bảng bên dưới</p>
                       <p><strong>Bước 4:</strong> Nhấn "Cập nhật" để thay đổi trạng thái từ "Chờ xử lý" → "Đã liên hệ"</p>
+                    </div>
+                    <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <h4 className="font-semibold text-yellow-800 mb-2">⚠️ Cần thiết lập email trước</h4>
+                      <p className="text-yellow-700 text-sm mb-3">
+                        Để nhận email tự động, cần cấu hình Gmail App Password trong Secrets tab:
+                      </p>
+                      <div className="text-yellow-700 text-xs space-y-1 mb-3">
+                        <p>• EMAIL_USER: mamnonthaonguyenxanh@gmail.com</p>
+                        <p>• EMAIL_APP_PASSWORD: [tạo từ Gmail Security]</p>
+                      </div>
+                      <TestEmailButton />
                     </div>
                   </div>
 

@@ -8,6 +8,7 @@ import {
   insertServiceRegistrationSchema
 } from "@shared/schema";
 import { notificationService } from "./notifications";
+import { sendTestEmail } from "./email";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Article routes
@@ -427,6 +428,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Service registration deleted" });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete service registration" });
+    }
+  });
+
+  // Test email route
+  app.post("/api/test-email", async (req, res) => {
+    try {
+      const result = await sendTestEmail();
+      if (result) {
+        res.json({ success: true, message: "Test email sent successfully" });
+      } else {
+        res.status(500).json({ success: false, message: "Failed to send test email" });
+      }
+    } catch (error) {
+      console.error("Error sending test email:", error);
+      res.status(500).json({ success: false, message: "Failed to send test email" });
     }
   });
 
