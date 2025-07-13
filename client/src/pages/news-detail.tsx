@@ -7,14 +7,35 @@ import type { Article } from "@shared/schema";
 export default function NewsDetail() {
   const { id } = useParams<{ id: string }>();
   
+  // Debug - early return if no id
+  if (!id) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-red-600 mb-4">No ID provided</h1>
+          <p>URL parameter 'id' is missing</p>
+          <Link href="/news">
+            <Button>Back to News</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+  
   console.log('NewsDetail component loaded with ID:', id);
   
   const { data: article, isLoading, error } = useQuery<Article>({
     queryKey: [`/api/articles/${id}`],
     enabled: !!id,
+    retry: 1,
   });
   
   console.log('Query state:', { article, isLoading, error, id });
+  
+  // Show detailed error information
+  if (error) {
+    console.error('Error details:', error);
+  }
 
   if (isLoading) {
     return (
