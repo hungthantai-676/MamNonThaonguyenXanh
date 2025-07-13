@@ -14,6 +14,7 @@ const navigation = [
   { name: "Tuyển sinh", href: "/admission" },
   { name: "Tin tức", href: "/news" },
   { name: "Liên hệ", href: "/contact" },
+  { name: "Quản trị", href: "/admin/login" },
 ];
 
 export default function Header() {
@@ -52,12 +53,7 @@ export default function Header() {
                 {item.name}
               </Link>
             ))}
-            <Link
-              href="/admin/login"
-              className="bg-primary-green text-white px-3 py-1 rounded-full text-sm hover:bg-green-600 transition-colors font-medium"
-            >
-              ⚙️ Quản trị
-            </Link>
+
           </nav>
 
           {/* Mobile Menu */}
@@ -82,13 +78,7 @@ export default function Header() {
                     {item.name}
                   </Link>
                 ))}
-                <Link
-                  href="/admin/login"
-                  className="text-gray-500 hover:text-primary-green transition-colors font-medium py-2 text-sm border-t pt-4"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Quản trị website
-                </Link>
+
               </nav>
             </SheetContent>
           </Sheet>
