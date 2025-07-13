@@ -200,6 +200,50 @@ export default function Parents() {
             </p>
           </div>
 
+          {/* Test Section */}
+          <div className="mb-8 p-4 bg-blue-50 rounded-lg">
+            <h3 className="font-semibold text-blue-900 mb-2">🧪 Test nhanh hệ thống</h3>
+            <p className="text-blue-800 text-sm mb-4">
+              Nhấn để tạo đăng ký dịch vụ mẫu và xem thông báo được gửi ngay lập tức
+            </p>
+            <div className="space-x-2">
+              <Button 
+                onClick={() => {
+                  const testData = {
+                    parentName: "Nguyễn Thị Hoa",
+                    parentPhone: "0987654321",
+                    parentEmail: "nguyenhoa@gmail.com",
+                    serviceName: "Tư vấn tâm lý",
+                    preferredTime: "14:00 - 15:00",
+                    notes: "Con tôi 4 tuổi, gần đây hay khóc và không chịu đi học. Mong được tư vấn cách xử lý tình huống này."
+                  };
+                  registrationMutation.mutate(testData);
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                disabled={registrationMutation.isPending}
+              >
+                🧪 Test Tư vấn tâm lý
+              </Button>
+              <Button 
+                onClick={() => {
+                  const testData = {
+                    parentName: "Trần Văn Minh",
+                    parentPhone: "0912345678",
+                    parentEmail: "tranminh@gmail.com",
+                    serviceName: "Tư vấn dinh dưỡng",
+                    preferredTime: "9:00 - 10:00",
+                    notes: "Con tôi 5 tuổi, ăn rất kém và hay ốm. Muốn được tư vấn chế độ dinh dưỡng phù hợp."
+                  };
+                  registrationMutation.mutate(testData);
+                }}
+                className="bg-green-600 hover:bg-green-700 text-white"
+                disabled={registrationMutation.isPending}
+              >
+                🧪 Test Tư vấn dinh dưỡng
+              </Button>
+            </div>
+          </div>
+
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {services.map((service, index) => (
               <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => handleServiceSelect(service.name)}>

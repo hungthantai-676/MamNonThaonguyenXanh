@@ -1200,6 +1200,16 @@ export default function AdminDashboard() {
                     </ul>
                   </div>
 
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <h3 className="font-semibold text-green-900 mb-2">🧪 Cách test hệ thống</h3>
+                    <div className="text-green-800 text-sm space-y-2">
+                      <p><strong>Bước 1:</strong> Vào trang "Phụ huynh" → cuộn xuống phần "Dịch vụ hỗ trợ phụ huynh"</p>
+                      <p><strong>Bước 2:</strong> Nhấn nút "🧪 Test Tư vấn tâm lý" hoặc "🧪 Test Tư vấn dinh dưỡng"</p>
+                      <p><strong>Bước 3:</strong> Quay lại đây để xem đăng ký mới trong bảng bên dưới</p>
+                      <p><strong>Bước 4:</strong> Nhấn "Cập nhật" để thay đổi trạng thái từ "Chờ xử lý" → "Đã liên hệ"</p>
+                    </div>
+                  </div>
+
                   <div className="overflow-x-auto">
                     <table className="w-full border-collapse border border-gray-300">
                       <thead>
