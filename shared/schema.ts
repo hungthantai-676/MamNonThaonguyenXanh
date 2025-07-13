@@ -109,7 +109,7 @@ export const notifications = pgTable("notifications", {
 
 export const admissionSteps = pgTable("admission_steps", {
   id: serial("id").primaryKey(),
-  stepNumber: text("step_number").notNull(),
+  stepNumber: integer("step_number").notNull(),
   title: text("title").notNull(),
   description: text("description").notNull(),
   iconUrl: text("icon_url"),
