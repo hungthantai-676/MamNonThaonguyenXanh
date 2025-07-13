@@ -1002,6 +1002,17 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
+                  {/* Instructions */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-blue-800 mb-2">📋 Hướng dẫn quản lý báo chí</h3>
+                    <ul className="text-sm text-blue-700 space-y-1">
+                      <li>• Thêm link bài viết để người dùng có thể click xem bài gốc</li>
+                      <li>• Chọn đúng loại báo chí (TV, Báo giấy, Online, Radio)</li>
+                      <li>• Ngày đăng giúp sắp xếp thứ tự hiển thị</li>
+                      <li>• Có thể sửa hoặc xóa bài viết bất kỳ lúc nào</li>
+                    </ul>
+                  </div>
+
                   {/* Add new media cover form */}
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <h3 className="font-semibold mb-4">➕ Thêm bài viết báo chí mới</h3>
@@ -1049,18 +1060,18 @@ export default function AdminDashboard() {
                         />
                       </div>
                       <div className="col-span-2">
-                        <Label htmlFor="new-url">🔗 Link bài viết (tùy chọn)</Label>
+                        <Label htmlFor="new-url">🔗 Link bài viết (quan trọng - để người dùng click xem)</Label>
                         <Input
                           id="new-url"
                           value={newMediaCover.url}
                           onChange={(e) => setNewMediaCover(prev => ({ ...prev, url: e.target.value }))}
-                          placeholder="https://..."
+                          placeholder="https://vtv.vn/giao-duc/bai-viet-ve-truong..."
                         />
                       </div>
                     </div>
                     <Button
                       onClick={() => createMediaCoverMutation.mutate(newMediaCover)}
-                      className="mt-4"
+                      className="mt-4 bg-primary-green hover:bg-primary-green/90"
                       disabled={!newMediaCover.outlet || !newMediaCover.title || !newMediaCover.date || !newMediaCover.type}
                     >
                       ➕ Thêm bài viết báo chí
@@ -1081,15 +1092,17 @@ export default function AdminDashboard() {
                             </div>
                             <h3 className="font-semibold text-lg mb-1">{cover.title}</h3>
                             <p className="text-sm text-gray-600">{cover.date}</p>
-                            {cover.url && (
+                            {cover.url ? (
                               <a
                                 href={cover.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-primary-green hover:underline text-sm mt-1 block"
                               >
-                                🔗 Xem bài viết
+                                🔗 Xem bài viết gốc
                               </a>
+                            ) : (
+                              <span className="text-red-500 text-sm">⚠️ Chưa có link bài viết</span>
                             )}
                           </div>
                           <div className="flex space-x-2">

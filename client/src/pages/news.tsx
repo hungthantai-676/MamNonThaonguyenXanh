@@ -160,39 +160,82 @@ export default function News() {
         </div>
       </section>
 
-      {/* Newsletter Signup */}
+      {/* Media Coverage Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
+          <div className="text-center mb-16">
             <h2 className="font-bold text-4xl text-dark-gray mb-4">
-              Đăng ký nhận tin tức
+              Báo chí nói về chúng tôi
             </h2>
-            <p className="text-xl text-gray-600 mb-8">
-              Nhận những thông tin mới nhất về hoạt động của trường qua email
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Những bài viết về trường trên các phương tiện truyền thông
             </p>
-            
-            <div className="bg-light-gray rounded-xl p-8">
-              <div className="flex flex-col md:flex-row gap-4 max-w-lg mx-auto">
-                <input 
-                  type="email" 
-                  placeholder="Nhập địa chỉ email của bạn"
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-green focus:border-primary-green"
-                />
-                <Button 
-                  className="bg-primary-green hover:bg-primary-green/90 text-white px-8"
-                  onClick={() => {
-                    console.log('Clicked "Đăng ký"');
-                    alert('Newsletter signup clicked');
-                  }}
-                >
-                  Đăng ký
-                </Button>
-              </div>
-              <p className="text-sm text-gray-500 mt-4">
-                Chúng tôi cam kết không spam và bảo mật thông tin của bạn
-              </p>
-            </div>
           </div>
+
+          {isLoadingMediaCovers ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="bg-light-gray rounded-xl overflow-hidden">
+                  <div className="p-6">
+                    <Skeleton className="h-4 w-1/3 mb-3" />
+                    <Skeleton className="h-6 w-full mb-3" />
+                    <Skeleton className="h-4 w-full mb-4" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {mediaCovers?.map((cover) => (
+                <div key={cover.id} className="bg-light-gray rounded-xl overflow-hidden hover:shadow-lg transition-shadow">
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 bg-primary-green/10 rounded-full flex items-center justify-center">
+                          {cover.type === 'TV' && <span className="text-primary-green font-bold">📺</span>}
+                          {cover.type === 'Báo' && <span className="text-primary-green font-bold">📰</span>}
+                          {cover.type === 'Online' && <span className="text-primary-green font-bold">💻</span>}
+                          {cover.type === 'Radio' && <span className="text-primary-green font-bold">📻</span>}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-primary-green">{cover.outlet}</h3>
+                          <p className="text-xs text-gray-500">{cover.type}</p>
+                        </div>
+                      </div>
+                      <span className="text-sm text-gray-500">{cover.date}</span>
+                    </div>
+                    
+                    <h4 className="font-semibold text-lg text-dark-gray mb-3 line-clamp-2">
+                      {cover.title}
+                    </h4>
+                    
+                    {cover.url ? (
+                      <a
+                        href={cover.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-primary-green hover:text-primary-green/80 font-medium"
+                      >
+                        Xem bài viết
+                        <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </a>
+                    ) : (
+                      <span className="text-gray-500 italic">Chưa có link bài viết</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!isLoadingMediaCovers && (!mediaCovers || mediaCovers.length === 0) && (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Chưa có bài viết báo chí nào</p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -258,55 +301,7 @@ export default function News() {
         </div>
       </section>
 
-      {/* Media Coverage */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="font-bold text-4xl text-dark-gray mb-4">Báo chí nói về chúng tôi</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Những bài viết về trường trên các phương tiện truyền thông
-            </p>
-          </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {isLoadingMediaCovers ? (
-              [1, 2, 3, 4].map((i) => (
-                <div key={i} className="bg-light-gray rounded-xl p-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <Skeleton className="h-4 w-20" />
-                    <Skeleton className="h-4 w-12" />
-                  </div>
-                  <Skeleton className="h-4 w-full mb-3" />
-                  <Skeleton className="h-4 w-1/2" />
-                </div>
-              ))
-            ) : (
-              mediaCovers?.map((coverage) => (
-                <div key={coverage.id} className="bg-light-gray rounded-xl p-6 hover:shadow-lg transition-shadow">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="font-semibold text-primary-green">{coverage.outlet}</span>
-                    <span className="text-xs bg-primary-green/10 text-primary-green px-2 py-1 rounded-full">
-                      {coverage.type}
-                    </span>
-                  </div>
-                  <h3 className="font-medium text-dark-gray mb-3">{coverage.title}</h3>
-                  <p className="text-sm text-gray-500">{coverage.date}</p>
-                  {coverage.url && (
-                    <a 
-                      href={coverage.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary-green hover:underline text-sm mt-2 block"
-                    >
-                      Xem bài viết →
-                    </a>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
