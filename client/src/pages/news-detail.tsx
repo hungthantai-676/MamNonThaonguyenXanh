@@ -7,16 +7,14 @@ import type { Article } from "@shared/schema";
 export default function NewsDetail() {
   const { id } = useParams<{ id: string }>();
   
+  console.log('NewsDetail component loaded with ID:', id);
+  
   const { data: article, isLoading, error } = useQuery<Article>({
-    queryKey: ['/api/articles', id],
-    queryFn: async () => {
-      const response = await fetch(`/api/articles/${id}`);
-      if (!response.ok) {
-        throw new Error('Bài viết không tồn tại');
-      }
-      return response.json();
-    },
+    queryKey: [`/api/articles/${id}`],
+    enabled: !!id,
   });
+  
+  console.log('Query state:', { article, isLoading, error, id });
 
   if (isLoading) {
     return (
