@@ -21,25 +21,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/articles/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      console.log('API - Fetching article with ID:', id);
       const article = await storage.getArticle(id);
+      console.log('API - Article found:', article ? 'Yes' : 'No');
       if (!article) {
         return res.status(404).json({ message: "Article not found" });
       }
       res.json(article);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch article" });
-    }
-  });
-
-  app.get("/api/articles/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const article = await storage.getArticle(id);
-      if (!article) {
-        return res.status(404).json({ message: "Article not found" });
-      }
-      res.json(article);
-    } catch (error) {
+      console.error("Error fetching article:", error);
       res.status(500).json({ message: "Failed to fetch article" });
     }
   });

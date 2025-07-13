@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Navigation Links</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            min-height: 50px;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test Navigation Links</h1>
+    
+    <div class="test-section">
+        <h2>1. Kiểm tra JavaScript</h2>
+        <p>Số đếm: <span id="counter">0</span></p>
+        <button onclick="incrementCounter()">➕ Tăng số</button>
+        <button onclick="resetCounter()">🔄 Reset</button>
+        <button onclick="testAlert()">⚠️ Test Alert</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Test Navigation</h2>
+        <button onclick="testNavigation('/news')">📰 Đi đến Tin tức</button>
+        <button onclick="testNavigation('/news/2')">📄 Đi đến Chi tiết tin tức</button>
+        <button onclick="testNavigation('/test')">🔍 Đi đến Test page</button>
+        <button onclick="testNavigation('/admin/login')">🔧 Đi đến Quản trị</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Test API</h2>
+        <button onclick="testAPI('/api/articles')">📰 Test API Articles</button>
+        <button onclick="testAPI('/api/articles/2')">📄 Test API Article Detail</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Kết quả Test</h2>
+        <div id="result" class="result">Chưa có kết quả</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Hướng dẫn</h2>
+        <ul>
+            <li>Click "Tăng số" - số đếm phải tăng</li>
+            <li>Click "Test Alert" - phải có popup</li>
+            <li>Click "Đi đến Tin tức" - phải chuyển trang</li>
+            <li>Click "Đi đến Chi tiết tin tức" - phải hiển thị chi tiết</li>
+            <li>Click "Test API" - phải load được dữ liệu</li>
+        </ul>
+    </div>
+
+    <script>
+        let count = 0;
+        
+        function updateResult(message, type = 'info') {
+            const result = document.getElementById('result');
+            const timestamp = new Date().toLocaleTimeString();
+            result.innerHTML = `${timestamp}: ${message}`;
+            result.className = `result ${type}`;
+        }
+        
+        function incrementCounter() {
+            count++;
+            document.getElementById('counter').textContent = count;
+            updateResult(`Tăng số thành công! Số hiện tại: ${count}`, 'success');
+        }
+        
+        function resetCounter() {
+            count = 0;
+            document.getElementById('counter').textContent = count;
+            updateResult('Reset thành công!', 'success');
+        }
+        
+        function testAlert() {
+            updateResult('Popup alert hoạt động!', 'success');
+            alert('JavaScript hoạt động tốt!');
+        }
+        
+        function testNavigation(url) {
+            updateResult(`Đang chuyển đến: ${url}`, 'info');
+            setTimeout(() => {
+                window.location.href = url;
+            }, 1000);
+        }
+        
+        async function testAPI(endpoint) {
+            try {
+                updateResult(`Đang test API: ${endpoint}`, 'info');
+                const response = await fetch(endpoint);
+                if (response.ok) {
+                    const data = await response.json();
+                    updateResult(`API hoạt động! Nhận được ${Array.isArray(data) ? data.length : 1} item(s)`, 'success');
+                } else {
+                    updateResult(`API lỗi: ${response.status} - ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                updateResult(`API lỗi: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test khi load page
+        window.addEventListener('load', () => {
+            updateResult('Trang test đã load thành công!', 'success');
+        });
+    </script>
+</body>
+</html>
