@@ -5,10 +5,11 @@ import {
   insertArticleSchema, insertTestimonialSchema, insertProgramSchema, 
   insertActivitySchema, insertAdmissionFormSchema, insertContactFormSchema,
   insertAdmissionStepSchema, insertMediaCoverSchema, insertSocialMediaLinkSchema,
-  insertServiceRegistrationSchema
+  insertServiceRegistrationSchema, insertAffiliateMemberSchema
 } from "@shared/schema";
 import { notificationService } from "./notifications";
 import { sendTestEmail } from "./email";
+import AffiliateService from "./affiliate";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Article routes
@@ -443,6 +444,229 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error sending test email:", error);
       res.status(500).json({ success: false, message: "Failed to send test email" });
+    }
+  });
+
+  // Affiliate routes
+  app.get("/api/affiliate/members", async (req, res) => {
+    try {
+      const members = await storage.getAffiliateMembers();
+      res.json(members);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch affiliate members" });
+    }
+  });
+
+  app.get("/api/affiliate/members/:memberType", async (req, res) => {
+    try {
+      const memberType = req.params.memberType;
+      const members = await storage.getAffiliateMembersByType(memberType);
+      res.json(members);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch affiliate members by type" });
+    }
+  });
+
+  app.post("/api/affiliate/register", async (req, res) => {
+    try {
+      const parsed = insertAffiliateMemberSchema.parse(req.body);
+      const { name, email, phone, memberType, sponsorId } = parsed;
+      
+      // Check if email already exists
+      const existingMember = await storage.getAffiliateMemberByEmail(email);
+      if (existingMember) {
+        return res.status(400).json({ message: "Email already registered" });
+      }
+
+      // Generate unique member ID
+      const memberId = AffiliateService.generateMemberId();
+      
+      // Create Web3 wallet
+      const wallet = await AffiliateService.createWallet();
+      
+      // Get sponsor if provided
+      let sponsor = null;
+      if (sponsorId) {
+        sponsor = await storage.getAffiliateMemberByMemberId(sponsorId);
+      }
+      
+      // Calculate level
+      const level = AffiliateService.calculateMemberLevel(sponsor);
+      
+      // Generate referral link
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const referralLink = AffiliateService.generateReferralLink(memberId, baseUrl);
+      
+      // Generate QR code
+      const qrCode = await AffiliateService.generateQRCode(referralLink);
+      
+      // Encrypt private key
+      const encryptedPrivateKey = AffiliateService.encryptPrivateKey(wallet.privateKey);
+      
+      // Get category name
+      const categoryName = AffiliateService.getMemberTypeDisplayName(memberType);
+      
+      // Create member
+      const memberData = {
+        memberId,
+        name,
+        email,
+        phone,
+        memberType,
+        categoryName,
+        sponsorId,
+        qrCode,
+        referralLink,
+        walletAddress: wallet.address,
+        privateKey: encryptedPrivateKey,
+        level,
+        tokenBalance: "1000", // Welcome bonus
+        totalReferrals: 0,
+        isActive: true,
+      };
+      
+      const member = await storage.createAffiliateMember(memberData);
+      
+      // Update sponsor's referral count
+      if (sponsor) {
+        await storage.updateAffiliateMember(sponsor.id, {
+          totalReferrals: sponsor.totalReferrals + 1,
+        });
+      }
+      
+      res.status(201).json(member);
+    } catch (error) {
+      console.error('Error registering affiliate member:', error);
+      res.status(400).json({ message: "Invalid affiliate member data" });
+    }
+  });
+
+  app.get("/api/affiliate/tree/:memberId", async (req, res) => {
+    try {
+      const memberId = req.params.memberId;
+      const member = await storage.getAffiliateMemberByMemberId(memberId);
+      
+      if (!member) {
+        return res.status(404).json({ message: "Member not found" });
+      }
+      
+      // Get all referrals (children)
+      const children = await storage.getAffiliateMembersBySponsor(memberId);
+      
+      // Build tree structure
+      const tree = {
+        ...member,
+        children: children.map(child => ({
+          ...child,
+          children: [], // Can be expanded for deeper levels
+        })),
+      };
+      
+      res.json(tree);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch affiliate tree" });
+    }
+  });
+
+  app.get("/api/affiliate/transactions/:memberId", async (req, res) => {
+    try {
+      const memberId = req.params.memberId;
+      const transactions = await storage.getAffiliateTransactionsByMember(memberId);
+      res.json(transactions);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch affiliate transactions" });
+    }
+  });
+
+  app.get("/api/affiliate/rewards/:memberId", async (req, res) => {
+    try {
+      const memberId = req.params.memberId;
+      const rewards = await storage.getAffiliateRewardsByMember(memberId);
+      res.json(rewards);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch affiliate rewards" });
+    }
+  });
+
+  // DEX trading routes
+  app.get("/api/dex/trades/:memberId", async (req, res) => {
+    try {
+      const memberId = req.params.memberId;
+      const trades = await storage.getDexTradesByMember(memberId);
+      res.json(trades);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch DEX trades" });
+    }
+  });
+
+  app.post("/api/dex/trade", async (req, res) => {
+    try {
+      const { memberId, tradeType, tokenAmount, ethAmount } = req.body;
+      
+      // Validate member exists
+      const member = await storage.getAffiliateMemberByMemberId(memberId);
+      if (!member) {
+        return res.status(404).json({ message: "Member not found" });
+      }
+      
+      // Calculate price
+      const price = parseFloat(ethAmount) / parseFloat(tokenAmount);
+      
+      // Create trade
+      const tradeData = {
+        tradeId: AffiliateService.generateTradeId(),
+        memberId,
+        tradeType,
+        tokenAmount,
+        ethAmount,
+        price: price.toString(),
+        status: "pending",
+      };
+      
+      const trade = await storage.createDexTrade(tradeData);
+      
+      // Update member's token balance (simplified)
+      const currentBalance = parseFloat(member.tokenBalance);
+      const newBalance = tradeType === "sell" 
+        ? currentBalance - parseFloat(tokenAmount)
+        : currentBalance + parseFloat(tokenAmount);
+        
+      await storage.updateAffiliateMember(member.id, {
+        tokenBalance: newBalance.toString(),
+      });
+      
+      res.status(201).json(trade);
+    } catch (error) {
+      console.error('Error creating DEX trade:', error);
+      res.status(400).json({ message: "Invalid trade data" });
+    }
+  });
+
+  // Referral join route
+  app.get("/api/affiliate/join", async (req, res) => {
+    try {
+      const { ref } = req.query;
+      
+      if (!ref) {
+        return res.status(400).json({ message: "Referral code required" });
+      }
+      
+      const sponsor = await storage.getAffiliateMemberByMemberId(ref as string);
+      if (!sponsor) {
+        return res.status(404).json({ message: "Invalid referral code" });
+      }
+      
+      res.json({
+        sponsor: {
+          name: sponsor.name,
+          memberType: sponsor.memberType,
+          categoryName: sponsor.categoryName,
+          level: sponsor.level,
+        },
+        message: "Valid referral code",
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to validate referral code" });
     }
   });
 

@@ -14,6 +14,7 @@ const navigation = [
   { name: "Tuyển sinh", href: "/admission" },
   { name: "Tin tức", href: "/news" },
   { name: "Liên hệ", href: "/contact" },
+  { name: "Affiliate", href: "/affiliate" },
   { name: "Quản trị", href: "/admin/login" },
 ];
 
@@ -48,10 +49,11 @@ export default function Header() {
                 className={cn(
                   "text-dark-gray hover:text-primary-green transition-colors font-medium",
                   location === item.href && "text-primary-green",
-                  item.name === "Quản trị" && "bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600"
+                  item.name === "Quản trị" && "bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600",
+                  item.name === "Affiliate" && "bg-gradient-to-r from-purple-500 to-green-500 text-white px-3 py-1 rounded-lg hover:from-purple-600 hover:to-green-600"
                 )}
               >
-                {item.name === "Quản trị" ? "🔧 Quản trị" : item.name}
+                {item.name === "Quản trị" ? "🔧 Quản trị" : item.name === "Affiliate" ? "🌟 Affiliate" : item.name}
               </Link>
             ))}
 

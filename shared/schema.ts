@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, varchar, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -155,6 +155,68 @@ export const serviceRegistrations = pgTable("service_registrations", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Affiliate system tables
+export const affiliateMembers = pgTable("affiliate_members", {
+  id: serial("id").primaryKey(),
+  memberId: varchar("member_id", { length: 50 }).unique().notNull(), // UUID
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).unique().notNull(),
+  phone: varchar("phone", { length: 20 }).notNull(),
+  memberType: varchar("member_type", { length: 50 }).notNull(), // "teacher" or "parent"
+  categoryName: varchar("category_name", { length: 100 }).notNull(), // "Chăm sóc phụ huynh" or "Đại sứ thương hiệu"
+  sponsorId: varchar("sponsor_id", { length: 50 }), // Reference to sponsor's memberId
+  qrCode: text("qr_code"), // Base64 encoded QR code
+  referralLink: varchar("referral_link", { length: 500 }).unique(),
+  walletAddress: varchar("wallet_address", { length: 255 }).unique(),
+  privateKey: text("private_key"), // Encrypted
+  tokenBalance: decimal("token_balance", { precision: 18, scale: 8 }).default("0"),
+  totalReferrals: integer("total_referrals").default(0),
+  level: integer("level").default(1),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const affiliateTransactions = pgTable("affiliate_transactions", {
+  id: serial("id").primaryKey(),
+  transactionId: varchar("transaction_id", { length: 100 }).unique().notNull(),
+  fromMemberId: varchar("from_member_id", { length: 50 }).notNull(),
+  toMemberId: varchar("to_member_id", { length: 50 }).notNull(),
+  amount: decimal("amount", { precision: 18, scale: 8 }).notNull(),
+  transactionType: varchar("transaction_type", { length: 50 }).notNull(), // "referral_bonus", "transfer", "dex_trade"
+  status: varchar("status", { length: 50 }).default("pending"), // "pending", "completed", "failed"
+  blockchainTxHash: varchar("blockchain_tx_hash", { length: 255 }),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const affiliateRewards = pgTable("affiliate_rewards", {
+  id: serial("id").primaryKey(),
+  memberId: varchar("member_id", { length: 50 }).notNull(),
+  referredMemberId: varchar("referred_member_id", { length: 50 }).notNull(),
+  rewardAmount: decimal("reward_amount", { precision: 18, scale: 8 }).notNull(),
+  rewardType: varchar("reward_type", { length: 50 }).notNull(), // "direct_referral", "indirect_referral"
+  level: integer("level").notNull(), // Level in the tree
+  isProcessed: boolean("is_processed").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const dexTrades = pgTable("dex_trades", {
+  id: serial("id").primaryKey(),
+  tradeId: varchar("trade_id", { length: 100 }).unique().notNull(),
+  memberId: varchar("member_id", { length: 50 }).notNull(),
+  tradeType: varchar("trade_type", { length: 20 }).notNull(), // "buy", "sell"
+  tokenAmount: decimal("token_amount", { precision: 18, scale: 8 }).notNull(),
+  ethAmount: decimal("eth_amount", { precision: 18, scale: 8 }).notNull(),
+  price: decimal("price", { precision: 18, scale: 8 }).notNull(),
+  status: varchar("status", { length: 50 }).default("pending"), // "pending", "completed", "failed"
+  blockchainTxHash: varchar("blockchain_tx_hash", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -221,6 +283,46 @@ export const insertServiceRegistrationSchema = createInsertSchema(serviceRegistr
   updatedAt: true,
 });
 
+export const insertAffiliateMemberSchema = createInsertSchema(affiliateMembers).omit({
+  id: true,
+  memberId: true,
+  qrCode: true,
+  referralLink: true,
+  walletAddress: true,
+  privateKey: true,
+  tokenBalance: true,
+  totalReferrals: true,
+  level: true,
+  isActive: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertAffiliateTransactionSchema = createInsertSchema(affiliateTransactions).omit({
+  id: true,
+  transactionId: true,
+  status: true,
+  blockchainTxHash: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertAffiliateRewardSchema = createInsertSchema(affiliateRewards).omit({
+  id: true,
+  isProcessed: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertDexTradeSchema = createInsertSchema(dexTrades).omit({
+  id: true,
+  tradeId: true,
+  status: true,
+  blockchainTxHash: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Article = typeof articles.$inferSelect;
@@ -247,3 +349,15 @@ export type SocialMediaLink = typeof socialMediaLinks.$inferSelect;
 export type InsertSocialMediaLink = z.infer<typeof insertSocialMediaLinkSchema>;
 export type ServiceRegistration = typeof serviceRegistrations.$inferSelect;
 export type InsertServiceRegistration = z.infer<typeof insertServiceRegistrationSchema>;
+
+export type AffiliateMember = typeof affiliateMembers.$inferSelect;
+export type InsertAffiliateMember = z.infer<typeof insertAffiliateMemberSchema>;
+
+export type AffiliateTransaction = typeof affiliateTransactions.$inferSelect;
+export type InsertAffiliateTransaction = z.infer<typeof insertAffiliateTransactionSchema>;
+
+export type AffiliateReward = typeof affiliateRewards.$inferSelect;
+export type InsertAffiliateReward = z.infer<typeof insertAffiliateRewardSchema>;
+
+export type DexTrade = typeof dexTrades.$inferSelect;
+export type InsertDexTrade = z.infer<typeof insertDexTradeSchema>;

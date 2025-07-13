@@ -1,4 +1,4 @@
-import { users, articles, testimonials, programs, activities, admissionForms, contactForms, chatMessages, notifications, admissionSteps, mediaCovers, socialMediaLinks, serviceRegistrations, type User, type InsertUser, type Article, type InsertArticle, type Testimonial, type InsertTestimonial, type Program, type InsertProgram, type Activity, type InsertActivity, type AdmissionForm, type InsertAdmissionForm, type ContactForm, type InsertContactForm, type ChatMessage, type InsertChatMessage, type Notification, type InsertNotification, type AdmissionStep, type InsertAdmissionStep, type MediaCover, type InsertMediaCover, type SocialMediaLink, type InsertSocialMediaLink, type ServiceRegistration, type InsertServiceRegistration } from "@shared/schema";
+import { users, articles, testimonials, programs, activities, admissionForms, contactForms, chatMessages, notifications, admissionSteps, mediaCovers, socialMediaLinks, serviceRegistrations, affiliateMembers, affiliateTransactions, affiliateRewards, dexTrades, type User, type InsertUser, type Article, type InsertArticle, type Testimonial, type InsertTestimonial, type Program, type InsertProgram, type Activity, type InsertActivity, type AdmissionForm, type InsertAdmissionForm, type ContactForm, type InsertContactForm, type ChatMessage, type InsertChatMessage, type Notification, type InsertNotification, type AdmissionStep, type InsertAdmissionStep, type MediaCover, type InsertMediaCover, type SocialMediaLink, type InsertSocialMediaLink, type ServiceRegistration, type InsertServiceRegistration, type AffiliateMember, type InsertAffiliateMember, type AffiliateTransaction, type InsertAffiliateTransaction, type AffiliateReward, type InsertAffiliateReward, type DexTrade, type InsertDexTrade } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
@@ -80,6 +80,38 @@ export interface IStorage {
   createServiceRegistration(registration: InsertServiceRegistration): Promise<ServiceRegistration>;
   updateServiceRegistration(id: number, registration: Partial<InsertServiceRegistration>): Promise<ServiceRegistration>;
   deleteServiceRegistration(id: number): Promise<void>;
+  
+  // Affiliate methods
+  getAffiliateMembers(): Promise<AffiliateMember[]>;
+  getAffiliateMember(id: number): Promise<AffiliateMember | undefined>;
+  getAffiliateMemberByMemberId(memberId: string): Promise<AffiliateMember | undefined>;
+  getAffiliateMemberByEmail(email: string): Promise<AffiliateMember | undefined>;
+  createAffiliateMember(member: InsertAffiliateMember): Promise<AffiliateMember>;
+  updateAffiliateMember(id: number, member: Partial<InsertAffiliateMember>): Promise<AffiliateMember>;
+  deleteAffiliateMember(id: number): Promise<void>;
+  getAffiliateMembersByType(memberType: string): Promise<AffiliateMember[]>;
+  getAffiliateMembersBySponsor(sponsorId: string): Promise<AffiliateMember[]>;
+  
+  // Affiliate transaction methods
+  getAffiliateTransactions(): Promise<AffiliateTransaction[]>;
+  getAffiliateTransaction(id: number): Promise<AffiliateTransaction | undefined>;
+  getAffiliateTransactionsByMember(memberId: string): Promise<AffiliateTransaction[]>;
+  createAffiliateTransaction(transaction: InsertAffiliateTransaction): Promise<AffiliateTransaction>;
+  updateAffiliateTransaction(id: number, transaction: Partial<InsertAffiliateTransaction>): Promise<AffiliateTransaction>;
+  
+  // Affiliate reward methods
+  getAffiliateRewards(): Promise<AffiliateReward[]>;
+  getAffiliateReward(id: number): Promise<AffiliateReward | undefined>;
+  getAffiliateRewardsByMember(memberId: string): Promise<AffiliateReward[]>;
+  createAffiliateReward(reward: InsertAffiliateReward): Promise<AffiliateReward>;
+  updateAffiliateReward(id: number, reward: Partial<InsertAffiliateReward>): Promise<AffiliateReward>;
+  
+  // DEX trade methods
+  getDexTrades(): Promise<DexTrade[]>;
+  getDexTrade(id: number): Promise<DexTrade | undefined>;
+  getDexTradesByMember(memberId: string): Promise<DexTrade[]>;
+  createDexTrade(trade: InsertDexTrade): Promise<DexTrade>;
+  updateDexTrade(id: number, trade: Partial<InsertDexTrade>): Promise<DexTrade>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -414,6 +446,151 @@ export class DatabaseStorage implements IStorage {
 
   async deleteServiceRegistration(id: number): Promise<void> {
     await db.delete(serviceRegistrations).where(eq(serviceRegistrations.id, id));
+  }
+
+  // Affiliate methods
+  async getAffiliateMembers(): Promise<AffiliateMember[]> {
+    return await db.select().from(affiliateMembers).where(eq(affiliateMembers.isActive, true));
+  }
+
+  async getAffiliateMember(id: number): Promise<AffiliateMember | undefined> {
+    const [member] = await db.select().from(affiliateMembers).where(eq(affiliateMembers.id, id));
+    return member || undefined;
+  }
+
+  async getAffiliateMemberByMemberId(memberId: string): Promise<AffiliateMember | undefined> {
+    const [member] = await db.select().from(affiliateMembers).where(eq(affiliateMembers.memberId, memberId));
+    return member || undefined;
+  }
+
+  async getAffiliateMemberByEmail(email: string): Promise<AffiliateMember | undefined> {
+    const [member] = await db.select().from(affiliateMembers).where(eq(affiliateMembers.email, email));
+    return member || undefined;
+  }
+
+  async createAffiliateMember(insertMember: InsertAffiliateMember): Promise<AffiliateMember> {
+    const [member] = await db
+      .insert(affiliateMembers)
+      .values(insertMember)
+      .returning();
+    return member;
+  }
+
+  async updateAffiliateMember(id: number, memberData: Partial<InsertAffiliateMember>): Promise<AffiliateMember> {
+    const [member] = await db
+      .update(affiliateMembers)
+      .set({ ...memberData, updatedAt: new Date() })
+      .where(eq(affiliateMembers.id, id))
+      .returning();
+    return member;
+  }
+
+  async deleteAffiliateMember(id: number): Promise<void> {
+    await db
+      .update(affiliateMembers)
+      .set({ isActive: false })
+      .where(eq(affiliateMembers.id, id));
+  }
+
+  async getAffiliateMembersByType(memberType: string): Promise<AffiliateMember[]> {
+    return await db.select().from(affiliateMembers).where(eq(affiliateMembers.memberType, memberType));
+  }
+
+  async getAffiliateMembersBySponsor(sponsorId: string): Promise<AffiliateMember[]> {
+    return await db.select().from(affiliateMembers).where(eq(affiliateMembers.sponsorId, sponsorId));
+  }
+
+  // Affiliate transaction methods
+  async getAffiliateTransactions(): Promise<AffiliateTransaction[]> {
+    return await db.select().from(affiliateTransactions).orderBy(affiliateTransactions.createdAt);
+  }
+
+  async getAffiliateTransaction(id: number): Promise<AffiliateTransaction | undefined> {
+    const [transaction] = await db.select().from(affiliateTransactions).where(eq(affiliateTransactions.id, id));
+    return transaction || undefined;
+  }
+
+  async getAffiliateTransactionsByMember(memberId: string): Promise<AffiliateTransaction[]> {
+    return await db.select().from(affiliateTransactions).where(eq(affiliateTransactions.fromMemberId, memberId));
+  }
+
+  async createAffiliateTransaction(insertTransaction: InsertAffiliateTransaction): Promise<AffiliateTransaction> {
+    const [transaction] = await db
+      .insert(affiliateTransactions)
+      .values(insertTransaction)
+      .returning();
+    return transaction;
+  }
+
+  async updateAffiliateTransaction(id: number, transactionData: Partial<InsertAffiliateTransaction>): Promise<AffiliateTransaction> {
+    const [transaction] = await db
+      .update(affiliateTransactions)
+      .set({ ...transactionData, updatedAt: new Date() })
+      .where(eq(affiliateTransactions.id, id))
+      .returning();
+    return transaction;
+  }
+
+  // Affiliate reward methods
+  async getAffiliateRewards(): Promise<AffiliateReward[]> {
+    return await db.select().from(affiliateRewards).orderBy(affiliateRewards.createdAt);
+  }
+
+  async getAffiliateReward(id: number): Promise<AffiliateReward | undefined> {
+    const [reward] = await db.select().from(affiliateRewards).where(eq(affiliateRewards.id, id));
+    return reward || undefined;
+  }
+
+  async getAffiliateRewardsByMember(memberId: string): Promise<AffiliateReward[]> {
+    return await db.select().from(affiliateRewards).where(eq(affiliateRewards.memberId, memberId));
+  }
+
+  async createAffiliateReward(insertReward: InsertAffiliateReward): Promise<AffiliateReward> {
+    const [reward] = await db
+      .insert(affiliateRewards)
+      .values(insertReward)
+      .returning();
+    return reward;
+  }
+
+  async updateAffiliateReward(id: number, rewardData: Partial<InsertAffiliateReward>): Promise<AffiliateReward> {
+    const [reward] = await db
+      .update(affiliateRewards)
+      .set({ ...rewardData, updatedAt: new Date() })
+      .where(eq(affiliateRewards.id, id))
+      .returning();
+    return reward;
+  }
+
+  // DEX trade methods
+  async getDexTrades(): Promise<DexTrade[]> {
+    return await db.select().from(dexTrades).orderBy(dexTrades.createdAt);
+  }
+
+  async getDexTrade(id: number): Promise<DexTrade | undefined> {
+    const [trade] = await db.select().from(dexTrades).where(eq(dexTrades.id, id));
+    return trade || undefined;
+  }
+
+  async getDexTradesByMember(memberId: string): Promise<DexTrade[]> {
+    return await db.select().from(dexTrades).where(eq(dexTrades.memberId, memberId));
+  }
+
+  async createDexTrade(insertTrade: InsertDexTrade): Promise<DexTrade> {
+    const [trade] = await db
+      .insert(dexTrades)
+      .values(insertTrade)
+      .returning();
+    return trade;
+  }
+
+  async updateDexTrade(id: number, tradeData: Partial<InsertDexTrade>): Promise<DexTrade> {
+    const [trade] = await db
+      .update(dexTrades)
+      .set({ ...tradeData, updatedAt: new Date() })
+      .where(eq(dexTrades.id, id))
+      .returning();
+    return trade;
   }
 }
 

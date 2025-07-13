@@ -1,6 +1,7 @@
 import ContactForm from "@/components/contact-form";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 
 export default function Contact() {
   return (
@@ -105,6 +106,28 @@ export default function Contact() {
                     <i className="fas fa-phone mr-2"></i>
                     Gọi ngay
                   </Button>
+                </div>
+              </div>
+
+              {/* Affiliate System */}
+              <div className="mt-8 bg-gradient-to-r from-purple-500/10 to-green-500/10 rounded-xl p-6">
+                <h3 className="font-semibold text-dark-gray mb-4">🌟 Hệ thống Affiliate</h3>
+                <p className="text-gray-600 mb-4">
+                  Tham gia hệ thống affiliate để nhận token, xây dựng mạng lưới và giao dịch trên DEX
+                </p>
+                <div className="grid grid-cols-1 gap-4">
+                  <Link href="/affiliate">
+                    <Button className="w-full bg-gradient-to-r from-purple-600 to-green-600 hover:from-purple-700 hover:to-green-700 text-white">
+                      <i className="fas fa-coins mr-2"></i>
+                      Tham gia Affiliate
+                    </Button>
+                  </Link>
+                </div>
+                <div className="mt-3 text-sm text-gray-500">
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-gift text-purple-500"></i>
+                    <span>Nhận 1,000 TNG token khi đăng ký</span>
+                  </div>
                 </div>
               </div>
             </div>
