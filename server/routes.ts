@@ -4,8 +4,10 @@ import { storage } from "./storage";
 import { 
   insertArticleSchema, insertTestimonialSchema, insertProgramSchema, 
   insertActivitySchema, insertAdmissionFormSchema, insertContactFormSchema,
-  insertAdmissionStepSchema, insertMediaCoverSchema, insertSocialMediaLinkSchema
+  insertAdmissionStepSchema, insertMediaCoverSchema, insertSocialMediaLinkSchema,
+  insertServiceRegistrationSchema
 } from "@shared/schema";
+import { notificationService } from "./notifications";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Article routes
@@ -379,6 +381,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Social media link deleted" });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete social media link" });
+    }
+  });
+
+  // Service registration routes
+  app.get("/api/service-registrations", async (req, res) => {
+    try {
+      const registrations = await storage.getServiceRegistrations();
+      res.json(registrations);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch service registrations" });
+    }
+  });
+
+  app.post("/api/service-registrations", async (req, res) => {
+    try {
+      const parsed = insertServiceRegistrationSchema.parse(req.body);
+      const registration = await storage.createServiceRegistration(parsed);
+      
+      // Send notifications
+      await notificationService.sendServiceRegistrationNotification(registration);
+      
+      res.status(201).json(registration);
+    } catch (error) {
+      console.error('Error creating service registration:', error);
+      res.status(400).json({ message: "Invalid service registration data" });
+    }
+  });
+
+  app.put("/api/service-registrations/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const parsed = insertServiceRegistrationSchema.partial().parse(req.body);
+      const registration = await storage.updateServiceRegistration(id, parsed);
+      res.json(registration);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid service registration data" });
+    }
+  });
+
+  app.delete("/api/service-registrations/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteServiceRegistration(id);
+      res.json({ message: "Service registration deleted" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete service registration" });
     }
   });
 

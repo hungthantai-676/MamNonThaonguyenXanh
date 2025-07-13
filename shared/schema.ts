@@ -142,6 +142,19 @@ export const socialMediaLinks = pgTable("social_media_links", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const serviceRegistrations = pgTable("service_registrations", {
+  id: serial("id").primaryKey(),
+  parentName: text("parent_name").notNull(),
+  parentPhone: text("parent_phone").notNull(),
+  parentEmail: text("parent_email"),
+  serviceName: text("service_name").notNull(),
+  preferredTime: text("preferred_time"),
+  notes: text("notes"),
+  status: text("status").default("pending"), // pending, contacted, completed
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -202,6 +215,12 @@ export const insertSocialMediaLinkSchema = createInsertSchema(socialMediaLinks).
   updatedAt: true,
 });
 
+export const insertServiceRegistrationSchema = createInsertSchema(serviceRegistrations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Article = typeof articles.$inferSelect;
@@ -226,3 +245,5 @@ export type MediaCover = typeof mediaCovers.$inferSelect;
 export type InsertMediaCover = z.infer<typeof insertMediaCoverSchema>;
 export type SocialMediaLink = typeof socialMediaLinks.$inferSelect;
 export type InsertSocialMediaLink = z.infer<typeof insertSocialMediaLinkSchema>;
+export type ServiceRegistration = typeof serviceRegistrations.$inferSelect;
+export type InsertServiceRegistration = z.infer<typeof insertServiceRegistrationSchema>;

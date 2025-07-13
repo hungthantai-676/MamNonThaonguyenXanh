@@ -1,4 +1,4 @@
-import { users, articles, testimonials, programs, activities, admissionForms, contactForms, chatMessages, notifications, admissionSteps, mediaCovers, socialMediaLinks, type User, type InsertUser, type Article, type InsertArticle, type Testimonial, type InsertTestimonial, type Program, type InsertProgram, type Activity, type InsertActivity, type AdmissionForm, type InsertAdmissionForm, type ContactForm, type InsertContactForm, type ChatMessage, type InsertChatMessage, type Notification, type InsertNotification, type AdmissionStep, type InsertAdmissionStep, type MediaCover, type InsertMediaCover, type SocialMediaLink, type InsertSocialMediaLink } from "@shared/schema";
+import { users, articles, testimonials, programs, activities, admissionForms, contactForms, chatMessages, notifications, admissionSteps, mediaCovers, socialMediaLinks, serviceRegistrations, type User, type InsertUser, type Article, type InsertArticle, type Testimonial, type InsertTestimonial, type Program, type InsertProgram, type Activity, type InsertActivity, type AdmissionForm, type InsertAdmissionForm, type ContactForm, type InsertContactForm, type ChatMessage, type InsertChatMessage, type Notification, type InsertNotification, type AdmissionStep, type InsertAdmissionStep, type MediaCover, type InsertMediaCover, type SocialMediaLink, type InsertSocialMediaLink, type ServiceRegistration, type InsertServiceRegistration } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
@@ -73,6 +73,13 @@ export interface IStorage {
   createSocialMediaLink(link: InsertSocialMediaLink): Promise<SocialMediaLink>;
   updateSocialMediaLink(id: number, link: Partial<InsertSocialMediaLink>): Promise<SocialMediaLink>;
   deleteSocialMediaLink(id: number): Promise<void>;
+  
+  // Service registration methods
+  getServiceRegistrations(): Promise<ServiceRegistration[]>;
+  getServiceRegistration(id: number): Promise<ServiceRegistration | undefined>;
+  createServiceRegistration(registration: InsertServiceRegistration): Promise<ServiceRegistration>;
+  updateServiceRegistration(id: number, registration: Partial<InsertServiceRegistration>): Promise<ServiceRegistration>;
+  deleteServiceRegistration(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -376,6 +383,37 @@ export class DatabaseStorage implements IStorage {
 
   async deleteSocialMediaLink(id: number): Promise<void> {
     await db.delete(socialMediaLinks).where(eq(socialMediaLinks.id, id));
+  }
+
+  // Service registration methods
+  async getServiceRegistrations(): Promise<ServiceRegistration[]> {
+    return await db.select().from(serviceRegistrations).orderBy(serviceRegistrations.createdAt);
+  }
+
+  async getServiceRegistration(id: number): Promise<ServiceRegistration | undefined> {
+    const [registration] = await db.select().from(serviceRegistrations).where(eq(serviceRegistrations.id, id));
+    return registration || undefined;
+  }
+
+  async createServiceRegistration(insertRegistration: InsertServiceRegistration): Promise<ServiceRegistration> {
+    const [registration] = await db
+      .insert(serviceRegistrations)
+      .values(insertRegistration)
+      .returning();
+    return registration;
+  }
+
+  async updateServiceRegistration(id: number, registrationData: Partial<InsertServiceRegistration>): Promise<ServiceRegistration> {
+    const [registration] = await db
+      .update(serviceRegistrations)
+      .set({ ...registrationData, updatedAt: new Date() })
+      .where(eq(serviceRegistrations.id, id))
+      .returning();
+    return registration;
+  }
+
+  async deleteServiceRegistration(id: number): Promise<void> {
+    await db.delete(serviceRegistrations).where(eq(serviceRegistrations.id, id));
   }
 }
 

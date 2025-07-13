@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Article, Program, Activity, AdmissionStep, MediaCover } from "@shared/schema";
+import type { Article, Program, Activity, AdmissionStep, MediaCover, ServiceRegistration } from "@shared/schema";
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
@@ -30,6 +30,7 @@ export default function AdminDashboard() {
   const { data: activities } = useQuery<Activity[]>({ queryKey: ["/api/activities"] });
   const { data: admissionSteps } = useQuery<AdmissionStep[]>({ queryKey: ["/api/admission-steps"] });
   const { data: mediaCovers } = useQuery<MediaCover[]>({ queryKey: ["/api/media-covers"] });
+  const { data: serviceRegistrations } = useQuery<ServiceRegistration[]>({ queryKey: ["/api/service-registrations"] });
 
   // Form states
   const [contactInfo, setContactInfo] = useState({
@@ -64,6 +65,8 @@ export default function AdminDashboard() {
     type: "",
     url: ""
   });
+
+  const [editingServiceRegistration, setEditingServiceRegistration] = useState<ServiceRegistration | null>(null);
 
   // Mutations
   const createArticleMutation = useMutation({
@@ -205,6 +208,21 @@ export default function AdminDashboard() {
     }
   });
 
+  const updateServiceRegistrationMutation = useMutation({
+    mutationFn: async (registration: ServiceRegistration) => {
+      const response = await apiRequest("PUT", `/api/service-registrations/${registration.id}`, registration);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/service-registrations"] });
+      toast({
+        title: "Cập nhật trạng thái thành công",
+        description: "Trạng thái đăng ký dịch vụ đã được cập nhật",
+      });
+      setEditingServiceRegistration(null);
+    },
+  });
+
   const logout = () => {
     localStorage.removeItem("admin-token");
     setLocation("/admin/login");
@@ -268,7 +286,7 @@ export default function AdminDashboard() {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="contact" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-11">
+          <TabsList className="grid w-full grid-cols-12">
             <TabsTrigger value="contact">📞 Liên hệ</TabsTrigger>
             <TabsTrigger value="media">🖼️ Ảnh/Video</TabsTrigger>
             <TabsTrigger value="homepage">🏠 Trang chủ</TabsTrigger>
@@ -280,6 +298,7 @@ export default function AdminDashboard() {
             <TabsTrigger value="activities">🎯 Hoạt động</TabsTrigger>
             <TabsTrigger value="media-covers">📺 Báo chí</TabsTrigger>
             <TabsTrigger value="social-media">🌐 Mạng xã hội</TabsTrigger>
+            <TabsTrigger value="service-registrations">🔔 Đăng ký DV</TabsTrigger>
           </TabsList>
 
           <TabsContent value="contact">
@@ -1156,6 +1175,166 @@ export default function AdminDashboard() {
                       Các kênh mạng xã hội sẽ hiển thị trên trang chủ để phụ huynh có thể theo dõi
                     </p>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="service-registrations">
+            <Card>
+              <CardHeader>
+                <CardTitle>🔔 Đăng ký dịch vụ</CardTitle>
+                <CardDescription>Quản lý và theo dõi các đăng ký dịch vụ từ phụ huynh</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h3 className="font-semibold text-blue-900 mb-2">💡 Hệ thống thông báo tức thì</h3>
+                    <p className="text-blue-800 text-sm">
+                      Khi phụ huynh đăng ký dịch vụ, thông báo sẽ được gửi tức thì qua:
+                    </p>
+                    <ul className="text-blue-700 text-sm mt-2 space-y-1">
+                      <li>• 📱 Slack (để thông báo ngay cho giáo viên)</li>
+                      <li>• 📧 Email (để lưu trữ thông tin)</li>
+                      <li>• 💬 Zalo (để liên hệ trực tiếp)</li>
+                    </ul>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse border border-gray-300">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="border border-gray-300 p-2 text-left">Phụ huynh</th>
+                          <th className="border border-gray-300 p-2 text-left">Dịch vụ</th>
+                          <th className="border border-gray-300 p-2 text-left">Liên hệ</th>
+                          <th className="border border-gray-300 p-2 text-left">Thời gian</th>
+                          <th className="border border-gray-300 p-2 text-left">Trạng thái</th>
+                          <th className="border border-gray-300 p-2 text-left">Ghi chú</th>
+                          <th className="border border-gray-300 p-2 text-left">Hành động</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {serviceRegistrations?.map((registration) => (
+                          <tr key={registration.id} className="hover:bg-gray-50">
+                            <td className="border border-gray-300 p-2">
+                              <div className="font-medium">{registration.parentName}</div>
+                              <div className="text-sm text-gray-500">{registration.parentPhone}</div>
+                            </td>
+                            <td className="border border-gray-300 p-2">
+                              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                                {registration.serviceName}
+                              </span>
+                            </td>
+                            <td className="border border-gray-300 p-2">
+                              <div className="text-sm">{registration.parentPhone}</div>
+                              {registration.parentEmail && (
+                                <div className="text-sm text-gray-500">{registration.parentEmail}</div>
+                              )}
+                            </td>
+                            <td className="border border-gray-300 p-2">
+                              <div className="text-sm">{registration.preferredTime || "Chưa chọn"}</div>
+                              <div className="text-xs text-gray-500">
+                                {new Date(registration.createdAt).toLocaleString('vi-VN')}
+                              </div>
+                            </td>
+                            <td className="border border-gray-300 p-2">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                registration.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                registration.status === 'contacted' ? 'bg-blue-100 text-blue-800' :
+                                registration.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                'bg-red-100 text-red-800'
+                              }`}>
+                                {registration.status === 'pending' ? 'Chờ xử lý' :
+                                 registration.status === 'contacted' ? 'Đã liên hệ' :
+                                 registration.status === 'completed' ? 'Hoàn thành' :
+                                 'Đã hủy'}
+                              </span>
+                            </td>
+                            <td className="border border-gray-300 p-2">
+                              <div className="text-sm max-w-xs truncate" title={registration.notes || ''}>
+                                {registration.notes || 'Không có ghi chú'}
+                              </div>
+                            </td>
+                            <td className="border border-gray-300 p-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => setEditingServiceRegistration(registration)}
+                                  >
+                                    Cập nhật
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Cập nhật trạng thái đăng ký</DialogTitle>
+                                  </DialogHeader>
+                                  {editingServiceRegistration && (
+                                    <div className="space-y-4">
+                                      <div>
+                                        <Label>Phụ huynh</Label>
+                                        <div className="p-2 bg-gray-50 rounded">
+                                          <div className="font-medium">{editingServiceRegistration.parentName}</div>
+                                          <div className="text-sm text-gray-600">{editingServiceRegistration.parentPhone}</div>
+                                        </div>
+                                      </div>
+                                      
+                                      <div>
+                                        <Label>Dịch vụ</Label>
+                                        <div className="p-2 bg-gray-50 rounded">
+                                          {editingServiceRegistration.serviceName}
+                                        </div>
+                                      </div>
+                                      
+                                      <div>
+                                        <Label htmlFor="status">Trạng thái</Label>
+                                        <select 
+                                          id="status"
+                                          className="w-full p-2 border rounded"
+                                          value={editingServiceRegistration.status || 'pending'}
+                                          onChange={(e) => setEditingServiceRegistration({
+                                            ...editingServiceRegistration,
+                                            status: e.target.value
+                                          })}
+                                        >
+                                          <option value="pending">Chờ xử lý</option>
+                                          <option value="contacted">Đã liên hệ</option>
+                                          <option value="completed">Hoàn thành</option>
+                                          <option value="cancelled">Đã hủy</option>
+                                        </select>
+                                      </div>
+                                      
+                                      <div className="flex justify-end space-x-2">
+                                        <Button 
+                                          variant="outline" 
+                                          onClick={() => setEditingServiceRegistration(null)}
+                                        >
+                                          Hủy
+                                        </Button>
+                                        <Button 
+                                          onClick={() => updateServiceRegistrationMutation.mutate(editingServiceRegistration)}
+                                          disabled={updateServiceRegistrationMutation.isPending}
+                                        >
+                                          {updateServiceRegistrationMutation.isPending ? "Đang cập nhật..." : "Cập nhật"}
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </DialogContent>
+                              </Dialog>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {(!serviceRegistrations || serviceRegistrations.length === 0) && (
+                    <div className="text-center py-8 bg-gray-50 rounded-lg">
+                      <p className="text-gray-500">Chưa có đăng ký dịch vụ nào</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

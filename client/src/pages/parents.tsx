@@ -1,9 +1,101 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Link } from "wouter";
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { InsertServiceRegistration } from "@shared/schema";
 
 export default function Parents() {
+  const { toast } = useToast();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState("");
+  const [formData, setFormData] = useState({
+    parentName: "",
+    parentPhone: "",
+    parentEmail: "",
+    serviceName: "",
+    preferredTime: "",
+    notes: ""
+  });
+
+  const services = [
+    {
+      name: "Tư vấn tâm lý",
+      description: "Hỗ trợ giải quyết các vấn đề tâm lý và hành vi của trẻ",
+      icon: "fas fa-heart",
+      color: "primary-green",
+      time: "8:00 - 17:00"
+    },
+    {
+      name: "Tư vấn dinh dưỡng",
+      description: "Hỗ trợ lập kế hoạch dinh dưỡng phù hợp cho từng trẻ",
+      icon: "fas fa-apple-alt",
+      color: "secondary-blue",
+      time: "8:00 - 17:00"
+    },
+    {
+      name: "Lớp phụ huynh",
+      description: "Tham gia các lớp học và hoạt động cùng con",
+      icon: "fas fa-users",
+      color: "accent-yellow",
+      time: "8:00 - 17:00"
+    },
+    {
+      name: "Tư vấn học tập",
+      description: "Hướng dẫn hỗ trợ học tập tại nhà",
+      icon: "fas fa-graduation-cap",
+      color: "primary-green",
+      time: "8:00 - 17:00"
+    }
+  ];
+
+  const registrationMutation = useMutation({
+    mutationFn: async (data: InsertServiceRegistration) => {
+      return await apiRequest("POST", "/api/service-registrations", data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Đăng ký thành công!",
+        description: "Cô giáo sẽ liên hệ với bạn trong thời gian sớm nhất.",
+      });
+      setIsDialogOpen(false);
+      setFormData({
+        parentName: "",
+        parentPhone: "",
+        parentEmail: "",
+        serviceName: "",
+        preferredTime: "",
+        notes: ""
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Đăng ký thất bại",
+        description: "Có lỗi xảy ra. Vui lòng thử lại.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleServiceSelect = (service: string) => {
+    setSelectedService(service);
+    setFormData(prev => ({ ...prev, serviceName: service }));
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    registrationMutation.mutate(formData);
+  };
+
   const resources = [
     {
       title: "Dinh dưỡng cho trẻ mầm non",
@@ -95,6 +187,119 @@ export default function Parents() {
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Tài nguyên hữu ích để hỗ trợ phụ huynh trong việc chăm sóc và giáo dục con em
           </p>
+        </div>
+      </section>
+
+      {/* Service Support Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="font-bold text-4xl text-dark-gray mb-4">Dịch vụ hỗ trợ phụ huynh</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Các dịch vụ đặc biệt để hỗ trợ phụ huynh trong hành trình nuôi dạy con
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {services.map((service, index) => (
+              <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => handleServiceSelect(service.name)}>
+                <CardContent className="p-6 text-center">
+                  <div className={`w-16 h-16 bg-${service.color}/10 rounded-full flex items-center justify-center mx-auto mb-4`}>
+                    <i className={`${service.icon} text-${service.color} text-2xl`}></i>
+                  </div>
+                  <h3 className="font-semibold text-xl text-dark-gray mb-3">{service.name}</h3>
+                  <p className="text-gray-600 mb-4 text-sm">{service.description}</p>
+                  <div className="text-sm text-gray-500 mb-4">
+                    <i className="fas fa-clock mr-1"></i>
+                    {service.time}
+                  </div>
+                  <Button className={`w-full bg-${service.color} hover:bg-${service.color}/90 text-white`}>
+                    Đăng ký
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Service Registration Dialog */}
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Đăng ký dịch vụ: {selectedService}</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="parentName">Họ tên phụ huynh *</Label>
+                  <Input
+                    id="parentName"
+                    value={formData.parentName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, parentName: e.target.value }))}
+                    placeholder="Nhập họ tên"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="parentPhone">Số điện thoại *</Label>
+                  <Input
+                    id="parentPhone"
+                    value={formData.parentPhone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, parentPhone: e.target.value }))}
+                    placeholder="Nhập số điện thoại"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="parentEmail">Email (tùy chọn)</Label>
+                  <Input
+                    id="parentEmail"
+                    type="email"
+                    value={formData.parentEmail}
+                    onChange={(e) => setFormData(prev => ({ ...prev, parentEmail: e.target.value }))}
+                    placeholder="Nhập email"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="preferredTime">Thời gian mong muốn</Label>
+                  <Select value={formData.preferredTime} onValueChange={(value) => setFormData(prev => ({ ...prev, preferredTime: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn thời gian" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="8:00 - 9:00">8:00 - 9:00</SelectItem>
+                      <SelectItem value="9:00 - 10:00">9:00 - 10:00</SelectItem>
+                      <SelectItem value="10:00 - 11:00">10:00 - 11:00</SelectItem>
+                      <SelectItem value="14:00 - 15:00">14:00 - 15:00</SelectItem>
+                      <SelectItem value="15:00 - 16:00">15:00 - 16:00</SelectItem>
+                      <SelectItem value="16:00 - 17:00">16:00 - 17:00</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="notes">Ghi chú</Label>
+                  <Textarea
+                    id="notes"
+                    value={formData.notes}
+                    onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                    placeholder="Mô tả tình huống hoặc yêu cầu cụ thể..."
+                    rows={3}
+                  />
+                </div>
+                
+                <div className="flex justify-end space-x-2">
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Hủy
+                  </Button>
+                  <Button type="submit" className="bg-primary-green hover:bg-primary-green/90" disabled={registrationMutation.isPending}>
+                    {registrationMutation.isPending ? "Đang gửi..." : "Đăng ký"}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </section>
 
