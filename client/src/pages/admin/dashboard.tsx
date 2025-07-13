@@ -1246,16 +1246,79 @@ export default function AdminDashboard() {
                       <p><strong>Bước 3:</strong> Quay lại đây để xem đăng ký mới trong bảng bên dưới</p>
                       <p><strong>Bước 4:</strong> Nhấn "Cập nhật" để thay đổi trạng thái từ "Chờ xử lý" → "Đã liên hệ"</p>
                     </div>
-                    <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                      <h4 className="font-semibold text-yellow-800 mb-2">⚠️ Cần thiết lập email trước</h4>
-                      <p className="text-yellow-700 text-sm mb-3">
-                        Để nhận email tự động, cần cấu hình Gmail App Password trong Secrets tab:
-                      </p>
-                      <div className="text-yellow-700 text-xs space-y-1 mb-3">
-                        <p>• EMAIL_USER: mamnonthaonguyenxanh@gmail.com</p>
-                        <p>• EMAIL_APP_PASSWORD: [tạo từ Gmail Security]</p>
+                    <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <h4 className="font-semibold text-yellow-800 mb-3">📧 Hướng dẫn thiết lập email tự động</h4>
+                      
+                      <div className="space-y-4">
+                        <div className="bg-white p-3 rounded border-l-4 border-blue-500">
+                          <h5 className="font-semibold text-blue-900 mb-2">Bước 1: Vào Gmail Security</h5>
+                          <p className="text-sm text-gray-700 mb-2">
+                            Đăng nhập Gmail với tài khoản: <strong>mamnonthaonguyenxanh@gmail.com</strong>
+                          </p>
+                          <p className="text-sm text-gray-700 mb-2">
+                            Truy cập: <a href="https://myaccount.google.com/security" target="_blank" className="text-blue-600 underline">https://myaccount.google.com/security</a>
+                          </p>
+                          <p className="text-sm text-gray-700">
+                            Tìm phần "2-Step Verification" và bật nó lên
+                          </p>
+                        </div>
+
+                        <div className="bg-white p-3 rounded border-l-4 border-green-500">
+                          <h5 className="font-semibold text-green-900 mb-2">Bước 2: Tạo App Password</h5>
+                          <p className="text-sm text-gray-700 mb-1">
+                            Sau khi bật 2-Step Verification, tìm "App passwords"
+                          </p>
+                          <p className="text-sm text-gray-700 mb-1">
+                            Nhấn "Generate" → chọn "Mail" → chọn "Computer"
+                          </p>
+                          <p className="text-sm text-gray-700">
+                            Sao chép mật khẩu 16 ký tự (dạng: xxxx xxxx xxxx xxxx)
+                          </p>
+                        </div>
+
+                        <div className="bg-white p-3 rounded border-l-4 border-purple-500">
+                          <h5 className="font-semibold text-purple-900 mb-2">Bước 3: Thêm vào Replit Secrets</h5>
+                          <p className="text-sm text-gray-700 mb-2">
+                            Vào project này → nhấn tab "Secrets" (biểu tượng chìa khóa)
+                          </p>
+                          <div className="bg-gray-100 p-2 rounded text-sm font-mono space-y-1">
+                            <div>Key: <span className="text-blue-600">EMAIL_USER</span></div>
+                            <div>Value: <span className="text-green-600">mamnonthaonguyenxanh@gmail.com</span></div>
+                            <div className="border-t pt-1">Key: <span className="text-blue-600">EMAIL_APP_PASSWORD</span></div>
+                            <div>Value: <span className="text-green-600">[mật khẩu 16 ký tự vừa tạo]</span></div>
+                          </div>
+                        </div>
+
+                        <div className="bg-white p-3 rounded border-l-4 border-red-500">
+                          <h5 className="font-semibold text-red-900 mb-2">Bước 4: Test thử</h5>
+                          <p className="text-sm text-gray-700 mb-2">
+                            Nhấn nút "📧 Test Email" bên dưới
+                          </p>
+                          <p className="text-sm text-gray-700">
+                            Kiểm tra email mamnonthaonguyenxanh@gmail.com
+                          </p>
+                        </div>
                       </div>
-                      <TestEmailButton />
+
+                      <div className="mt-4 pt-3 border-t">
+                        <div className="bg-blue-50 p-3 rounded mb-3">
+                          <h5 className="font-semibold text-blue-900 mb-2">📺 Video hướng dẫn chi tiết</h5>
+                          <p className="text-sm text-blue-800 mb-2">
+                            Nếu chưa rõ, xem video này để làm theo từng bước:
+                          </p>
+                          <a 
+                            href="https://www.youtube.com/watch?v=hXiPshHn9Pw" 
+                            target="_blank" 
+                            className="text-blue-600 underline text-sm"
+                          >
+                            🎬 Cách tạo Gmail App Password cho ứng dụng
+                          </a>
+                          <p className="text-xs text-blue-700 mt-1">
+                            (Video bằng tiếng Việt, hướng dẫn từng bước rất chi tiết)
+                          </p>
+                        </div>
+                        <TestEmailButton />
+                      </div>
                     </div>
                   </div>
 
