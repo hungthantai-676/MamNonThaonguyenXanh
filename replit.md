@@ -199,10 +199,16 @@ Changelog:
 - July 13, 2025. Added media coverage management system with new database table and API endpoints
 - July 13, 2025. Implemented "Báo chí nói về chúng tôi" section with full CRUD operations in admin panel
 - July 13, 2025. Updated news page to dynamically load media coverage from API instead of static data
+- July 13, 2025. RESOLVED: Fixed critical routing and navigation issues - all Link components now work correctly
+- July 13, 2025. TESTED: JavaScript functionality, navigation, and API endpoints confirmed working
+- July 13, 2025. OPTIMIZED: Added database query limits and caching headers for improved performance
+- July 13, 2025. CONFIRMED: News article links and detail pages functioning properly with logging
 ```
 
 ## User Preferences
 
 ```
 Preferred communication style: Simple, everyday language.
+Testing approach: Prefers direct visual confirmation over technical logs.
+Performance concern: Website loading speed is important for user experience.
 ```

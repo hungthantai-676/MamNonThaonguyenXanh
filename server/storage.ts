@@ -88,7 +88,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getArticles(): Promise<Article[]> {
-    return await db.select().from(articles);
+    return await db.select().from(articles).orderBy(articles.publishedAt).limit(50);
   }
 
   async getArticle(id: number): Promise<Article | undefined> {

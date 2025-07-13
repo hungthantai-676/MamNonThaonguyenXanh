@@ -14,7 +14,6 @@ const navigation = [
   { name: "Tuyển sinh", href: "/admission" },
   { name: "Tin tức", href: "/news" },
   { name: "Liên hệ", href: "/contact" },
-  { name: "Test", href: "/test" },
   { name: "Quản trị", href: "/admin/login" },
 ];
 
@@ -49,11 +48,10 @@ export default function Header() {
                 className={cn(
                   "text-dark-gray hover:text-primary-green transition-colors font-medium",
                   location === item.href && "text-primary-green",
-                  item.name === "Quản trị" && "bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600",
-                  item.name === "Test" && "bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600"
+                  item.name === "Quản trị" && "bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600"
                 )}
               >
-                {item.name === "Quản trị" ? "🔧 Quản trị" : item.name === "Test" ? "🔍 Test" : item.name}
+                {item.name === "Quản trị" ? "🔧 Quản trị" : item.name}
               </Link>
             ))}
 
@@ -75,12 +73,11 @@ export default function Header() {
                     className={cn(
                       "text-dark-gray hover:text-primary-green transition-colors font-medium py-2",
                       location === item.href && "text-primary-green",
-                      item.name === "Quản trị" && "bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600",
-                      item.name === "Test" && "bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600"
+                      item.name === "Quản trị" && "bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600"
                     )}
                     onClick={() => setIsOpen(false)}
                   >
-                    {item.name === "Quản trị" ? "🔧 Quản trị" : item.name === "Test" ? "🔍 Test" : item.name}
+                    {item.name === "Quản trị" ? "🔧 Quản trị" : item.name}
                   </Link>
                 ))}
 
