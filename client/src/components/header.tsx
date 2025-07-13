@@ -48,7 +48,7 @@ export default function Header() {
                 className={cn(
                   "text-dark-gray hover:text-primary-green transition-colors font-medium",
                   location === item.href && "text-primary-green",
-                  item.name === "Quản trị" && "bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600"
+                  item.name === "Quản trị" && "bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600"
                 )}
               >
                 {item.name === "Quản trị" ? "🔧 Quản trị" : item.name}
@@ -72,11 +72,12 @@ export default function Header() {
                     href={item.href}
                     className={cn(
                       "text-dark-gray hover:text-primary-green transition-colors font-medium py-2",
-                      location === item.href && "text-primary-green"
+                      location === item.href && "text-primary-green",
+                      item.name === "Quản trị" && "bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600"
                     )}
                     onClick={() => setIsOpen(false)}
                   >
-                    {item.name}
+                    {item.name === "Quản trị" ? "🔧 Quản trị" : item.name}
                   </Link>
                 ))}
 
