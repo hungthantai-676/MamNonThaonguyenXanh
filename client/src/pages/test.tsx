@@ -6,11 +6,23 @@ export default function Test() {
   const [count, setCount] = useState(0);
   
   const testAlert = () => {
+    console.log('Alert button clicked!');
     alert('JavaScript is working!');
   };
   
   const testConsole = () => {
+    console.log('Console button clicked!');
     console.log('Console log working!');
+  };
+  
+  const handleIncrement = () => {
+    console.log('Increment button clicked!');
+    setCount(prev => prev + 1);
+  };
+  
+  const handleReset = () => {
+    console.log('Reset button clicked!');
+    setCount(0);
   };
   
   return (
@@ -22,10 +34,10 @@ export default function Test() {
           <div>
             <h2 className="text-2xl font-semibold mb-4">Counter Test</h2>
             <p className="text-lg">Count: {count}</p>
-            <Button onClick={() => setCount(count + 1)} className="mr-4">
+            <Button onClick={handleIncrement} className="mr-4">
               Increment
             </Button>
-            <Button onClick={() => setCount(0)} variant="outline">
+            <Button onClick={handleReset} variant="outline">
               Reset
             </Button>
           </div>
@@ -50,11 +62,30 @@ export default function Test() {
           <div>
             <h2 className="text-2xl font-semibold mb-4">Direct Navigation Test</h2>
             <button 
-              onClick={() => window.location.href = '/news'}
+              onClick={() => {
+                console.log('Direct navigation button clicked!');
+                window.location.href = '/news';
+              }}
               className="bg-blue-500 text-white px-4 py-2 rounded"
             >
               Direct Navigation to News
             </button>
+          </div>
+          
+          <div>
+            <h2 className="text-2xl font-semibold mb-4">Raw HTML Test</h2>
+            <button 
+              onclick="alert('Raw HTML onclick works!')"
+              className="bg-red-500 text-white px-4 py-2 rounded mr-4"
+            >
+              Raw HTML onclick
+            </button>
+            <div 
+              onclick="console.log('Raw div clicked!')"
+              className="inline-block bg-green-500 text-white px-4 py-2 rounded cursor-pointer"
+            >
+              Raw HTML div click
+            </div>
           </div>
         </div>
       </div>
