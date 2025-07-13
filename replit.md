@@ -135,19 +135,41 @@ The application uses the following main entities:
 - **Password**: `admin123`
 - Simple client-side authentication for easy access
 
-### Dashboard Features (5 Tabs)
+### Dashboard Features (9 Tabs)
 1. **📞 Liên hệ**: Update contact info (phone, email, address, Google Maps)
 2. **🖼️ Ảnh/Video**: Upload images and videos directly from device
    - Logo upload with preview
    - Banner upload with preview  
    - Video upload with preview
    - All formats supported, auto-resizing
-3. **📰 Bài viết**: Create articles with image upload
+3. **🏠 Trang chủ**: Edit homepage content
+   - Hero section (title, subtitle, background image)
+   - Featured highlights and descriptions
+   - Direct content editing
+4. **ℹ️ Giới thiệu**: Edit about page content
+   - School history, mission, vision
+   - Teacher team information
+   - About images upload
+5. **📚 Thư viện**: Parent library management
+   - Document upload and management
+   - PDF/DOC file support
+   - Edit/delete existing documents
+6. **🎓 Tuyển sinh**: Admission information editing
+   - General admission info
+   - Age requirements and deadlines
+   - Required documents list
+   - Tuition fees for all programs
+7. **📰 Bài viết**: Create and edit articles
    - Title, content, category selection
    - Direct image upload from device
+   - Edit/delete existing articles
    - Instant publishing
-4. **📚 Chương trình**: View programs and tuition fees
-5. **🎯 Hoạt động**: View school activities and events
+8. **📚 Chương trình**: Programs management
+   - Edit program details and tuition
+   - Program descriptions and requirements
+9. **🎯 Hoạt động**: Activities management
+   - Edit activity details and images
+   - Date, location, and frequency settings
 
 ### User-Friendly Features
 - Drag & drop file upload
@@ -166,6 +188,9 @@ Changelog:
 - July 09, 2025. Implemented content management interface
 - July 09, 2025. Updated tuition fees to 4,000,000 VND for all programs
 - July 09, 2025. Added real business contact information
+- July 13, 2025. Added comprehensive edit/delete functionality for articles, programs, activities
+- July 13, 2025. Expanded admin panel to 9 tabs including homepage, about page, library, and admission editing
+- July 13, 2025. Implemented modal forms for editing all content types with image upload capabilities
 ```
 
 ## User Preferences

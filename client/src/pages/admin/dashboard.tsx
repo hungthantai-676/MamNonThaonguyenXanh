@@ -188,9 +188,13 @@ export default function AdminDashboard() {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="contact" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-9">
             <TabsTrigger value="contact">📞 Liên hệ</TabsTrigger>
             <TabsTrigger value="media">🖼️ Ảnh/Video</TabsTrigger>
+            <TabsTrigger value="homepage">🏠 Trang chủ</TabsTrigger>
+            <TabsTrigger value="about">ℹ️ Giới thiệu</TabsTrigger>
+            <TabsTrigger value="library">📚 Thư viện</TabsTrigger>
+            <TabsTrigger value="admission">🎓 Tuyển sinh</TabsTrigger>
             <TabsTrigger value="articles">📰 Bài viết</TabsTrigger>
             <TabsTrigger value="programs">📚 Chương trình</TabsTrigger>
             <TabsTrigger value="activities">🎯 Hoạt động</TabsTrigger>
@@ -422,6 +426,344 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="programs">
+            <Card>
+              <CardHeader>
+                <CardTitle>📚 Chương trình học</CardTitle>
+                <CardDescription>Quản lý các chương trình và học phí</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {programs?.map((program) => (
+                    <div key={program.id} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg">{program.name}</h3>
+                          <p className="text-sm text-gray-600 mt-1">{program.description}</p>
+                          <p className="text-sm mt-2">
+                            <span className="font-medium">Độ tuổi:</span> {program.ageRange} | 
+                            <span className="font-medium"> Sỉ số:</span> {program.capacity} học sinh
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xl font-bold text-primary-green">
+                            {program.tuition.toLocaleString('vi-VN')} VNĐ/tháng
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Cập nhật: {new Date(program.updatedAt).toLocaleDateString('vi-VN')}
+                          </p>
+                          <div className="flex space-x-2 mt-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setEditingProgram(program)}
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              ✏️ Sửa
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="homepage">
+            <Card>
+              <CardHeader>
+                <CardTitle>🏠 Chỉnh sửa trang chủ</CardTitle>
+                <CardDescription>Cập nhật nội dung trang chủ</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">🎯 Phần Hero</h3>
+                  <div>
+                    <Label htmlFor="hero-title">📝 Tiêu đề chính</Label>
+                    <Input
+                      id="hero-title"
+                      defaultValue="Chào mừng đến với Mầm Non Thảo Nguyên Xanh"
+                      placeholder="Nhập tiêu đề chính..."
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="hero-subtitle">📝 Mô tả ngắn</Label>
+                    <Textarea
+                      id="hero-subtitle"
+                      defaultValue="Nơi nuôi dưỡng tương lai của trẻ em với tình yêu thương và chăm sóc tận tâm"
+                      placeholder="Nhập mô tả ngắn..."
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="hero-image">🖼️ Ảnh nền Hero</Label>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      className="cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">✨ Tính năng nổi bật</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="border rounded-lg p-4">
+                      <h4 className="font-medium">🎓 Giáo dục chất lượng</h4>
+                      <Textarea
+                        defaultValue="Phương pháp giảng dạy hiện đại, phù hợp với từng độ tuổi"
+                        rows={2}
+                        className="mt-2"
+                      />
+                    </div>
+                    <div className="border rounded-lg p-4">
+                      <h4 className="font-medium">🏥 An toàn tuyệt đối</h4>
+                      <Textarea
+                        defaultValue="Môi trường học tập an toàn, sạch sẽ và thân thiện"
+                        rows={2}
+                        className="mt-2"
+                      />
+                    </div>
+                    <div className="border rounded-lg p-4">
+                      <h4 className="font-medium">👨‍👩‍👧‍👦 Phát triển toàn diện</h4>
+                      <Textarea
+                        defaultValue="Phát triển cả về thể chất, trí tuệ và tình cảm"
+                        rows={2}
+                        className="mt-2"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <Button className="w-full">
+                  💾 Lưu thay đổi trang chủ
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="about">
+            <Card>
+              <CardHeader>
+                <CardTitle>ℹ️ Chỉnh sửa trang giới thiệu</CardTitle>
+                <CardDescription>Cập nhật thông tin về trường</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">📋 Thông tin cơ bản</h3>
+                  <div>
+                    <Label htmlFor="about-history">📚 Lịch sử trường</Label>
+                    <Textarea
+                      id="about-history"
+                      defaultValue="Mầm Non Thảo Nguyên Xanh được thành lập năm 2010 với mục tiêu mang đến môi trường giáo dục chất lượng cao cho trẻ em..."
+                      placeholder="Nhập lịch sử trường..."
+                      rows={4}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="about-mission">🎯 Sứ mệnh</Label>
+                    <Textarea
+                      id="about-mission"
+                      defaultValue="Nuôi dưỡng và phát triển toàn diện trẻ em trong môi trường yêu thương, an toàn và sáng tạo..."
+                      placeholder="Nhập sứ mệnh..."
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="about-vision">🌟 Tầm nhìn</Label>
+                    <Textarea
+                      id="about-vision"
+                      defaultValue="Trở thành trường mầm non hàng đầu trong việc giáo dục và phát triển trẻ em..."
+                      placeholder="Nhập tầm nhìn..."
+                      rows={3}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">👥 Đội ngũ giáo viên</h3>
+                  <div>
+                    <Label htmlFor="about-teachers">👨‍🏫 Giới thiệu đội ngũ</Label>
+                    <Textarea
+                      id="about-teachers"
+                      defaultValue="Đội ngũ giáo viên giàu kinh nghiệm, tận tâm và được đào tạo chuyên nghiệp..."
+                      placeholder="Nhập giới thiệu đội ngũ..."
+                      rows={4}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="about-image">🖼️ Ảnh giới thiệu</Label>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      className="cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                <Button className="w-full">
+                  💾 Lưu thay đổi giới thiệu
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="library">
+            <Card>
+              <CardHeader>
+                <CardTitle>📚 Thư viện phụ huynh</CardTitle>
+                <CardDescription>Quản lý tài liệu và hướng dẫn cho phụ huynh</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">📄 Tài liệu hiện có</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="border rounded-lg p-4">
+                      <h4 className="font-medium">📋 Hướng dẫn chuẩn bị đồ dùng</h4>
+                      <p className="text-sm text-gray-600 mt-1">Danh sách đồ dùng cần thiết cho năm học</p>
+                      <div className="flex space-x-2 mt-2">
+                        <Button size="sm" variant="outline">✏️ Sửa</Button>
+                        <Button size="sm" variant="outline">🗑️ Xóa</Button>
+                      </div>
+                    </div>
+                    <div className="border rounded-lg p-4">
+                      <h4 className="font-medium">📋 Quy định nhà trường</h4>
+                      <p className="text-sm text-gray-600 mt-1">Các quy định và nội quy của trường</p>
+                      <div className="flex space-x-2 mt-2">
+                        <Button size="sm" variant="outline">✏️ Sửa</Button>
+                        <Button size="sm" variant="outline">🗑️ Xóa</Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">➕ Thêm tài liệu mới</h3>
+                  <div>
+                    <Label htmlFor="doc-title">📝 Tiêu đề tài liệu</Label>
+                    <Input
+                      id="doc-title"
+                      placeholder="Nhập tiêu đề tài liệu..."
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="doc-description">📝 Mô tả</Label>
+                    <Textarea
+                      id="doc-description"
+                      placeholder="Nhập mô tả tài liệu..."
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="doc-file">📎 Tệp tài liệu</Label>
+                    <Input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      className="cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                <Button className="w-full">
+                  💾 Thêm tài liệu mới
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="admission">
+            <Card>
+              <CardHeader>
+                <CardTitle>🎓 Chỉnh sửa thông tin tuyển sinh</CardTitle>
+                <CardDescription>Cập nhật thông tin tuyển sinh và đăng ký</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">📋 Thông tin tuyển sinh</h3>
+                  <div>
+                    <Label htmlFor="admission-info">📝 Thông tin chung</Label>
+                    <Textarea
+                      id="admission-info"
+                      defaultValue="Mầm Non Thảo Nguyên Xanh tuyển sinh năm học 2024-2025 cho các lớp từ 18 tháng đến 5 tuổi..."
+                      placeholder="Nhập thông tin tuyển sinh..."
+                      rows={4}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="admission-age">👶 Độ tuổi tuyển sinh</Label>
+                      <Input
+                        id="admission-age"
+                        defaultValue="18 tháng - 5 tuổi"
+                        placeholder="Nhập độ tuổi..."
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="admission-deadline">📅 Hạn đăng ký</Label>
+                      <Input
+                        type="date"
+                        id="admission-deadline"
+                        defaultValue="2024-08-15"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">📋 Hồ sơ cần thiết</h3>
+                  <div>
+                    <Label htmlFor="admission-documents">📄 Danh sách hồ sơ</Label>
+                    <Textarea
+                      id="admission-documents"
+                      defaultValue="- Đơn đăng ký nhập học&#10;- Bản sao giấy khai sinh&#10;- Sổ sức khỏe&#10;- 4 ảnh 3x4 của bé"
+                      placeholder="Nhập danh sách hồ sơ..."
+                      rows={6}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">💰 Học phí</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="tuition-nursery">🍼 Lớp Nhà Trẻ</Label>
+                      <Input
+                        type="number"
+                        id="tuition-nursery"
+                        defaultValue="4000000"
+                        placeholder="Học phí (VNĐ)"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="tuition-kindergarten">🎨 Lớp Mẫu Giáo</Label>
+                      <Input
+                        type="number"
+                        id="tuition-kindergarten"
+                        defaultValue="4000000"
+                        placeholder="Học phí (VNĐ)"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="tuition-preschool">🎓 Lớp Chuẩn Bị</Label>
+                      <Input
+                        type="number"
+                        id="tuition-preschool"
+                        defaultValue="4000000"
+                        placeholder="Học phí (VNĐ)"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <Button className="w-full">
+                  💾 Lưu thay đổi tuyển sinh
+                </Button>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="programs">
