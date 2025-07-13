@@ -54,9 +54,9 @@ export default function Header() {
             ))}
             <Link
               href="/admin/login"
-              className="text-gray-500 hover:text-primary-green transition-colors font-medium text-sm"
+              className="bg-primary-green text-white px-3 py-1 rounded-full text-sm hover:bg-green-600 transition-colors font-medium"
             >
-              Quản trị
+              ⚙️ Quản trị
             </Link>
           </nav>
 
