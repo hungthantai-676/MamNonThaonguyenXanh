@@ -12,6 +12,7 @@ import Parents from "@/pages/parents";
 import Admission from "@/pages/admission";
 import News from "@/pages/news";
 import NewsDetail from "@/pages/news-detail";
+import NewsDetailTest from "@/pages/news-detail-test";
 import Contact from "@/pages/contact";
 import AdminLogin from "@/pages/admin/login";
 import AdminDashboard from "@/pages/admin/dashboard";
@@ -33,7 +34,7 @@ function Router() {
           <Route path="/parents" component={Parents} />
           <Route path="/admission" component={Admission} />
           <Route path="/news" component={News} />
-          <Route path="/news/:id" component={NewsDetail} />
+          <Route path="/news/:id" component={NewsDetailTest} />
           <Route path="/contact" component={Contact} />
           <Route path="/admin-access" component={AdminAccess} />
           <Route path="/admin-quick" component={AdminQuick} />

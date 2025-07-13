@@ -1,35 +1,34 @@
-import { useRoute, Link } from "wouter";
+import { useEffect, useState } from "react";
+import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Tag, User } from "lucide-react";
 import type { Article } from "@shared/schema";
 
-export default function NewsDetail() {
-  const [match, params] = useRoute("/news/:id");
-  const id = params?.id;
+export default function NewsDetailTest() {
+  const [id, setId] = useState<string | null>(null);
   
-  // Extract ID from pathname as fallback
-  const pathId = window.location.pathname.split('/')[2];
-  const finalId = id || pathId;
+  useEffect(() => {
+    // Extract ID from URL path
+    const pathSegments = window.location.pathname.split('/');
+    const extractedId = pathSegments[2]; // /news/[id]
+    setId(extractedId);
+    console.log('Extracted ID from URL:', extractedId);
+  }, []);
   
-  console.log('Route debug:', { 
-    match, 
-    id, 
-    pathId, 
-    finalId,
-    pathname: window.location.pathname,
-    params 
+  const { data: article, isLoading, error } = useQuery<Article>({
+    queryKey: [`/api/articles/${id}`],
+    enabled: !!id,
+    retry: 1,
   });
   
-  // Debug - early return if no id
-  if (!finalId) {
+  console.log('Test Component - ID:', id, 'Article:', article, 'Loading:', isLoading, 'Error:', error);
+  
+  if (!id) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-red-600 mb-4">No ID provided</h1>
-          <p>URL parameter 'id' is missing or route not matched</p>
-          <p>Match: {match ? 'true' : 'false'}, ID: {id || 'undefined'}</p>
-          <p>Path ID: {pathId || 'undefined'}</p>
+          <h1 className="text-3xl font-bold text-red-600 mb-4">Test Component - No ID</h1>
           <p>Current pathname: {window.location.pathname}</p>
           <Link href="/news">
             <Button>Back to News</Button>
@@ -39,21 +38,6 @@ export default function NewsDetail() {
     );
   }
   
-  console.log('NewsDetail component loaded with finalId:', finalId);
-  
-  const { data: article, isLoading, error } = useQuery<Article>({
-    queryKey: [`/api/articles/${finalId}`],
-    enabled: !!finalId,
-    retry: 1,
-  });
-  
-  console.log('Query state:', { article, isLoading, error, finalId });
-  
-  // Show detailed error information
-  if (error) {
-    console.error('Error details:', error);
-  }
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
@@ -83,6 +67,9 @@ export default function NewsDetail() {
             <p className="text-gray-600 mb-8">
               Bài viết bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.
             </p>
+            <p className="text-red-600 mb-8">
+              Error: {error?.message || 'Unknown error'}
+            </p>
             <Link href="/news">
               <Button>
                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -107,6 +94,14 @@ export default function NewsDetail() {
             </Button>
           </Link>
 
+          {/* Test info */}
+          <div className="bg-blue-100 border border-blue-300 rounded-lg p-4 mb-6">
+            <h2 className="text-blue-800 font-semibold mb-2">Test Component Info</h2>
+            <p className="text-blue-700 text-sm">ID: {id}</p>
+            <p className="text-blue-700 text-sm">Article Title: {article.title}</p>
+            <p className="text-blue-700 text-sm">Current URL: {window.location.pathname}</p>
+          </div>
+
           {/* Article header */}
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
             {article.imageUrl && (
@@ -126,10 +121,6 @@ export default function NewsDetail() {
                 <div className="flex items-center">
                   <Tag className="mr-2 h-4 w-4" />
                   <span className="capitalize">{article.category}</span>
-                </div>
-                <div className="flex items-center">
-                  <User className="mr-2 h-4 w-4" />
-                  <span>{article.author}</span>
                 </div>
               </div>
 
