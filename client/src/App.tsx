@@ -34,7 +34,7 @@ function Router() {
           <Route path="/parents" component={Parents} />
           <Route path="/admission" component={Admission} />
           <Route path="/news" component={News} />
-          <Route path="/news/:id" component={NewsDetailTest} />
+          <Route path="/news/:id" component={NewsDetail} />
           <Route path="/contact" component={Contact} />
           <Route path="/admin-access" component={AdminAccess} />
           <Route path="/admin-quick" component={AdminQuick} />

@@ -1,59 +1,45 @@
-import { useRoute, Link } from "wouter";
+import { useEffect, useState } from "react";
+import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Tag, User } from "lucide-react";
 import type { Article } from "@shared/schema";
 
 export default function NewsDetail() {
-  const [match, params] = useRoute("/news/:id");
-  const id = params?.id;
+  const [id, setId] = useState<string | null>(null);
   
-  // Extract ID from pathname as fallback
-  const pathId = window.location.pathname.split('/')[2];
-  const finalId = id || pathId;
+  useEffect(() => {
+    // Extract ID from URL path
+    const pathSegments = window.location.pathname.split('/');
+    const extractedId = pathSegments[2]; // /news/[id]
+    setId(extractedId);
+    console.log('NewsDetail - Extracted ID from URL:', extractedId);
+  }, []);
   
-  console.log('Route debug:', { 
-    match, 
-    id, 
-    pathId, 
-    finalId,
-    pathname: window.location.pathname,
-    params 
+  const { data: article, isLoading, error } = useQuery<Article>({
+    queryKey: [`/api/articles/${id}`],
+    enabled: !!id,
+    retry: 1,
   });
   
-  // Debug - early return if no id
-  if (!finalId) {
+  console.log('NewsDetail Query state:', { article, isLoading, error, id });
+  
+  // Show detailed error information
+  if (error) {
+    console.error('NewsDetail Error details:', error);
+  }
+
+  if (!id) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-red-600 mb-4">No ID provided</h1>
-          <p>URL parameter 'id' is missing or route not matched</p>
-          <p>Match: {match ? 'true' : 'false'}, ID: {id || 'undefined'}</p>
-          <p>Path ID: {pathId || 'undefined'}</p>
-          <p>Current pathname: {window.location.pathname}</p>
-          <Link href="/news">
-            <Button>Back to News</Button>
-          </Link>
+          <h1 className="text-3xl font-bold text-red-600 mb-4">Loading...</h1>
+          <p>Extracting article ID from URL...</p>
         </div>
       </div>
     );
   }
   
-  console.log('NewsDetail component loaded with finalId:', finalId);
-  
-  const { data: article, isLoading, error } = useQuery<Article>({
-    queryKey: [`/api/articles/${finalId}`],
-    enabled: !!finalId,
-    retry: 1,
-  });
-  
-  console.log('Query state:', { article, isLoading, error, finalId });
-  
-  // Show detailed error information
-  if (error) {
-    console.error('Error details:', error);
-  }
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">

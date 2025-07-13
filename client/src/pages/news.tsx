@@ -143,7 +143,13 @@ export default function News() {
 
           {!loading && displayArticles && displayArticles.length > 6 && (
             <div className="text-center mt-12">
-              <Button className="bg-primary-green hover:bg-primary-green/90 text-white">
+              <Button 
+                className="bg-primary-green hover:bg-primary-green/90 text-white"
+                onClick={() => {
+                  console.log('Clicked "Xem thêm bài viết"');
+                  alert('Button clicked - should show more articles');
+                }}
+              >
                 Xem thêm bài viết
               </Button>
             </div>
@@ -169,7 +175,13 @@ export default function News() {
                   placeholder="Nhập địa chỉ email của bạn"
                   className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-green focus:border-primary-green"
                 />
-                <Button className="bg-primary-green hover:bg-primary-green/90 text-white px-8">
+                <Button 
+                  className="bg-primary-green hover:bg-primary-green/90 text-white px-8"
+                  onClick={() => {
+                    console.log('Clicked "Đăng ký"');
+                    alert('Newsletter signup clicked');
+                  }}
+                >
                   Đăng ký
                 </Button>
               </div>
