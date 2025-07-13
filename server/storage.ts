@@ -1,4 +1,4 @@
-import { users, articles, testimonials, programs, activities, admissionForms, contactForms, chatMessages, notifications, type User, type InsertUser, type Article, type InsertArticle, type Testimonial, type InsertTestimonial, type Program, type InsertProgram, type Activity, type InsertActivity, type AdmissionForm, type InsertAdmissionForm, type ContactForm, type InsertContactForm, type ChatMessage, type InsertChatMessage, type Notification, type InsertNotification } from "@shared/schema";
+import { users, articles, testimonials, programs, activities, admissionForms, contactForms, chatMessages, notifications, admissionSteps, type User, type InsertUser, type Article, type InsertArticle, type Testimonial, type InsertTestimonial, type Program, type InsertProgram, type Activity, type InsertActivity, type AdmissionForm, type InsertAdmissionForm, type ContactForm, type InsertContactForm, type ChatMessage, type InsertChatMessage, type Notification, type InsertNotification, type AdmissionStep, type InsertAdmissionStep } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
@@ -52,6 +52,13 @@ export interface IStorage {
   getNotifications(userId: number): Promise<Notification[]>;
   createNotification(notification: InsertNotification): Promise<Notification>;
   markNotificationAsRead(id: number): Promise<void>;
+  
+  // Admission step methods
+  getAdmissionSteps(): Promise<AdmissionStep[]>;
+  getAdmissionStep(id: number): Promise<AdmissionStep | undefined>;
+  createAdmissionStep(step: InsertAdmissionStep): Promise<AdmissionStep>;
+  updateAdmissionStep(id: number, step: Partial<InsertAdmissionStep>): Promise<AdmissionStep>;
+  deleteAdmissionStep(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -257,6 +264,40 @@ export class DatabaseStorage implements IStorage {
       .update(notifications)
       .set({ isRead: true })
       .where(eq(notifications.id, id));
+  }
+
+  // Admission step methods
+  async getAdmissionSteps(): Promise<AdmissionStep[]> {
+    return await db.select().from(admissionSteps).where(eq(admissionSteps.isActive, true));
+  }
+
+  async getAdmissionStep(id: number): Promise<AdmissionStep | undefined> {
+    const [step] = await db.select().from(admissionSteps).where(eq(admissionSteps.id, id));
+    return step || undefined;
+  }
+
+  async createAdmissionStep(insertStep: InsertAdmissionStep): Promise<AdmissionStep> {
+    const [step] = await db
+      .insert(admissionSteps)
+      .values({ ...insertStep, updatedAt: new Date() })
+      .returning();
+    return step;
+  }
+
+  async updateAdmissionStep(id: number, stepData: Partial<InsertAdmissionStep>): Promise<AdmissionStep> {
+    const [step] = await db
+      .update(admissionSteps)
+      .set({ ...stepData, updatedAt: new Date() })
+      .where(eq(admissionSteps.id, id))
+      .returning();
+    return step;
+  }
+
+  async deleteAdmissionStep(id: number): Promise<void> {
+    await db
+      .update(admissionSteps)
+      .set({ isActive: false })
+      .where(eq(admissionSteps.id, id));
   }
 }
 

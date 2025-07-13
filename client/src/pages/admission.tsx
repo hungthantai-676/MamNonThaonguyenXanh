@@ -2,11 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import AdmissionForm from "@/components/admission-form";
-import type { Program } from "@shared/schema";
+import type { Program, AdmissionStep } from "@shared/schema";
 
 export default function Admission() {
   const { data: programs, isLoading } = useQuery<Program[]>({
     queryKey: ["/api/programs"],
+  });
+  
+  const { data: admissionSteps, isLoading: isLoadingSteps } = useQuery<AdmissionStep[]>({
+    queryKey: ["/api/admission-steps"],
   });
 
   return (
@@ -128,47 +132,40 @@ export default function Admission() {
           </div>
 
           <div className="max-w-4xl mx-auto">
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {[
-                {
-                  step: "01",
-                  title: "Đăng ký online",
-                  description: "Điền form đăng ký trực tuyến hoặc liên hệ trực tiếp",
-                  icon: "fas fa-laptop"
-                },
-                {
-                  step: "02", 
-                  title: "Tham quan trường",
-                  description: "Được mời tham quan cơ sở vật chất và gặp gỡ giáo viên",
-                  icon: "fas fa-eye"
-                },
-                {
-                  step: "03",
-                  title: "Nộp hồ sơ",
-                  description: "Chuẩn bị và nộp đầy đủ hồ sơ theo quy định",
-                  icon: "fas fa-folder"
-                },
-                {
-                  step: "04",
-                  title: "Nhập học",
-                  description: "Hoàn tất thủ tục và chính thức bắt đầu học tập",
-                  icon: "fas fa-graduation-cap"
-                }
-              ].map((process, index) => (
-                <div key={index} className="text-center">
-                  <div className="relative mb-6">
-                    <div className="w-20 h-20 bg-primary-green rounded-full flex items-center justify-center mx-auto mb-4">
-                      <i className={`${process.icon} text-white text-2xl`}></i>
+            {isLoadingSteps ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="text-center">
+                    <div className="relative mb-6">
+                      <Skeleton className="w-20 h-20 rounded-full mx-auto mb-4" />
                     </div>
-                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-accent-yellow rounded-full flex items-center justify-center text-white font-bold text-sm">
-                      {process.step}
-                    </div>
+                    <Skeleton className="h-6 w-3/4 mx-auto mb-3" />
+                    <Skeleton className="h-4 w-full" />
                   </div>
-                  <h3 className="font-semibold text-lg text-dark-gray mb-3">{process.title}</h3>
-                  <p className="text-gray-600">{process.description}</p>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {admissionSteps?.map((step, index) => (
+                  <div key={step.id} className="text-center">
+                    <div className="relative mb-6">
+                      <div className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-4 shadow-lg">
+                        <img 
+                          src={step.iconUrl} 
+                          alt={step.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-accent-yellow rounded-full flex items-center justify-center text-white font-bold text-sm">
+                        {step.stepNumber.toString().padStart(2, '0')}
+                      </div>
+                    </div>
+                    <h3 className="font-semibold text-lg text-dark-gray mb-3">{step.title}</h3>
+                    <p className="text-gray-600">{step.description}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>

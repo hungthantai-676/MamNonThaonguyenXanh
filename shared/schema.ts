@@ -107,6 +107,18 @@ export const notifications = pgTable("notifications", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const admissionSteps = pgTable("admission_steps", {
+  id: serial("id").primaryKey(),
+  stepNumber: text("step_number").notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  iconUrl: text("icon_url"),
+  iconType: text("icon_type").default("image"), // image, icon
+  iconClass: text("icon_class"), // fallback icon class
+  isActive: boolean("is_active").default(true),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -151,6 +163,11 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
   createdAt: true,
 });
 
+export const insertAdmissionStepSchema = createInsertSchema(admissionSteps).omit({
+  id: true,
+  updatedAt: true,
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Article = typeof articles.$inferSelect;
@@ -169,3 +186,5 @@ export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type AdmissionStep = typeof admissionSteps.$inferSelect;
+export type InsertAdmissionStep = z.infer<typeof insertAdmissionStepSchema>;

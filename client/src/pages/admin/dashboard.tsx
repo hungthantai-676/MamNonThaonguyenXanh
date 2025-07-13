@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Article, Program, Activity } from "@shared/schema";
+import type { Article, Program, Activity, AdmissionStep } from "@shared/schema";
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
@@ -28,6 +28,7 @@ export default function AdminDashboard() {
   const { data: articles } = useQuery<Article[]>({ queryKey: ["/api/articles"] });
   const { data: programs } = useQuery<Program[]>({ queryKey: ["/api/programs"] });
   const { data: activities } = useQuery<Activity[]>({ queryKey: ["/api/activities"] });
+  const { data: admissionSteps } = useQuery<AdmissionStep[]>({ queryKey: ["/api/admission-steps"] });
 
   // Form states
   const [contactInfo, setContactInfo] = useState({
@@ -52,6 +53,7 @@ export default function AdminDashboard() {
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [editingProgram, setEditingProgram] = useState<Program | null>(null);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+  const [editingAdmissionStep, setEditingAdmissionStep] = useState<AdmissionStep | null>(null);
 
   // Mutations
   const createArticleMutation = useMutation({
@@ -128,6 +130,21 @@ export default function AdminDashboard() {
     }
   });
 
+  const updateAdmissionStepMutation = useMutation({
+    mutationFn: async (step: AdmissionStep) => {
+      const response = await apiRequest("PUT", `/api/admission-steps/${step.id}`, step);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admission-steps"] });
+      toast({
+        title: "Cập nhật bước tuyển sinh thành công",
+        description: "Bước tuyển sinh đã được cập nhật",
+      });
+      setEditingAdmissionStep(null);
+    }
+  });
+
   const logout = () => {
     localStorage.removeItem("admin-token");
     setLocation("/admin/login");
@@ -146,7 +163,7 @@ export default function AdminDashboard() {
     });
   };
 
-  const handleImageUpload = (type: 'logo' | 'banner' | 'article') => (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (type: 'logo' | 'banner' | 'article' | 'admission-step') => (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -155,6 +172,9 @@ export default function AdminDashboard() {
         if (type === 'logo') setLogoUrl(result);
         else if (type === 'banner') setBannerUrl(result);
         else if (type === 'article') setNewArticle(prev => ({ ...prev, imageUrl: result }));
+        else if (type === 'admission-step' && editingAdmissionStep) {
+          setEditingAdmissionStep(prev => prev ? { ...prev, iconUrl: result } : null);
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -764,6 +784,49 @@ export default function AdminDashboard() {
                 </Button>
               </CardContent>
             </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>🔄 Quy trình tuyển sinh</CardTitle>
+                <CardDescription>Quản lý các bước trong quy trình tuyển sinh</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {admissionSteps?.map((step) => (
+                    <div key={step.id} className="border rounded-lg p-4">
+                      <div className="flex items-start space-x-4">
+                        <div className="w-16 h-16 rounded-full overflow-hidden shadow-md">
+                          <img 
+                            src={step.iconUrl} 
+                            alt={step.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2">
+                            <span className="inline-block bg-accent-yellow text-white font-bold text-xs px-2 py-1 rounded-full">
+                              {step.stepNumber.toString().padStart(2, '0')}
+                            </span>
+                            <h3 className="font-semibold text-lg">{step.title}</h3>
+                          </div>
+                          <p className="text-sm text-gray-600 mt-1">{step.description}</p>
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setEditingAdmissionStep(step)}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            ✏️ Sửa
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="programs">
@@ -1116,6 +1179,80 @@ export default function AdminDashboard() {
                 <Button
                   variant="outline"
                   onClick={() => setEditingActivity(null)}
+                  className="flex-1"
+                >
+                  ❌ Hủy
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Admission Step Modal */}
+      <Dialog open={!!editingAdmissionStep} onOpenChange={() => setEditingAdmissionStep(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>✏️ Chỉnh sửa bước tuyển sinh</DialogTitle>
+          </DialogHeader>
+          {editingAdmissionStep && (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-step-title">📝 Tiêu đề bước</Label>
+                <Input
+                  id="edit-step-title"
+                  value={editingAdmissionStep.title}
+                  onChange={(e) => setEditingAdmissionStep({ ...editingAdmissionStep, title: e.target.value })}
+                  placeholder="Nhập tiêu đề bước..."
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-step-description">📝 Mô tả</Label>
+                <Textarea
+                  id="edit-step-description"
+                  value={editingAdmissionStep.description}
+                  onChange={(e) => setEditingAdmissionStep({ ...editingAdmissionStep, description: e.target.value })}
+                  rows={4}
+                  placeholder="Nhập mô tả bước..."
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-step-number">🔢 Số thứ tự</Label>
+                <Input
+                  type="number"
+                  id="edit-step-number"
+                  value={editingAdmissionStep.stepNumber}
+                  onChange={(e) => setEditingAdmissionStep({ ...editingAdmissionStep, stepNumber: parseInt(e.target.value) })}
+                  min="1"
+                  max="10"
+                  placeholder="Nhập số thứ tự..."
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-step-icon">🖼️ Icon/Hình ảnh</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload('admission-step')}
+                  className="cursor-pointer"
+                />
+                {editingAdmissionStep.iconUrl && (
+                  <div className="mt-2 border rounded-lg p-2">
+                    <img src={editingAdmissionStep.iconUrl} alt="Step Icon" className="max-w-full h-32 object-cover rounded" />
+                  </div>
+                )}
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  onClick={() => updateAdmissionStepMutation.mutate(editingAdmissionStep)}
+                  disabled={updateAdmissionStepMutation.isPending}
+                  className="flex-1"
+                >
+                  {updateAdmissionStepMutation.isPending ? "Đang cập nhật..." : "💾 Cập nhật bước"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setEditingAdmissionStep(null)}
                   className="flex-1"
                 >
                   ❌ Hủy

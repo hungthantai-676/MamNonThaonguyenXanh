@@ -3,7 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
   insertArticleSchema, insertTestimonialSchema, insertProgramSchema, 
-  insertActivitySchema, insertAdmissionFormSchema, insertContactFormSchema 
+  insertActivitySchema, insertAdmissionFormSchema, insertContactFormSchema,
+  insertAdmissionStepSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -247,6 +248,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true, message: "Program updated" });
     } catch (error) {
       res.status(500).json({ message: "Failed to update program" });
+    }
+  });
+
+  // Admission step routes
+  app.get("/api/admission-steps", async (req, res) => {
+    try {
+      const steps = await storage.getAdmissionSteps();
+      res.json(steps);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch admission steps" });
+    }
+  });
+
+  app.post("/api/admission-steps", async (req, res) => {
+    try {
+      const validatedData = insertAdmissionStepSchema.parse(req.body);
+      const step = await storage.createAdmissionStep(validatedData);
+      res.status(201).json(step);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid admission step data" });
+    }
+  });
+
+  app.put("/api/admission-steps/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertAdmissionStepSchema.partial().parse(req.body);
+      const step = await storage.updateAdmissionStep(id, validatedData);
+      res.json(step);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid admission step data or step not found" });
+    }
+  });
+
+  app.delete("/api/admission-steps/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteAdmissionStep(id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete admission step" });
     }
   });
 
