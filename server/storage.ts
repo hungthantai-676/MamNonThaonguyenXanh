@@ -13,6 +13,8 @@ export interface IStorage {
   getArticle(id: number): Promise<Article | undefined>;
   getArticlesByCategory(category: string): Promise<Article[]>;
   createArticle(article: InsertArticle): Promise<Article>;
+  updateArticle(id: number, article: Partial<InsertArticle>): Promise<Article>;
+  deleteArticle(id: number): Promise<void>;
   
   // Testimonial methods
   getTestimonials(): Promise<Testimonial[]>;
@@ -28,6 +30,7 @@ export interface IStorage {
   getActivities(): Promise<Activity[]>;
   getActivity(id: number): Promise<Activity | undefined>;
   createActivity(activity: InsertActivity): Promise<Activity>;
+  updateActivity(id: number, activity: Partial<InsertActivity>): Promise<Activity>;
   
   // Admission form methods
   getAdmissionForms(): Promise<AdmissionForm[]>;
@@ -91,6 +94,19 @@ export class DatabaseStorage implements IStorage {
     return article;
   }
 
+  async updateArticle(id: number, articleData: Partial<InsertArticle>): Promise<Article> {
+    const [article] = await db
+      .update(articles)
+      .set(articleData)
+      .where(eq(articles.id, id))
+      .returning();
+    return article;
+  }
+
+  async deleteArticle(id: number): Promise<void> {
+    await db.delete(articles).where(eq(articles.id, id));
+  }
+
   async getTestimonials(): Promise<Testimonial[]> {
     return await db.select().from(testimonials);
   }
@@ -146,6 +162,15 @@ export class DatabaseStorage implements IStorage {
         imageUrl: insertActivity.imageUrl || null,
         isActive: insertActivity.isActive ?? true
       })
+      .returning();
+    return activity;
+  }
+
+  async updateActivity(id: number, activityData: Partial<InsertActivity>): Promise<Activity> {
+    const [activity] = await db
+      .update(activities)
+      .set(activityData)
+      .where(eq(activities.id, id))
       .returning();
     return activity;
   }

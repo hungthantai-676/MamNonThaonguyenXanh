@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -47,6 +48,11 @@ export default function AdminDashboard() {
   const [bannerUrl, setBannerUrl] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
 
+  // Edit states
+  const [editingArticle, setEditingArticle] = useState<Article | null>(null);
+  const [editingProgram, setEditingProgram] = useState<Program | null>(null);
+  const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+
   // Mutations
   const createArticleMutation = useMutation({
     mutationFn: async (article: typeof newArticle) => {
@@ -60,6 +66,65 @@ export default function AdminDashboard() {
         description: "Bài viết mới đã được thêm vào website",
       });
       setNewArticle({ title: "", content: "", category: "news", imageUrl: "" });
+    }
+  });
+
+  const updateArticleMutation = useMutation({
+    mutationFn: async (article: Article) => {
+      const response = await apiRequest("PUT", `/api/articles/${article.id}`, article);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/articles"] });
+      toast({
+        title: "Cập nhật bài viết thành công",
+        description: "Bài viết đã được cập nhật",
+      });
+      setEditingArticle(null);
+    }
+  });
+
+  const deleteArticleMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("DELETE", `/api/articles/${id}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/articles"] });
+      toast({
+        title: "Xóa bài viết thành công",
+        description: "Bài viết đã được xóa khỏi website",
+      });
+    }
+  });
+
+  const updateProgramMutation = useMutation({
+    mutationFn: async (program: Program) => {
+      const response = await apiRequest("PUT", `/api/programs/${program.id}`, program);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/programs"] });
+      toast({
+        title: "Cập nhật chương trình thành công",
+        description: "Chương trình đã được cập nhật",
+      });
+      setEditingProgram(null);
+    }
+  });
+
+  const updateActivityMutation = useMutation({
+    mutationFn: async (activity: Activity) => {
+      const response = await apiRequest("PUT", `/api/activities/${activity.id}`, activity);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+      toast({
+        title: "Cập nhật hoạt động thành công",
+        description: "Hoạt động đã được cập nhật",
+      });
+      setEditingActivity(null);
     }
   });
 
@@ -326,8 +391,29 @@ export default function AdminDashboard() {
                             </p>
                             <p className="text-sm mt-2 text-gray-700">{article.content.substring(0, 100)}...</p>
                           </div>
-                          <div className="text-xs text-gray-500">
-                            {new Date(article.publishedAt).toLocaleDateString('vi-VN')}
+                          <div className="flex flex-col items-end space-y-2">
+                            <div className="text-xs text-gray-500">
+                              {new Date(article.publishedAt).toLocaleDateString('vi-VN')}
+                            </div>
+                            <div className="flex space-x-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setEditingArticle(article)}
+                                className="text-blue-600 hover:text-blue-800"
+                              >
+                                ✏️ Sửa
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => deleteArticleMutation.mutate(article.id)}
+                                className="text-red-600 hover:text-red-800"
+                                disabled={deleteArticleMutation.isPending}
+                              >
+                                🗑️ Xóa
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -364,6 +450,16 @@ export default function AdminDashboard() {
                           <p className="text-xs text-gray-500 mt-1">
                             Cập nhật: {new Date(program.updatedAt).toLocaleDateString('vi-VN')}
                           </p>
+                          <div className="flex space-x-2 mt-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setEditingProgram(program)}
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              ✏️ Sửa
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -396,11 +492,23 @@ export default function AdminDashboard() {
                             </p>
                           )}
                         </div>
-                        {activity.imageUrl && (
-                          <div className="ml-4">
-                            <img src={activity.imageUrl} alt={activity.name} className="w-16 h-16 object-cover rounded" />
+                        <div className="flex items-center space-x-4">
+                          {activity.imageUrl && (
+                            <div>
+                              <img src={activity.imageUrl} alt={activity.name} className="w-16 h-16 object-cover rounded" />
+                            </div>
+                          )}
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setEditingActivity(activity)}
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              ✏️ Sửa
+                            </Button>
                           </div>
-                        )}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -410,6 +518,271 @@ export default function AdminDashboard() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Edit Article Modal */}
+      <Dialog open={!!editingArticle} onOpenChange={() => setEditingArticle(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>✏️ Chỉnh sửa bài viết</DialogTitle>
+          </DialogHeader>
+          {editingArticle && (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-title">📰 Tiêu đề</Label>
+                <Input
+                  id="edit-title"
+                  value={editingArticle.title}
+                  onChange={(e) => setEditingArticle({ ...editingArticle, title: e.target.value })}
+                  placeholder="Nhập tiêu đề bài viết..."
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-category">📂 Danh mục</Label>
+                <select
+                  id="edit-category"
+                  value={editingArticle.category}
+                  onChange={(e) => setEditingArticle({ ...editingArticle, category: e.target.value })}
+                  className="w-full p-2 border rounded-md"
+                >
+                  <option value="news">📰 Tin tức</option>
+                  <option value="announcement">📢 Thông báo</option>
+                  <option value="event">🎉 Sự kiện</option>
+                </select>
+              </div>
+              <div>
+                <Label htmlFor="edit-image">🖼️ Ảnh bài viết</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (e) => {
+                        const result = e.target?.result as string;
+                        setEditingArticle({ ...editingArticle, imageUrl: result });
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="cursor-pointer"
+                />
+                {editingArticle.imageUrl && (
+                  <div className="mt-2 border rounded-lg p-2">
+                    <img src={editingArticle.imageUrl} alt="Article" className="max-w-full h-32 object-cover" />
+                  </div>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="edit-content">📝 Nội dung</Label>
+                <Textarea
+                  id="edit-content"
+                  value={editingArticle.content}
+                  onChange={(e) => setEditingArticle({ ...editingArticle, content: e.target.value })}
+                  rows={6}
+                  placeholder="Nhập nội dung bài viết..."
+                />
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  onClick={() => updateArticleMutation.mutate(editingArticle)}
+                  disabled={updateArticleMutation.isPending}
+                  className="flex-1"
+                >
+                  {updateArticleMutation.isPending ? "Đang cập nhật..." : "💾 Cập nhật bài viết"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setEditingArticle(null)}
+                  className="flex-1"
+                >
+                  ❌ Hủy
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Program Modal */}
+      <Dialog open={!!editingProgram} onOpenChange={() => setEditingProgram(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>✏️ Chỉnh sửa chương trình</DialogTitle>
+          </DialogHeader>
+          {editingProgram && (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-program-name">📚 Tên chương trình</Label>
+                <Input
+                  id="edit-program-name"
+                  value={editingProgram.name}
+                  onChange={(e) => setEditingProgram({ ...editingProgram, name: e.target.value })}
+                  placeholder="Nhập tên chương trình..."
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-program-description">📝 Mô tả</Label>
+                <Textarea
+                  id="edit-program-description"
+                  value={editingProgram.description}
+                  onChange={(e) => setEditingProgram({ ...editingProgram, description: e.target.value })}
+                  rows={4}
+                  placeholder="Nhập mô tả chương trình..."
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-program-age">👶 Độ tuổi</Label>
+                  <Input
+                    id="edit-program-age"
+                    value={editingProgram.ageRange}
+                    onChange={(e) => setEditingProgram({ ...editingProgram, ageRange: e.target.value })}
+                    placeholder="VD: 2-3 tuổi"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-program-capacity">👥 Sỉ số</Label>
+                  <Input
+                    type="number"
+                    id="edit-program-capacity"
+                    value={editingProgram.capacity}
+                    onChange={(e) => setEditingProgram({ ...editingProgram, capacity: parseInt(e.target.value) || 0 })}
+                    placeholder="Số học sinh"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="edit-program-tuition">💰 Học phí (VNĐ)</Label>
+                <Input
+                  type="number"
+                  id="edit-program-tuition"
+                  value={editingProgram.tuition}
+                  onChange={(e) => setEditingProgram({ ...editingProgram, tuition: parseInt(e.target.value) || 0 })}
+                  placeholder="Học phí hàng tháng"
+                />
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  onClick={() => updateProgramMutation.mutate(editingProgram)}
+                  disabled={updateProgramMutation.isPending}
+                  className="flex-1"
+                >
+                  {updateProgramMutation.isPending ? "Đang cập nhật..." : "💾 Cập nhật chương trình"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setEditingProgram(null)}
+                  className="flex-1"
+                >
+                  ❌ Hủy
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Activity Modal */}
+      <Dialog open={!!editingActivity} onOpenChange={() => setEditingActivity(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>✏️ Chỉnh sửa hoạt động</DialogTitle>
+          </DialogHeader>
+          {editingActivity && (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-activity-name">🎯 Tên hoạt động</Label>
+                <Input
+                  id="edit-activity-name"
+                  value={editingActivity.name}
+                  onChange={(e) => setEditingActivity({ ...editingActivity, name: e.target.value })}
+                  placeholder="Nhập tên hoạt động..."
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-activity-description">📝 Mô tả</Label>
+                <Textarea
+                  id="edit-activity-description"
+                  value={editingActivity.description}
+                  onChange={(e) => setEditingActivity({ ...editingActivity, description: e.target.value })}
+                  rows={4}
+                  placeholder="Nhập mô tả hoạt động..."
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-activity-date">📅 Ngày</Label>
+                  <Input
+                    type="date"
+                    id="edit-activity-date"
+                    value={editingActivity.date ? new Date(editingActivity.date).toISOString().split('T')[0] : ''}
+                    onChange={(e) => setEditingActivity({ ...editingActivity, date: new Date(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-activity-location">📍 Địa điểm</Label>
+                  <Input
+                    id="edit-activity-location"
+                    value={editingActivity.location || ''}
+                    onChange={(e) => setEditingActivity({ ...editingActivity, location: e.target.value })}
+                    placeholder="Nhập địa điểm..."
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="edit-activity-frequency">🔄 Tần suất</Label>
+                <Input
+                  id="edit-activity-frequency"
+                  value={editingActivity.frequency}
+                  onChange={(e) => setEditingActivity({ ...editingActivity, frequency: e.target.value })}
+                  placeholder="VD: Hàng tuần, Hàng tháng..."
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-activity-image">🖼️ Ảnh hoạt động</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (e) => {
+                        const result = e.target?.result as string;
+                        setEditingActivity({ ...editingActivity, imageUrl: result });
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="cursor-pointer"
+                />
+                {editingActivity.imageUrl && (
+                  <div className="mt-2 border rounded-lg p-2">
+                    <img src={editingActivity.imageUrl} alt="Activity" className="max-w-full h-32 object-cover" />
+                  </div>
+                )}
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  onClick={() => updateActivityMutation.mutate(editingActivity)}
+                  disabled={updateActivityMutation.isPending}
+                  className="flex-1"
+                >
+                  {updateActivityMutation.isPending ? "Đang cập nhật..." : "💾 Cập nhật hoạt động"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setEditingActivity(null)}
+                  className="flex-1"
+                >
+                  ❌ Hủy
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

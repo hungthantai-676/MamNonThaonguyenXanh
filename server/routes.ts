@@ -50,6 +50,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/articles/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertArticleSchema.partial().parse(req.body);
+      const article = await storage.updateArticle(id, validatedData);
+      res.json(article);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid article data or article not found" });
+    }
+  });
+
+  app.delete("/api/articles/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteArticle(id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete article" });
+    }
+  });
+
   // Testimonial routes
   app.get("/api/testimonials", async (req, res) => {
     try {
@@ -103,6 +124,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/programs/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertProgramSchema.partial().parse(req.body);
+      const program = await storage.updateProgram(id, validatedData);
+      res.json(program);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid program data or program not found" });
+    }
+  });
+
   // Activity routes
   app.get("/api/activities", async (req, res) => {
     try {
@@ -133,6 +165,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(activity);
     } catch (error) {
       res.status(400).json({ message: "Invalid activity data" });
+    }
+  });
+
+  app.put("/api/activities/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertActivitySchema.partial().parse(req.body);
+      const activity = await storage.updateActivity(id, validatedData);
+      res.json(activity);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid activity data or activity not found" });
     }
   });
 
