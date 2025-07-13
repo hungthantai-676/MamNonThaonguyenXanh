@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Article, Program, Activity, AdmissionStep } from "@shared/schema";
+import type { Article, Program, Activity, AdmissionStep, MediaCover } from "@shared/schema";
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
@@ -29,6 +29,7 @@ export default function AdminDashboard() {
   const { data: programs } = useQuery<Program[]>({ queryKey: ["/api/programs"] });
   const { data: activities } = useQuery<Activity[]>({ queryKey: ["/api/activities"] });
   const { data: admissionSteps } = useQuery<AdmissionStep[]>({ queryKey: ["/api/admission-steps"] });
+  const { data: mediaCovers } = useQuery<MediaCover[]>({ queryKey: ["/api/media-covers"] });
 
   // Form states
   const [contactInfo, setContactInfo] = useState({
@@ -40,6 +41,7 @@ export default function AdminDashboard() {
 
   const [newArticle, setNewArticle] = useState({
     title: "",
+    excerpt: "",
     content: "",
     category: "news",
     imageUrl: ""
@@ -54,6 +56,14 @@ export default function AdminDashboard() {
   const [editingProgram, setEditingProgram] = useState<Program | null>(null);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [editingAdmissionStep, setEditingAdmissionStep] = useState<AdmissionStep | null>(null);
+  const [editingMediaCover, setEditingMediaCover] = useState<MediaCover | null>(null);
+  const [newMediaCover, setNewMediaCover] = useState({
+    outlet: "",
+    title: "",
+    date: "",
+    type: "",
+    url: ""
+  });
 
   // Mutations
   const createArticleMutation = useMutation({
@@ -67,7 +77,7 @@ export default function AdminDashboard() {
         title: "Tạo bài viết thành công",
         description: "Bài viết mới đã được thêm vào website",
       });
-      setNewArticle({ title: "", content: "", category: "news", imageUrl: "" });
+      setNewArticle({ title: "", excerpt: "", content: "", category: "news", imageUrl: "" });
     }
   });
 
@@ -145,6 +155,56 @@ export default function AdminDashboard() {
     }
   });
 
+  const createMediaCoverMutation = useMutation({
+    mutationFn: async (cover: typeof newMediaCover) => {
+      const response = await apiRequest("POST", "/api/media-covers", cover);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/media-covers"] });
+      toast({
+        title: "Thêm bài viết báo chí thành công",
+        description: "Bài viết đã được thêm vào mục báo chí",
+      });
+      setNewMediaCover({
+        outlet: "",
+        title: "",
+        date: "",
+        type: "",
+        url: ""
+      });
+    }
+  });
+
+  const updateMediaCoverMutation = useMutation({
+    mutationFn: async (cover: MediaCover) => {
+      const response = await apiRequest("PUT", `/api/media-covers/${cover.id}`, cover);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/media-covers"] });
+      toast({
+        title: "Cập nhật bài viết báo chí thành công",
+        description: "Bài viết đã được cập nhật",
+      });
+      setEditingMediaCover(null);
+    }
+  });
+
+  const deleteMediaCoverMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("DELETE", `/api/media-covers/${id}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/media-covers"] });
+      toast({
+        title: "Xóa bài viết báo chí thành công",
+        description: "Bài viết đã được xóa khỏi mục báo chí",
+      });
+    }
+  });
+
   const logout = () => {
     localStorage.removeItem("admin-token");
     setLocation("/admin/login");
@@ -208,7 +268,7 @@ export default function AdminDashboard() {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="contact" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-9">
+          <TabsList className="grid w-full grid-cols-10">
             <TabsTrigger value="contact">📞 Liên hệ</TabsTrigger>
             <TabsTrigger value="media">🖼️ Ảnh/Video</TabsTrigger>
             <TabsTrigger value="homepage">🏠 Trang chủ</TabsTrigger>
@@ -218,6 +278,7 @@ export default function AdminDashboard() {
             <TabsTrigger value="articles">📰 Bài viết</TabsTrigger>
             <TabsTrigger value="programs">📚 Chương trình</TabsTrigger>
             <TabsTrigger value="activities">🎯 Hoạt động</TabsTrigger>
+            <TabsTrigger value="media-covers">📺 Báo chí</TabsTrigger>
           </TabsList>
 
           <TabsContent value="contact">
@@ -382,6 +443,16 @@ export default function AdminDashboard() {
                         <img src={newArticle.imageUrl} alt="Article" className="max-w-full h-32 object-cover" />
                       </div>
                     )}
+                  </div>
+                  <div>
+                    <Label htmlFor="excerpt">📄 Tóm tắt</Label>
+                    <Textarea
+                      id="excerpt"
+                      value={newArticle.excerpt}
+                      onChange={(e) => setNewArticle(prev => ({ ...prev, excerpt: e.target.value }))}
+                      rows={3}
+                      placeholder="Nhập tóm tắt bài viết..."
+                    />
                   </div>
                   <div>
                     <Label htmlFor="content">📝 Nội dung</Label>
@@ -921,6 +992,131 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="media-covers">
+            <Card>
+              <CardHeader>
+                <CardTitle>📺 Báo chí nói về chúng tôi</CardTitle>
+                <CardDescription>Quản lý các bài viết báo chí đăng về trường</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {/* Add new media cover form */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-semibold mb-4">➕ Thêm bài viết báo chí mới</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="new-outlet">📺 Tên báo/đài</Label>
+                        <Input
+                          id="new-outlet"
+                          value={newMediaCover.outlet}
+                          onChange={(e) => setNewMediaCover(prev => ({ ...prev, outlet: e.target.value }))}
+                          placeholder="VD: VTV1, Tuổi Trẻ, VnExpress..."
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="new-type">📱 Loại báo chí</Label>
+                        <select
+                          id="new-type"
+                          value={newMediaCover.type}
+                          onChange={(e) => setNewMediaCover(prev => ({ ...prev, type: e.target.value }))}
+                          className="w-full p-2 border rounded-md"
+                        >
+                          <option value="">Chọn loại</option>
+                          <option value="TV">📺 Truyền hình</option>
+                          <option value="Báo">📰 Báo giấy</option>
+                          <option value="Online">💻 Online</option>
+                          <option value="Radio">📻 Radio</option>
+                        </select>
+                      </div>
+                      <div>
+                        <Label htmlFor="new-title">📝 Tiêu đề bài viết</Label>
+                        <Input
+                          id="new-title"
+                          value={newMediaCover.title}
+                          onChange={(e) => setNewMediaCover(prev => ({ ...prev, title: e.target.value }))}
+                          placeholder="Nhập tiêu đề bài viết..."
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="new-date">📅 Ngày đăng</Label>
+                        <Input
+                          id="new-date"
+                          value={newMediaCover.date}
+                          onChange={(e) => setNewMediaCover(prev => ({ ...prev, date: e.target.value }))}
+                          placeholder="VD: 20/11/2024"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <Label htmlFor="new-url">🔗 Link bài viết (tùy chọn)</Label>
+                        <Input
+                          id="new-url"
+                          value={newMediaCover.url}
+                          onChange={(e) => setNewMediaCover(prev => ({ ...prev, url: e.target.value }))}
+                          placeholder="https://..."
+                        />
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => createMediaCoverMutation.mutate(newMediaCover)}
+                      className="mt-4"
+                      disabled={!newMediaCover.outlet || !newMediaCover.title || !newMediaCover.date || !newMediaCover.type}
+                    >
+                      ➕ Thêm bài viết báo chí
+                    </Button>
+                  </div>
+
+                  {/* Media covers list */}
+                  <div className="space-y-4">
+                    {mediaCovers?.map((cover) => (
+                      <div key={cover.id} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <span className="font-semibold text-primary-green">{cover.outlet}</span>
+                              <span className="text-xs bg-primary-green/10 text-primary-green px-2 py-1 rounded-full">
+                                {cover.type}
+                              </span>
+                            </div>
+                            <h3 className="font-semibold text-lg mb-1">{cover.title}</h3>
+                            <p className="text-sm text-gray-600">{cover.date}</p>
+                            {cover.url && (
+                              <a
+                                href={cover.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary-green hover:underline text-sm mt-1 block"
+                              >
+                                🔗 Xem bài viết
+                              </a>
+                            )}
+                          </div>
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setEditingMediaCover(cover)}
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              ✏️ Sửa
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => deleteMediaCoverMutation.mutate(cover.id)}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              🗑️ Xóa
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
 
@@ -977,6 +1173,16 @@ export default function AdminDashboard() {
                     <img src={editingArticle.imageUrl} alt="Article" className="max-w-full h-32 object-cover" />
                   </div>
                 )}
+              </div>
+              <div>
+                <Label htmlFor="edit-excerpt">📄 Tóm tắt</Label>
+                <Textarea
+                  id="edit-excerpt"
+                  value={editingArticle.excerpt || ""}
+                  onChange={(e) => setEditingArticle({ ...editingArticle, excerpt: e.target.value })}
+                  rows={3}
+                  placeholder="Nhập tóm tắt bài viết..."
+                />
               </div>
               <div>
                 <Label htmlFor="edit-content">📝 Nội dung</Label>
@@ -1253,6 +1459,88 @@ export default function AdminDashboard() {
                 <Button
                   variant="outline"
                   onClick={() => setEditingAdmissionStep(null)}
+                  className="flex-1"
+                >
+                  ❌ Hủy
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Media Cover Modal */}
+      <Dialog open={!!editingMediaCover} onOpenChange={() => setEditingMediaCover(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>✏️ Chỉnh sửa bài viết báo chí</DialogTitle>
+          </DialogHeader>
+          {editingMediaCover && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-outlet">📺 Tên báo/đài</Label>
+                  <Input
+                    id="edit-outlet"
+                    value={editingMediaCover.outlet}
+                    onChange={(e) => setEditingMediaCover({ ...editingMediaCover, outlet: e.target.value })}
+                    placeholder="VD: VTV1, Tuổi Trẻ, VnExpress..."
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-type">📱 Loại báo chí</Label>
+                  <select
+                    id="edit-type"
+                    value={editingMediaCover.type}
+                    onChange={(e) => setEditingMediaCover({ ...editingMediaCover, type: e.target.value })}
+                    className="w-full p-2 border rounded-md"
+                  >
+                    <option value="">Chọn loại</option>
+                    <option value="TV">📺 Truyền hình</option>
+                    <option value="Báo">📰 Báo giấy</option>
+                    <option value="Online">💻 Online</option>
+                    <option value="Radio">📻 Radio</option>
+                  </select>
+                </div>
+                <div>
+                  <Label htmlFor="edit-title">📝 Tiêu đề bài viết</Label>
+                  <Input
+                    id="edit-title"
+                    value={editingMediaCover.title}
+                    onChange={(e) => setEditingMediaCover({ ...editingMediaCover, title: e.target.value })}
+                    placeholder="Nhập tiêu đề bài viết..."
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-date">📅 Ngày đăng</Label>
+                  <Input
+                    id="edit-date"
+                    value={editingMediaCover.date}
+                    onChange={(e) => setEditingMediaCover({ ...editingMediaCover, date: e.target.value })}
+                    placeholder="VD: 20/11/2024"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Label htmlFor="edit-url">🔗 Link bài viết (tùy chọn)</Label>
+                  <Input
+                    id="edit-url"
+                    value={editingMediaCover.url || ""}
+                    onChange={(e) => setEditingMediaCover({ ...editingMediaCover, url: e.target.value })}
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  onClick={() => updateMediaCoverMutation.mutate(editingMediaCover)}
+                  disabled={updateMediaCoverMutation.isPending}
+                  className="flex-1"
+                >
+                  {updateMediaCoverMutation.isPending ? "Đang cập nhật..." : "💾 Cập nhật bài viết"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setEditingMediaCover(null)}
                   className="flex-1"
                 >
                   ❌ Hủy

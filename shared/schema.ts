@@ -119,6 +119,18 @@ export const admissionSteps = pgTable("admission_steps", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const mediaCovers = pgTable("media_covers", {
+  id: serial("id").primaryKey(),
+  outlet: text("outlet").notNull(),
+  title: text("title").notNull(),
+  date: text("date").notNull(),
+  type: text("type").notNull(), // TV, Báo, Online, Radio
+  url: text("url"),
+  imageUrl: text("image_url"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -168,6 +180,11 @@ export const insertAdmissionStepSchema = createInsertSchema(admissionSteps).omit
   updatedAt: true,
 });
 
+export const insertMediaCoverSchema = createInsertSchema(mediaCovers).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Article = typeof articles.$inferSelect;
@@ -188,3 +205,5 @@ export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type AdmissionStep = typeof admissionSteps.$inferSelect;
 export type InsertAdmissionStep = z.infer<typeof insertAdmissionStepSchema>;
+export type MediaCover = typeof mediaCovers.$inferSelect;
+export type InsertMediaCover = z.infer<typeof insertMediaCoverSchema>;

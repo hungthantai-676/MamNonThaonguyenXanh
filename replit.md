@@ -135,7 +135,7 @@ The application uses the following main entities:
 - **Password**: `admin123`
 - Simple client-side authentication for easy access
 
-### Dashboard Features (9 Tabs)
+### Dashboard Features (10 Tabs)
 1. **📞 Liên hệ**: Update contact info (phone, email, address, Google Maps)
 2. **🖼️ Ảnh/Video**: Upload images and videos directly from device
    - Logo upload with preview
@@ -170,6 +170,11 @@ The application uses the following main entities:
 9. **🎯 Hoạt động**: Activities management
    - Edit activity details and images
    - Date, location, and frequency settings
+10. **📺 Báo chí**: Media coverage management
+    - Add new media coverage articles
+    - Edit existing coverage (outlet, title, date, type, URL)
+    - Delete media coverage entries
+    - Support for TV, newspaper, online, and radio coverage
 
 ### User-Friendly Features
 - Drag & drop file upload
@@ -191,6 +196,9 @@ Changelog:
 - July 13, 2025. Added comprehensive edit/delete functionality for articles, programs, activities
 - July 13, 2025. Expanded admin panel to 9 tabs including homepage, about page, library, and admission editing
 - July 13, 2025. Implemented modal forms for editing all content types with image upload capabilities
+- July 13, 2025. Added media coverage management system with new database table and API endpoints
+- July 13, 2025. Implemented "Báo chí nói về chúng tôi" section with full CRUD operations in admin panel
+- July 13, 2025. Updated news page to dynamically load media coverage from API instead of static data
 ```
 
 ## User Preferences

@@ -1,4 +1,4 @@
-import { users, articles, testimonials, programs, activities, admissionForms, contactForms, chatMessages, notifications, admissionSteps, type User, type InsertUser, type Article, type InsertArticle, type Testimonial, type InsertTestimonial, type Program, type InsertProgram, type Activity, type InsertActivity, type AdmissionForm, type InsertAdmissionForm, type ContactForm, type InsertContactForm, type ChatMessage, type InsertChatMessage, type Notification, type InsertNotification, type AdmissionStep, type InsertAdmissionStep } from "@shared/schema";
+import { users, articles, testimonials, programs, activities, admissionForms, contactForms, chatMessages, notifications, admissionSteps, mediaCovers, type User, type InsertUser, type Article, type InsertArticle, type Testimonial, type InsertTestimonial, type Program, type InsertProgram, type Activity, type InsertActivity, type AdmissionForm, type InsertAdmissionForm, type ContactForm, type InsertContactForm, type ChatMessage, type InsertChatMessage, type Notification, type InsertNotification, type AdmissionStep, type InsertAdmissionStep, type MediaCover, type InsertMediaCover } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
@@ -59,6 +59,13 @@ export interface IStorage {
   createAdmissionStep(step: InsertAdmissionStep): Promise<AdmissionStep>;
   updateAdmissionStep(id: number, step: Partial<InsertAdmissionStep>): Promise<AdmissionStep>;
   deleteAdmissionStep(id: number): Promise<void>;
+  
+  // Media cover methods
+  getMediaCovers(): Promise<MediaCover[]>;
+  getMediaCover(id: number): Promise<MediaCover | undefined>;
+  createMediaCover(cover: InsertMediaCover): Promise<MediaCover>;
+  updateMediaCover(id: number, cover: Partial<InsertMediaCover>): Promise<MediaCover>;
+  deleteMediaCover(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -298,6 +305,40 @@ export class DatabaseStorage implements IStorage {
       .update(admissionSteps)
       .set({ isActive: false })
       .where(eq(admissionSteps.id, id));
+  }
+
+  // Media cover methods
+  async getMediaCovers(): Promise<MediaCover[]> {
+    return await db.select().from(mediaCovers).where(eq(mediaCovers.isActive, true));
+  }
+
+  async getMediaCover(id: number): Promise<MediaCover | undefined> {
+    const [cover] = await db.select().from(mediaCovers).where(eq(mediaCovers.id, id));
+    return cover || undefined;
+  }
+
+  async createMediaCover(insertCover: InsertMediaCover): Promise<MediaCover> {
+    const [cover] = await db
+      .insert(mediaCovers)
+      .values({ ...insertCover, createdAt: new Date() })
+      .returning();
+    return cover;
+  }
+
+  async updateMediaCover(id: number, coverData: Partial<InsertMediaCover>): Promise<MediaCover> {
+    const [cover] = await db
+      .update(mediaCovers)
+      .set(coverData)
+      .where(eq(mediaCovers.id, id))
+      .returning();
+    return cover;
+  }
+
+  async deleteMediaCover(id: number): Promise<void> {
+    await db
+      .update(mediaCovers)
+      .set({ isActive: false })
+      .where(eq(mediaCovers.id, id));
   }
 }
 

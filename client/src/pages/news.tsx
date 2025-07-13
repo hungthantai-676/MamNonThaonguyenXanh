@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import NewsCard from "@/components/news-card";
-import type { Article } from "@shared/schema";
+import type { Article, MediaCover } from "@shared/schema";
 
 export default function News() {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -16,6 +16,10 @@ export default function News() {
   const { data: categoryArticles, isLoading: categoryLoading } = useQuery<Article[]>({
     queryKey: ["/api/articles/category", selectedCategory],
     enabled: selectedCategory !== "all",
+  });
+
+  const { data: mediaCovers, isLoading: isLoadingMediaCovers } = useQuery<MediaCover[]>({
+    queryKey: ["/api/media-covers"],
   });
 
   const displayArticles = selectedCategory === "all" ? articles : categoryArticles;
@@ -244,43 +248,41 @@ export default function News() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              {
-                outlet: "VTV1",
-                title: "Mô hình giáo dục mầm non hiện đại",
-                date: "20/11/2024",
-                type: "TV"
-              },
-              {
-                outlet: "Tuổi Trẻ",
-                title: "Trường mầm non đạt chuẩn quốc gia",
-                date: "15/11/2024",
-                type: "Báo"
-              },
-              {
-                outlet: "VnExpress",
-                title: "Phương pháp STEAM trong giáo dục mầm non",
-                date: "10/11/2024",
-                type: "Online"
-              },
-              {
-                outlet: "Radio VOV",
-                title: "Chăm sóc dinh dưỡng cho trẻ mầm non",
-                date: "05/11/2024",
-                type: "Radio"
-              }
-            ].map((coverage, index) => (
-              <div key={index} className="bg-light-gray rounded-xl p-6 hover:shadow-lg transition-shadow">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-semibold text-primary-green">{coverage.outlet}</span>
-                  <span className="text-xs bg-primary-green/10 text-primary-green px-2 py-1 rounded-full">
-                    {coverage.type}
-                  </span>
+            {isLoadingMediaCovers ? (
+              [1, 2, 3, 4].map((i) => (
+                <div key={i} className="bg-light-gray rounded-xl p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-12" />
+                  </div>
+                  <Skeleton className="h-4 w-full mb-3" />
+                  <Skeleton className="h-4 w-1/2" />
                 </div>
-                <h3 className="font-medium text-dark-gray mb-3">{coverage.title}</h3>
-                <p className="text-sm text-gray-500">{coverage.date}</p>
-              </div>
-            ))}
+              ))
+            ) : (
+              mediaCovers?.map((coverage) => (
+                <div key={coverage.id} className="bg-light-gray rounded-xl p-6 hover:shadow-lg transition-shadow">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="font-semibold text-primary-green">{coverage.outlet}</span>
+                    <span className="text-xs bg-primary-green/10 text-primary-green px-2 py-1 rounded-full">
+                      {coverage.type}
+                    </span>
+                  </div>
+                  <h3 className="font-medium text-dark-gray mb-3">{coverage.title}</h3>
+                  <p className="text-sm text-gray-500">{coverage.date}</p>
+                  {coverage.url && (
+                    <a 
+                      href={coverage.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary-green hover:underline text-sm mt-2 block"
+                    >
+                      Xem bài viết →
+                    </a>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>

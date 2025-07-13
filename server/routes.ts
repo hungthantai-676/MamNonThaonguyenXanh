@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { 
   insertArticleSchema, insertTestimonialSchema, insertProgramSchema, 
   insertActivitySchema, insertAdmissionFormSchema, insertContactFormSchema,
-  insertAdmissionStepSchema
+  insertAdmissionStepSchema, insertMediaCoverSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -289,6 +289,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete admission step" });
+    }
+  });
+
+  // Media cover routes
+  app.get("/api/media-covers", async (req, res) => {
+    try {
+      const covers = await storage.getMediaCovers();
+      res.json(covers);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch media covers" });
+    }
+  });
+
+  app.post("/api/media-covers", async (req, res) => {
+    try {
+      const validatedData = insertMediaCoverSchema.parse(req.body);
+      const cover = await storage.createMediaCover(validatedData);
+      res.status(201).json(cover);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid media cover data" });
+    }
+  });
+
+  app.put("/api/media-covers/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertMediaCoverSchema.partial().parse(req.body);
+      const cover = await storage.updateMediaCover(id, validatedData);
+      res.json(cover);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid media cover data or cover not found" });
+    }
+  });
+
+  app.delete("/api/media-covers/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteMediaCover(id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete media cover" });
     }
   });
 
