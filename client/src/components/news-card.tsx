@@ -25,12 +25,16 @@ export default function NewsCard({ article }: NewsCardProps) {
         <p className="text-gray-600 mb-4">
           {article.excerpt}
         </p>
-        <Link 
-          href={`/news/${article.id}`} 
-          className="text-primary-green font-medium hover:text-primary-green/80"
-          onClick={() => console.log('Clicked read more for article ID:', article.id)}
-        >
-          Đọc thêm <i className="fas fa-arrow-right ml-1"></i>
+        <Link href={`/news/${article.id}`}>
+          <span 
+            className="text-primary-green font-medium hover:text-primary-green/80 cursor-pointer"
+            onClick={() => {
+              console.log('Clicked read more for article ID:', article.id);
+              console.log('Navigating to:', `/news/${article.id}`);
+            }}
+          >
+            Đọc thêm <i className="fas fa-arrow-right ml-1"></i>
+          </span>
         </Link>
       </CardContent>
     </Card>

@@ -83,7 +83,10 @@ export default function News() {
                   <Link href={`/news/${displayArticles[0].id}`}>
                     <Button 
                       className="bg-primary-green hover:bg-primary-green/90 text-white"
-                      onClick={() => console.log('Clicked read full article for ID:', displayArticles[0].id)}
+                      onClick={() => {
+                        console.log('Clicked read full article for ID:', displayArticles[0].id);
+                        console.log('Navigating to:', `/news/${displayArticles[0].id}`);
+                      }}
                     >
                       Đọc bài viết đầy đủ
                     </Button>
