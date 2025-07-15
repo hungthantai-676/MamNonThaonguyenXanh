@@ -468,6 +468,113 @@ export default function AffiliatePage() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Registration Modal */}
+        <Dialog open={showRegistrationForm} onOpenChange={setShowRegistrationForm}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-center">
+                <Gift className="w-6 h-6 mx-auto mb-2" />
+                Tham gia Affiliate
+              </DialogTitle>
+            </DialogHeader>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <div>
+                <Label htmlFor="modal-name">Họ và tên</Label>
+                <Input
+                  id="modal-name"
+                  {...form.register("name")}
+                  placeholder="Nhập họ và tên"
+                />
+                {form.formState.errors.name && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {form.formState.errors.name.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="modal-email">Email</Label>
+                <Input
+                  id="modal-email"
+                  type="email"
+                  {...form.register("email")}
+                  placeholder="Nhập email"
+                />
+                {form.formState.errors.email && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {form.formState.errors.email.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="modal-phone">Số điện thoại</Label>
+                <Input
+                  id="modal-phone"
+                  {...form.register("phone")}
+                  placeholder="Nhập số điện thoại"
+                />
+                {form.formState.errors.phone && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {form.formState.errors.phone.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label>Loại thành viên</Label>
+                <RadioGroup
+                  defaultValue="parent"
+                  onValueChange={(value) => form.setValue("memberType", value as "teacher" | "parent")}
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="teacher" id="modal-teacher" />
+                    <Label htmlFor="modal-teacher" className="flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-green-600" />
+                      Chăm sóc phụ huynh (Giáo viên)
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="parent" id="modal-parent" />
+                    <Label htmlFor="modal-parent" className="flex items-center gap-2">
+                      <Crown className="w-4 h-4 text-purple-600" />
+                      Đại sứ thương hiệu (Phụ huynh)
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <div>
+                <Label htmlFor="modal-sponsorId">Mã giới thiệu (tùy chọn)</Label>
+                <Input
+                  id="modal-sponsorId"
+                  {...form.register("sponsorId")}
+                  placeholder="Nhập mã giới thiệu nếu có"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={registerMutation.isPending}
+              >
+                {registerMutation.isPending ? "Đang đăng ký..." : "Đăng ký ngay"}
+              </Button>
+            </form>
+
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <h4 className="font-semibold text-blue-900 mb-2">🎁 Lợi ích khi tham gia:</h4>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• Nhận 1,000 TNG token khi đăng ký</li>
+                <li>• Tự động tạo ví Web3 cá nhân</li>
+                <li>• QR code giới thiệu độc quyền</li>
+                <li>• Hoa hồng từ mạng lưới giới thiệu</li>
+                <li>• Giao dịch trên sàn DEX</li>
+              </ul>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
