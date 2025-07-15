@@ -145,7 +145,7 @@ export default function Chatbot() {
           >
             <Bot className="w-8 h-8" />
           </button>
-          <div className="absolute -top-12 right-0 bg-white shadow-lg rounded-lg p-3 max-w-xs animate-pulse">
+          <div className="absolute -top-12 -left-32 bg-white shadow-lg rounded-lg p-3 max-w-xs animate-pulse pointer-events-none">
             <p className="text-sm text-gray-700 font-medium">
               🤖 Trợ lý AI Mầm Non Thảo Nguyên Xanh
             </p>
