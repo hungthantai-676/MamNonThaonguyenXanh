@@ -73,15 +73,19 @@ export default function Chatbot() {
   });
 
   const handleSendMessage = () => {
-    if (!inputValue.trim()) return;
+    const message = inputValue.trim();
+    if (!message) return;
+    
+    console.log("Sending message:", message);
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      text: inputValue,
+      text: message,
       sender: "user",
       timestamp: new Date(),
     };
     setMessages(prev => [...prev, userMessage]);
+    setInputValue("");
 
     const typingMessage: Message = {
       id: "typing",
@@ -92,8 +96,7 @@ export default function Chatbot() {
     };
     setMessages(prev => [...prev, typingMessage]);
 
-    chatMutation.mutate(inputValue);
-    setInputValue("");
+    chatMutation.mutate(message);
   };
 
   const handleQuickReply = (reply: string) => {
@@ -227,7 +230,7 @@ export default function Chatbot() {
           </div>
 
           <div className="p-4 border-t bg-white">
-            <div className="flex gap-2">
+            <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} className="flex gap-2">
               <input
                 type="text"
                 value={inputValue}
@@ -235,21 +238,20 @@ export default function Chatbot() {
                   console.log("Input changed:", e.target.value);
                   setInputValue(e.target.value);
                 }}
-                onKeyPress={handleKeyPress}
                 onFocus={() => console.log("Input focused")}
                 placeholder="Nhập câu hỏi của bạn..."
                 className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                disabled={false}
                 autoFocus
+                style={{ pointerEvents: 'auto' }}
               />
               <button
-                onClick={handleSendMessage}
+                type="submit"
                 disabled={!inputValue.trim()}
                 className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg disabled:opacity-50"
               >
                 <Send className="w-4 h-4" />
               </button>
-            </div>
+            </form>
           </div>
         </div>
       )}
