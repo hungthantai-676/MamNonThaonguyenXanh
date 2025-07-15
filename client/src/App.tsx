@@ -22,6 +22,7 @@ import AdminAccess from "@/pages/admin-access";
 import AdminQuick from "@/pages/admin-quick";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import Chatbot from "@/components/chatbot";
 
 function Router() {
   return (
@@ -49,12 +50,8 @@ function Router() {
       </main>
       <Footer />
       
-      {/* Chat Widget */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <div className="bg-primary-green hover:bg-primary-green/90 text-white w-14 h-14 rounded-full flex items-center justify-center cursor-pointer shadow-lg transition-all hover:scale-110">
-          <i className="fas fa-comments text-xl"></i>
-        </div>
-      </div>
+      {/* AI Chatbot */}
+      <Chatbot />
     </div>
   );
 }

@@ -10,6 +10,7 @@ import {
 import { notificationService } from "./notifications";
 import { sendTestEmail } from "./email";
 import AffiliateService from "./affiliate";
+import { ChatbotService } from "./chatbot";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Article routes
@@ -667,6 +668,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to validate referral code" });
+    }
+  });
+
+  // Chatbot API endpoint
+  app.post("/api/chatbot", async (req, res) => {
+    try {
+      const { message } = req.body;
+      
+      if (!message || typeof message !== "string") {
+        return res.status(400).json({ error: "Message is required" });
+      }
+
+      const response = ChatbotService.generateResponse(message);
+      
+      // Add a small delay to make it feel more natural
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      res.json({ 
+        response,
+        quickReplies: ChatbotService.getQuickReplies(),
+      });
+    } catch (error) {
+      console.error("Chatbot error:", error);
+      res.status(500).json({ 
+        error: "Xin lỗi, tôi đang gặp sự cố. Vui lòng thử lại sau hoặc liên hệ trực tiếp qua hotline: 0856318686" 
+      });
     }
   });
 
