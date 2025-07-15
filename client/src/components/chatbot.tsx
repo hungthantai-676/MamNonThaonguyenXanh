@@ -1,33 +1,151 @@
-import { useState, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import { Bot, X } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { Bot, X, Send, User } from "lucide-react";
+
+interface Message {
+  id: string;
+  text: string;
+  sender: "user" | "bot";
+  timestamp: Date;
+  isTyping?: boolean;
+}
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "1",
+      text: "Xin chào! Tôi là trợ lý AI của Mầm Non Thảo Nguyên Xanh. Tôi có thể giúp bạn:\n\n• Tư vấn về chương trình học\n• Thông tin tuyển sinh\n• Học phí và lịch học\n• Hoạt động ngoại khóa\n• Thủ tục nhập học\n\nBạn có câu hỏi gì không?",
+      sender: "bot",
+      timestamp: new Date(),
+    },
+  ]);
+  const [inputValue, setInputValue] = useState("");
+  const [quickReplies, setQuickReplies] = useState<string[]>([
+    "Học phí các lớp như thế nào?",
+    "Thủ tục tuyển sinh năm học 2024-2025",
+    "Chương trình học có gì đặc biệt?",
+    "Thông tin liên hệ trường",
+  ]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const toggleChat = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log("Chatbot toggle clicked!", isOpen);
-    setIsOpen(prev => !prev);
-  }, [isOpen]);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
-  console.log("Chatbot render - isOpen:", isOpen);
-  
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const chatMutation = useMutation({
+    mutationFn: async (message: string) => {
+      const response = await apiRequest("POST", "/api/chatbot", { message });
+      return response as { response: string; quickReplies: string[] };
+    },
+    onSuccess: (data) => {
+      setMessages(prev => prev.filter(msg => msg.id !== "typing"));
+      
+      const botMessage: Message = {
+        id: Date.now().toString(),
+        text: data.response,
+        sender: "bot",
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, botMessage]);
+      
+      if (data.quickReplies) {
+        setQuickReplies(data.quickReplies);
+      }
+    },
+    onError: (error) => {
+      console.error("Chat error:", error);
+      setMessages(prev => prev.filter(msg => msg.id !== "typing"));
+      
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        text: "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại sau.",
+        sender: "bot",
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    },
+  });
+
+  const handleSendMessage = () => {
+    if (!inputValue.trim()) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: inputValue,
+      sender: "user",
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMessage]);
+
+    const typingMessage: Message = {
+      id: "typing",
+      text: "Đang trả lời...",
+      sender: "bot",
+      timestamp: new Date(),
+      isTyping: true,
+    };
+    setMessages(prev => [...prev, typingMessage]);
+
+    chatMutation.mutate(inputValue);
+    setInputValue("");
+  };
+
+  const handleQuickReply = (reply: string) => {
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: reply,
+      sender: "user",
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMessage]);
+
+    const typingMessage: Message = {
+      id: "typing",
+      text: "Đang trả lời...",
+      sender: "bot",
+      timestamp: new Date(),
+      isTyping: true,
+    };
+    setMessages(prev => [...prev, typingMessage]);
+
+    chatMutation.mutate(reply);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const toggleChat = () => {
+    setIsOpen(!isOpen);
+  };
+
   return (
     <div className="fixed right-6 z-[9999]" style={{ top: '66.67vh' }}>
       {!isOpen ? (
         <div className="relative">
           <button
             onClick={toggleChat}
-            onMouseEnter={() => console.log("Mouse entered chatbot button")}
-            onMouseLeave={() => console.log("Mouse left chatbot button")}
             className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white w-16 h-16 rounded-full shadow-lg transition-all hover:scale-110 flex items-center justify-center cursor-pointer"
-            style={{ pointerEvents: 'all' }}
           >
             <Bot className="w-8 h-8" />
           </button>
-          <div className="absolute -top-12 right-0 bg-white shadow-lg rounded-lg p-3 max-w-xs">
+          <div className="absolute -top-12 right-0 bg-white shadow-lg rounded-lg p-3 max-w-xs animate-pulse">
             <p className="text-sm text-gray-700 font-medium">
               🤖 Trợ lý AI Mầm Non Thảo Nguyên Xanh
             </p>
@@ -50,39 +168,81 @@ export default function Chatbot() {
               <X className="w-4 h-4" />
             </button>
           </div>
-          <div className="flex-1 p-4 bg-gray-50">
-            <div className="bg-white rounded-lg p-3 mb-4">
-              <p className="text-sm text-gray-700">
-                Xin chào! Tôi là trợ lý AI của Mầm Non Thảo Nguyên Xanh. Tôi có thể giúp bạn:
-              </p>
-              <ul className="text-sm text-gray-600 mt-2 space-y-1">
-                <li>• Tư vấn về chương trình học</li>
-                <li>• Thông tin tuyển sinh</li>
-                <li>• Học phí và lịch học</li>
-                <li>• Hoạt động ngoại khóa</li>
-              </ul>
-            </div>
-            <div className="space-y-2">
-              <button className="w-full text-left p-2 bg-green-50 hover:bg-green-100 rounded-lg text-sm">
-                Học phí các lớp như thế nào?
-              </button>
-              <button className="w-full text-left p-2 bg-green-50 hover:bg-green-100 rounded-lg text-sm">
-                Thủ tục tuyển sinh năm học 2024-2025
-              </button>
-              <button className="w-full text-left p-2 bg-green-50 hover:bg-green-100 rounded-lg text-sm">
-                Thông tin liên hệ trường
-              </button>
+          
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${
+                  message.sender === "user" ? "justify-end" : "justify-start"
+                }`}
+              >
+                <div
+                  className={`max-w-[85%] rounded-lg px-4 py-2 ${
+                    message.sender === "user"
+                      ? "bg-green-500 text-white"
+                      : "bg-gray-100 text-gray-800"
+                  }`}
+                >
+                  <div className="flex items-start gap-2">
+                    {message.sender === "bot" && (
+                      <Bot className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    )}
+                    {message.sender === "user" && (
+                      <User className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    )}
+                    <div className="flex-1">
+                      <p className="text-sm whitespace-pre-line">
+                        {message.isTyping ? (
+                          <span className="animate-pulse">
+                            Đang trả lời...
+                          </span>
+                        ) : (
+                          message.text
+                        )}
+                      </p>
+                      <p className="text-xs opacity-70 mt-1">
+                        {formatTime(message.timestamp)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+
+          <div className="px-4 py-2 border-t bg-gray-50">
+            <div className="flex flex-wrap gap-2">
+              {quickReplies.slice(0, 3).map((reply, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleQuickReply(reply)}
+                  className="text-xs bg-white hover:bg-green-500 hover:text-white transition-colors px-3 py-1 rounded-full border border-gray-200"
+                >
+                  {reply}
+                </button>
+              ))}
             </div>
           </div>
-          <div className="p-4 border-t">
+
+          <div className="p-4 border-t bg-white">
             <div className="flex gap-2">
               <input
                 type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyPress={handleKeyPress}
                 placeholder="Nhập câu hỏi của bạn..."
                 className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                disabled={chatMutation.isPending}
               />
-              <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
-                Gửi
+              <button
+                onClick={handleSendMessage}
+                disabled={!inputValue.trim() || chatMutation.isPending}
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg disabled:opacity-50"
+              >
+                <Send className="w-4 h-4" />
               </button>
             </div>
           </div>
