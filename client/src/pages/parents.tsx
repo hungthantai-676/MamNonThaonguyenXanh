@@ -17,6 +17,8 @@ export default function Parents() {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedService, setSelectedService] = useState("");
+  const [isArticleModalOpen, setIsArticleModalOpen] = useState(false);
+  const [selectedArticle, setSelectedArticle] = useState<any>(null);
   const [formData, setFormData] = useState({
     parentName: "",
     parentPhone: "",
@@ -89,6 +91,11 @@ export default function Parents() {
     setSelectedService(service);
     setFormData(prev => ({ ...prev, serviceName: service }));
     setIsDialogOpen(true);
+  };
+
+  const handleArticleSelect = (article: any) => {
+    setSelectedArticle(article);
+    setIsArticleModalOpen(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -755,7 +762,46 @@ Liên hệ tư vấn: 0123.456.789 - Trường Mầm Non Thảo Nguyên Xanh`
                 author: "BS. Nguyễn Thị Hoa",
                 date: "15/11/2024",
                 image: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063",
-                category: "Sức khỏe"
+                category: "Sức khỏe",
+                fullContent: `# Dinh dưỡng cho trẻ mầm non
+
+## Tầm quan trọng của dinh dưỡng
+
+Dinh dưỡng đóng vai trò then chốt trong sự phát triển toàn diện của trẻ em, đặc biệt trong độ tuổi mầm non (2-6 tuổi). Đây là giai đoạn quan trọng nhất để xây dựng nền tảng sức khỏe vững chắc cho cả cuộc đời.
+
+## Nguyên tắc dinh dưỡng cơ bản
+
+### 1. Đảm bảo đủ 4 nhóm chất dinh dưỡng
+- **Carbohydrate (50-60%)**: Cung cấp năng lượng cho hoạt động hàng ngày
+- **Protein (20-25%)**: Xây dựng và phát triển cơ bắp, não bộ
+- **Lipid (20-25%)**: Cần thiết cho phát triển não và hệ thần kinh
+- **Vitamin và khoáng chất**: Hỗ trợ các chức năng sinh lý
+
+### 2. Lượng nước cần thiết
+- Trẻ 2-3 tuổi: 1-1.2 lít/ngày
+- Trẻ 4-6 tuổi: 1.5-1.8 lít/ngày
+
+## Thực phẩm nên ăn và hạn chế
+
+### Nên ăn:
+- Ngũ cốc nguyên hạt (gạo lứt, yến mạch)
+- Thịt nạc, cá, trứng, đậu
+- Rau xanh, trái cây tươi
+- Sữa và sản phẩm từ sữa
+
+### Hạn chế:
+- Đồ ngọt, kẹo, nước ngọt
+- Thực phẩm chế biến sẵn
+- Thực phẩm chiên rán nhiều dầu
+
+## Lời khuyên thực tế
+
+1. **Tạo thói quen ăn uống đúng giờ**
+2. **Trang trí món ăn hấp dẫn**
+3. **Ăn cùng gia đình để tạo không khí vui vẻ**
+4. **Khuyến khích trẻ thử các loại thực phẩm mới**
+
+*Bài viết được tư vấn bởi BS. Nguyễn Thị Hoa - Chuyên gia dinh dưỡng trẻ em*`
               },
               {
                 title: "Phát triển kỹ năng xã hội",
@@ -763,7 +809,48 @@ Liên hệ tư vấn: 0123.456.789 - Trường Mầm Non Thảo Nguyên Xanh`
                 author: "ThS. Lê Văn Minh",
                 date: "12/11/2024",
                 image: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b",
-                category: "Tâm lý"
+                category: "Tâm lý",
+                fullContent: `# Phát triển kỹ năng xã hội cho trẻ mầm non
+
+## Tầm quan trọng của kỹ năng xã hội
+
+Kỹ năng xã hội là nền tảng giúp trẻ hòa nhập và thành công trong cuộc sống. Việc phát triển sớm các kỹ năng này sẽ giúp trẻ tự tin hơn trong giao tiếp và tương tác.
+
+## Các kỹ năng xã hội cơ bản
+
+### 1. Kỹ năng giao tiếp
+- Lắng nghe khi người khác nói
+- Biết cách bắt chuyện và duy trì cuộc trò chuyện
+- Sử dụng ngôn ngữ cơ thể phù hợp
+- Thể hiện cảm xúc một cách tích cực
+
+### 2. Kỹ năng hợp tác
+- Chia sẻ đồ chơi và tài liệu
+- Làm việc nhóm hiệu quả
+- Giúp đỡ bạn bè khi cần
+- Tham gia các hoạt động tập thể
+
+### 3. Kỹ năng giải quyết xung đột
+- Biết cách xin lỗi khi làm sai
+- Thương lượng và tìm giải pháp
+- Kiểm soát cảm xúc khi có tranh cãi
+- Tôn trọng ý kiến khác biệt
+
+## Cách phát triển kỹ năng xã hội
+
+### Tại nhà:
+- Tạo môi trường thân thiện, an toàn
+- Làm gương về cách giao tiếp lịch sự
+- Khuyến khích trẻ kể về ngày học
+- Tổ chức các hoạt động với bạn bè
+
+### Tại trường:
+- Tham gia các hoạt động nhóm
+- Học cách xếp hàng và chờ đợi
+- Thực hành chia sẻ trong giờ ăn
+- Tham gia các trò chơi tập thể
+
+*Bài viết được tư vấn bởi ThS. Lê Văn Minh - Chuyên gia tâm lý trẻ em*`
               },
               {
                 title: "Xây dựng thói quen tốt",
@@ -771,7 +858,58 @@ Liên hệ tư vấn: 0123.456.789 - Trường Mầm Non Thảo Nguyên Xanh`
                 author: "Cô Trần Thị Mai",
                 date: "10/11/2024",
                 image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b",
-                category: "Giáo dục"
+                category: "Giáo dục",
+                fullContent: `# Xây dựng thói quen tốt cho trẻ mầm non
+
+## Tại sao thói quen quan trọng?
+
+Thói quen tốt giúp trẻ có cuộc sống có trật tự, tự tin và thành công hơn. Giai đoạn mầm non là thời điểm vàng để hình thành các thói quen tích cực.
+
+## Các thói quen cần thiết
+
+### 1. Thói quen sinh hoạt
+- Ngủ dậy đúng giờ
+- Đánh răng, rửa mặt buổi sáng và tối
+- Ăn uống đầy đủ và đúng giờ
+- Ngủ trưa và ngủ tối đúng giờ
+
+### 2. Thói quen học tập
+- Đọc sách mỗi ngày
+- Làm bài tập về nhà
+- Sắp xếp đồ dùng học tập
+- Tập trung trong giờ học
+
+### 3. Thói quen vệ sinh
+- Rửa tay trước và sau khi ăn
+- Vệ sinh cá nhân sạch sẽ
+- Giữ gìn đồ dùng cá nhân
+- Vứt rác đúng nơi quy định
+
+## Phương pháp xây dựng thói quen
+
+### Bước 1: Bắt đầu từ điều nhỏ
+- Chọn 1-2 thói quen để tập trung
+- Bắt đầu với những việc dễ thực hiện
+- Lặp lại hàng ngày để tạo sự quen thuộc
+
+### Bước 2: Tạo động lực
+- Khen ngợi khi trẻ thực hiện tốt
+- Tạo biểu đồ theo dõi tiến bộ
+- Đặt mục tiêu nhỏ và có thể đạt được
+
+### Bước 3: Kiên trì và nhất quán
+- Thực hiện đều đặn mỗi ngày
+- Không bỏ qua kể cả khi bận rộn
+- Tạo môi trường hỗ trợ
+
+## Lưu ý quan trọng
+
+- Mỗi trẻ có tốc độ phát triển khác nhau
+- Cần kiên nhẫn và động viên
+- Không nên quá khắt khe hoặc ép buộc
+- Tạo không khí vui vẻ khi thực hiện
+
+*Bài viết được tư vấn bởi Cô Trần Thị Mai - Giáo viên mầm non 15 năm kinh nghiệm*`
               },
               {
                 title: "Kích thích sự sáng tạo",
@@ -779,7 +917,62 @@ Liên hệ tư vấn: 0123.456.789 - Trường Mầm Non Thảo Nguyên Xanh`
                 author: "Cô Phạm Thị Lan",
                 date: "08/11/2024",
                 image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0",
-                category: "Sáng tạo"
+                category: "Sáng tạo",
+                fullContent: `# Kích thích sự sáng tạo ở trẻ mầm non
+
+## Tại sao cần phát triển sự sáng tạo?
+
+Sự sáng tạo giúp trẻ phát triển tư duy độc lập, giải quyết vấn đề hiệu quả và thích ứng với những thay đổi trong cuộc sống. Đây là kỹ năng quan trọng cho thành công trong thế kỷ 21.
+
+## Các hoạt động phát triển sáng tạo
+
+### 1. Hoạt động nghệ thuật
+- **Vẽ tranh tự do**: Để trẻ tự do thể hiện ý tưởng
+- **Nặn đất sét**: Phát triển khả năng tạo hình 3D
+- **Làm thủ công**: Tái chế vật liệu thành đồ chơi
+- **Trang trí**: Sáng tạo trong việc trang trí không gian
+
+### 2. Hoạt động âm nhạc
+- Hát các bài hát sáng tác
+- Chơi nhạc cụ đơn giản
+- Sáng tác giai điệu
+- Nhảy múa tự do
+
+### 3. Hoạt động kể chuyện
+- Kể chuyện từ tranh
+- Sáng tác câu chuyện mới
+- Diễn kịch ngắn
+- Thay đổi kết thúc câu chuyện
+
+## Cách khuyến khích sáng tạo
+
+### Tại nhà:
+- Tạo không gian riêng cho trẻ sáng tạo
+- Cung cấp đầy đủ vật liệu nghệ thuật
+- Không áp đặt kết quả cụ thể
+- Khen ngợi quá trình thay vì kết quả
+
+### Tại trường:
+- Tham gia các lớp học nghệ thuật
+- Tổ chức triển lãm tác phẩm trẻ em
+- Hoạt động nhóm sáng tạo
+- Sử dụng công nghệ hỗ trợ
+
+## Lợi ích của sự sáng tạo
+
+- Phát triển khả năng tư duy logic
+- Tăng cường sự tự tin
+- Cải thiện khả năng giao tiếp
+- Giúp trẻ thư giãn và vui vẻ
+
+## Lưu ý quan trọng
+
+- Không có đúng sai trong sáng tạo
+- Mỗi trẻ có cách thể hiện khác nhau
+- Cần kiên nhẫn và động viên
+- Tạo môi trường an toàn để trẻ thể hiện
+
+*Bài viết được tư vấn bởi Cô Phạm Thị Lan - Giáo viên mỹ thuật mầm non*`
               },
               {
                 title: "Đọc sách cùng con",
@@ -787,7 +980,76 @@ Liên hệ tư vấn: 0123.456.789 - Trường Mầm Non Thảo Nguyên Xanh`
                 author: "Cô Vũ Thị Hương",
                 date: "05/11/2024",
                 image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d",
-                category: "Giáo dục"
+                category: "Giáo dục",
+                fullContent: `# Đọc sách cùng con - Chìa khóa phát triển toàn diện
+
+## Tầm quan trọng của việc đọc sách
+
+Đọc sách không chỉ giúp trẻ học từ vựng mà còn phát triển trí tưởng tượng, khả năng tư duy và tình cảm. Thói quen đọc sách từ nhỏ sẽ theo trẻ suốt cuộc đời.
+
+## Lợi ích của việc đọc sách
+
+### 1. Phát triển ngôn ngữ
+- Mở rộng vốn từ vựng
+- Cải thiện khả năng nghe, nói
+- Học cách diễn đạt ý tưởng
+- Phát triển kỹ năng giao tiếp
+
+### 2. Phát triển tư duy
+- Kích thích trí tưởng tượng
+- Tăng cường khả năng tập trung
+- Phát triển tư duy logic
+- Học cách giải quyết vấn đề
+
+### 3. Phát triển cảm xúc
+- Học cách thể hiện cảm xúc
+- Phát triển khả năng đồng cảm
+- Xây dựng mối quan hệ tốt với cha mẹ
+- Tăng cường sự tự tin
+
+## Cách chọn sách phù hợp
+
+### Theo độ tuổi:
+- **2-3 tuổi**: Sách tranh đơn giản, màu sắc rõ ràng
+- **3-4 tuổi**: Sách có cốt truyện ngắn, dễ hiểu
+- **4-5 tuổi**: Sách có nội dung phong phú hơn
+- **5-6 tuổi**: Sách có thể tự đọc được
+
+### Theo nội dung:
+- Sách giáo dục giá trị sống
+- Sách khoa học phổ thông
+- Truyện cổ tích, thần thoại
+- Sách về thiên nhiên, động vật
+
+## Kỹ thuật đọc sách hiệu quả
+
+### Trước khi đọc:
+- Tạo không gian yên tĩnh, thoải mái
+- Chọn thời gian phù hợp
+- Để trẻ lựa chọn sách yêu thích
+- Chuẩn bị tinh thần vui vẻ
+
+### Trong khi đọc:
+- Đọc với giọng điệu sinh động
+- Sử dụng biểu cảm khuôn mặt
+- Dừng lại để giải thích từ khó
+- Đặt câu hỏi để trẻ tương tác
+
+### Sau khi đọc:
+- Hỏi về nội dung câu chuyện
+- Khuyến khích trẻ kể lại
+- Thảo luận về bài học rút ra
+- Vẽ tranh minh họa câu chuyện
+
+## Mẹo tạo hứng thú đọc sách
+
+1. **Đọc đều đặn mỗi ngày**: Tạo thói quen đọc sách
+2. **Tham quan thư viện**: Để trẻ trải nghiệm không gian sách
+3. **Kể chuyện bằng cách diễn**: Làm cho câu chuyện sinh động
+4. **Tạo cuốn sách riêng**: Để trẻ tự sáng tác
+5. **Khen ngợi và động viên**: Ghi nhận những tiến bộ của trẻ
+
+*Bài viết được tư vấn bởi Cô Vũ Thị Hương - Thủ thư trường mầm non*`
               },
               {
                 title: "Quản lý cảm xúc ở trẻ",
@@ -795,7 +1057,89 @@ Liên hệ tư vấn: 0123.456.789 - Trường Mầm Non Thảo Nguyên Xanh`
                 author: "ThS. Hoàng Thị Nga",
                 date: "03/11/2024",
                 image: "https://images.unsplash.com/photo-1580582932707-520aed937b7b",
-                category: "Tâm lý"
+                category: "Tâm lý",
+                fullContent: `# Quản lý cảm xúc ở trẻ mầm non
+
+## Tầm quan trọng của quản lý cảm xúc
+
+Quản lý cảm xúc là kỹ năng quan trọng giúp trẻ thích ứng với cuộc sống, xây dựng mối quan hệ tốt và đạt được thành công. Việc học cách quản lý cảm xúc từ nhỏ sẽ giúp trẻ trưởng thành hạnh phúc hơn.
+
+## Các cảm xúc cơ bản ở trẻ
+
+### 1. Cảm xúc tích cực
+- **Vui vẻ**: Khi được khen ngợi, chơi với bạn
+- **Hào hứng**: Khi tham gia hoạt động yêu thích
+- **Tự hào**: Khi hoàn thành tốt việc gì đó
+- **Yêu thương**: Với gia đình, bạn bè
+
+### 2. Cảm xúc tiêu cực
+- **Tức giận**: Khi không được như ý muốn
+- **Buồn**: Khi bị từ chối hoặc thất vọng
+- **Sợ hãi**: Khi gặp điều mới lạ hoặc nguy hiểm
+- **Ghen tị**: Khi thấy người khác có thứ mình muốn
+
+## Cách giúp trẻ quản lý cảm xúc
+
+### Bước 1: Nhận biết cảm xúc
+- Dạy trẻ đặt tên cho cảm xúc
+- Sử dụng biểu đồ cảm xúc
+- Quan sát biểu hiện cơ thể
+- Kể về cảm xúc bằng câu chuyện
+
+### Bước 2: Thể hiện cảm xúc tích cực
+- Khuyến khích trẻ nói ra cảm xúc
+- Lắng nghe và thấu hiểu
+- Không phán xét hoặc chê bai
+- Tạo môi trường an toàn
+
+### Bước 3: Học cách điều chỉnh
+- Dạy kỹ thuật thở sâu
+- Đếm từ 1 đến 10 khi tức giận
+- Tìm hoạt động thay thế
+- Học cách xin lỗi và tha thứ
+
+## Chiến lược cụ thể
+
+### Khi trẻ tức giận:
+- Giữ bình tĩnh và kiên nhẫn
+- Không đáp trả bằng giọng to
+- Đợi trẻ bình tĩnh rồi mới nói chuyện
+- Tìm hiểu nguyên nhân thực sự
+
+### Khi trẻ buồn:
+- Ôm và an ủi trẻ
+- Lắng nghe mà không cố sửa chữa ngay
+- Giúp trẻ tìm ra giải pháp
+- Tạo hoạt động vui vẻ
+
+### Khi trẻ sợ hãi:
+- Không bắt trẻ "đừng sợ"
+- Thừa nhận nỗi sợ là bình thường
+- Dần dần giúp trẻ đối mặt với nỗi sợ
+- Tạo cảm giác an toàn
+
+## Vai trò của cha mẹ
+
+### Làm gương:
+- Thể hiện cảm xúc tích cực
+- Quản lý cảm xúc bản thân tốt
+- Nói về cảm xúc một cách tự nhiên
+- Xử lý xung đột một cách văn minh
+
+### Hỗ trợ:
+- Tạo môi trường gia đình ấm áp
+- Dành thời gian chất lượng cho trẻ
+- Thiết lập quy tắc rõ ràng
+- Khen ngợi khi trẻ cố gắng
+
+## Dấu hiệu cần lưu ý
+
+- Trẻ thường xuyên nổi giận không kiểm soát
+- Rút lui, không muốn giao tiếp
+- Có biểu hiện tự làm hại bản thân
+- Cảm xúc thay đổi quá nhanh và cực đoan
+
+*Bài viết được tư vấn bởi ThS. Hoàng Thị Nga - Chuyên gia tâm lý trẻ em*`
               }
             ].map((article, index) => (
               <Card key={index} className="hover:shadow-lg transition-shadow">
@@ -815,7 +1159,12 @@ Liên hệ tư vấn: 0123.456.789 - Trường Mầm Non Thảo Nguyên Xanh`
                   <p className="text-gray-600 mb-4 text-sm">{article.excerpt}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-500">{article.author}</span>
-                    <Button variant="ghost" size="sm" className="text-primary-green">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-primary-green hover:text-primary-green/80"
+                      onClick={() => handleArticleSelect(article)}
+                    >
                       Đọc thêm
                     </Button>
                   </div>
@@ -950,7 +1299,11 @@ Liên hệ tư vấn: 0123.456.789 - Trường Mầm Non Thảo Nguyên Xanh`
                   <h3 className="font-semibold text-lg text-dark-gray mb-3">{service.title}</h3>
                   <p className="text-gray-600 mb-4">{service.description}</p>
                   <div className="text-sm text-gray-500 mb-4">{service.schedule}</div>
-                  <Button variant="outline" className="border-primary-green text-primary-green hover:bg-primary-green hover:text-white">
+                  <Button 
+                    variant="outline" 
+                    className="border-primary-green text-primary-green hover:bg-primary-green hover:text-white"
+                    onClick={() => handleServiceSelect(service.title)}
+                  >
                     Đăng ký
                   </Button>
                 </CardContent>
@@ -959,6 +1312,45 @@ Liên hệ tư vấn: 0123.456.789 - Trường Mầm Non Thảo Nguyên Xanh`
           </div>
         </div>
       </section>
+
+      {/* Article Modal */}
+      <Dialog open={isArticleModalOpen} onOpenChange={setIsArticleModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-dark-gray mb-2">
+              {selectedArticle?.title}
+            </DialogTitle>
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              <span className="flex items-center gap-2">
+                <i className="fas fa-user"></i>
+                {selectedArticle?.author}
+              </span>
+              <span className="flex items-center gap-2">
+                <i className="fas fa-calendar"></i>
+                {selectedArticle?.date}
+              </span>
+              <span className="px-2 py-1 bg-primary-green/10 text-primary-green rounded-full text-xs">
+                {selectedArticle?.category}
+              </span>
+            </div>
+          </DialogHeader>
+          <div className="mt-6">
+            <img 
+              src={selectedArticle?.image} 
+              alt={selectedArticle?.title}
+              className="w-full h-64 object-cover rounded-lg mb-6"
+            />
+            <div className="prose prose-lg max-w-none">
+              <div 
+                className="whitespace-pre-wrap"
+                dangerouslySetInnerHTML={{ 
+                  __html: selectedArticle?.fullContent?.replace(/\n/g, '<br />') 
+                }}
+              />
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
