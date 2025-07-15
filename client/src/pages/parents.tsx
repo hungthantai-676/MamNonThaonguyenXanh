@@ -96,48 +96,438 @@ export default function Parents() {
     registrationMutation.mutate(formData);
   };
 
+  const handleDownload = (title: string, content: string) => {
+    const element = document.createElement('a');
+    const file = new Blob([content], { type: 'text/plain' });
+    element.href = URL.createObjectURL(file);
+    element.download = `${title}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    
+    toast({
+      title: "Tải xuống thành công!",
+      description: `Đã tải tài liệu "${title}" vào máy tính của bạn.`,
+    });
+  };
+
   const resources = [
     {
       title: "Dinh dưỡng cho trẻ mầm non",
       description: "Hướng dẫn chế độ dinh dưỡng cân bằng cho trẻ từ 6 tháng đến 6 tuổi",
       icon: "fas fa-apple-alt",
       color: "primary-green",
-      downloadUrl: "#"
+      content: `HƯỚNG DẪN DINH DƯỠNG CHO TRẺ MẦM NON
+===========================================
+
+1. NGUYÊN TẮC DINH DƯỠNG CƠ BẢN:
+- Đảm bảo đầy đủ 4 nhóm chất: Tinh bột, Protein, Chất béo, Vitamin và khoáng chất
+- Bữa ăn cân bằng với tỷ lệ: 50-60% tinh bột, 20-25% protein, 20-25% chất béo
+- Uống đủ nước: 1-1.5 lít/ngày cho trẻ 3-6 tuổi
+
+2. THỰC ĐƠN MẪU CHO TRẺ 3-6 TUỔI:
+Bữa sáng (7:00-8:00):
+- Cháo/phở/bún + thịt/cá/trứng + rau xanh
+- Sữa tươi 200ml
+- Trái cây theo mùa
+
+Bữa trưa (11:30-12:30):
+- Cơm trắng + canh/soup
+- Thịt/cá/tôm nướng/luộc/xào
+- Rau xanh xào/luộc
+- Trái cây tráng miệng
+
+Bữa xế (15:00-16:00):
+- Bánh mì/bánh bao + sữa
+- Hoặc yaourt + trái cây
+
+Bữa tối (18:00-19:00):
+- Cơm + canh chua/canh rau
+- Thịt/cá/đậu hũ
+- Rau củ luộc/xào nhẹ
+
+3. THỰC PHẨM NÊN ĂN:
+- Ngũ cốc nguyên hạt (yến mạch, gạo lứt)
+- Thịt nạc, cá, trứng, đậu
+- Sữa và sản phẩm từ sữa
+- Rau xanh, củ quả tươi
+- Trái cây theo mùa
+
+4. THỰC PHẨM HạN CHẾ:
+- Đồ ngọt, kẹo, nước ngọt
+- Thực phẩm chiên rán nhiều dầu
+- Thực phẩm chế biến sẵn
+- Đồ uống có caffeine
+
+5. MẸO VẶT THỰC TẾ:
+- Cho trẻ ăn đúng giờ, không ăn vặt
+- Trang trí món ăn đẹp mắt, hấp dẫn
+- Ăn cùng gia đình, tạo không khí vui vẻ
+- Khuyến khích trẻ thử thức ăn mới
+- Uống nước trước bữa ăn 30 phút
+
+Liên hệ tư vấn: 0123.456.789 - Trường Mầm Non Thảo Nguyên Xanh`
     },
     {
       title: "Phát triển kỹ năng ngôn ngữ",
       description: "Các hoạt động giúp trẻ phát triển khả năng ngôn ngữ tại nhà",
       icon: "fas fa-comments",
       color: "secondary-blue",
-      downloadUrl: "#"
+      content: `PHÁT TRIỂN KỸ NĂNG NGÔN NGỮ CHO TRẺ MẦM NON
+===============================================
+
+1. GIAI ĐOẠN PHÁT TRIỂN NGÔN NGỮ:
+Trẻ 2-3 tuổi:
+- Vốn từ: 200-1000 từ
+- Nối 2-3 từ thành câu đơn giản
+- Hiểu được yêu cầu cơ bản
+
+Trẻ 3-4 tuổi:
+- Vốn từ: 1000-2000 từ
+- Nói câu 3-4 từ
+- Bắt đầu kể chuyện đơn giản
+
+Trẻ 4-5 tuổi:
+- Vốn từ: 2000-4000 từ
+- Nói câu phức tạp
+- Đặt câu hỏi, tranh luận
+
+Trẻ 5-6 tuổi:
+- Vốn từ: 4000-6000 từ
+- Kể chuyện có logic
+- Sử dụng ngữ pháp đúng
+
+2. HOẠT ĐỘNG PHÁT TRIỂN NGÔN NGỮ:
+a) Đọc sách cùng con (mỗi ngày 20-30 phút):
+- Chọn sách phù hợp độ tuổi
+- Đọc với giọng điệu sinh động
+- Đặt câu hỏi về nội dung
+- Khuyến khích trẻ kể lại
+
+b) Trò chuyện hàng ngày:
+- Hỏi về những gì trẻ làm trong ngày
+- Lắng nghe và phản hồi tích cực
+- Sửa lỗi ngữ pháp một cách nhẹ nhàng
+- Dạy từ mới qua hoạt động thực tế
+
+c) Chơi game ngôn ngữ:
+- Đố vui về từ vựng
+- Chơi "Tôi thấy..." với màu sắc, hình dạng
+- Hát và học thuộc lòng các bài hát
+- Kể chuyện cổ tích
+
+d) Hoạt động sáng tạo:
+- Vẽ và kể về bức tranh
+- Làm thủ công và mô tả quy trình
+- Chơi nhập vai các nhân vật
+- Tạo ra những câu chuyện mới
+
+3. CÁCH KHUYẾN KHÍCH TRẺ NÓI:
+- Kiên nhẫn lắng nghe, không ngắt lời
+- Đặt câu hỏi mở để trẻ diễn đạt
+- Khen ngợi khi trẻ cố gắng nói
+- Không sửa lỗi quá nhiều trong 1 lần
+- Tạo môi trường an toàn để trẻ thể hiện
+
+4. DẤU HIỆU CẦN LƯU Ý:
+- Trẻ 3 tuổi chưa nói được từ đơn
+- Trẻ 4 tuổi chưa nối được thành câu
+- Trẻ 5 tuổi nói không rõ ràng
+- Trẻ không hiểu được yêu cầu đơn giản
+- Trẻ không tương tác bằng ngôn ngữ
+
+5. KHUYẾN NGHỊ CHO PHỤ HUYNH:
+- Giảm thời gian xem TV, điện thoại
+- Tăng cường giao tiếp trực tiếp
+- Đọc sách mỗi ngày cùng con
+- Tham gia các hoạt động xã hội
+- Tham khảo ý kiến chuyên gia khi cần
+
+Liên hệ tư vấn: 0123.456.789 - Trường Mầm Non Thảo Nguyên Xanh`
     },
     {
       title: "Kỹ năng sống cơ bản",
       description: "Hướng dẫn dạy trẻ các kỹ năng tự lập trong sinh hoạt hàng ngày",
       icon: "fas fa-hands-helping",
       color: "accent-yellow",
-      downloadUrl: "#"
+      content: `KỸ NĂNG SỐNG CƠ BẢN CHO TRẺ MẦM NON
+====================================
+
+1. KỸ NĂNG TỰ CHĂM SÓC BẢN THÂN:
+Trẻ 2-3 tuổi:
+- Rửa tay với sự hỗ trợ
+- Đánh răng với sự giúp đỡ
+- Ăn uống tự lập cơ bản
+- Mặc/cởi quần áo đơn giản
+
+Trẻ 3-4 tuổi:
+- Rửa tay, mặt độc lập
+- Đánh răng tự lập
+- Mặc quần áo hoàn chỉnh
+- Đi vệ sinh tự lập
+
+Trẻ 4-5 tuổi:
+- Tắm rửa với ít hỗ trợ
+- Chải tóc, cột tóc đơn giản
+- Chuẩn bị đồ dùng cá nhân
+- Sắp xếp giường ngủ
+
+Trẻ 5-6 tuổi:
+- Tắm rửa hoàn toàn tự lập
+- Chọn quần áo phù hợp thời tiết
+- Chuẩn bị đồ đến trường
+- Quản lý thời gian cơ bản
+
+2. KỸ NĂNG SINH HOẠT HÀNG NGÀY:
+a) Kỹ năng ăn uống:
+- Sử dụng đũa, thìa, nĩa đúng cách
+- Ăn sạch sẽ, không làm bẩn
+- Dọn dẹp sau khi ăn
+- Biết lượng ăn phù hợp với bản thân
+
+b) Kỹ năng ngủ nghỉ:
+- Đi ngủ đúng giờ
+- Tự lên giường và đắp chăn
+- Chuẩn bị đồ ngủ
+- Ngủ tự lập trong phòng riêng
+
+c) Kỹ năng vệ sinh:
+- Giữ gọn gàng môi trường sống
+- Vứt rác đúng nơi quy định
+- Sắp xếp đồ chơi, sách vở
+- Lau chùi đồ dùng cá nhân
+
+3. KỸ NĂNG XÃ HỘI CƠ BẢN:
+- Chào hỏi lịch sự
+- Nói "xin chào", "cảm ơn", "xin lỗi"
+- Chia sẻ đồ chơi với bạn
+- Chờ đợi và xếp hàng
+- Nghe lời người lớn
+- Giúp đỡ bạn bè khi cần
+
+4. KỸ NĂNG AN TOÀN:
+- Nhận biết những tình huống nguy hiểm
+- Biết số điện thoại khẩn cấp
+- Không nói chuyện với người lạ
+- Quy tắc giao thông cơ bản
+- Sử dụng đồ chơi an toàn
+
+5. CÁCH DẠY TRẺ KỸ NĂNG SỐNG:
+a) Nguyên tắc dạy:
+- Làm gương cho trẻ bắt chước
+- Hướng dẫn từng bước cụ thể
+- Kiên nhẫn và động viên
+- Tạo thói quen thông qua lặp lại
+- Khen ngợi khi trẻ thành công
+
+b) Phương pháp thực tế:
+- Chia nhỏ từng kỹ năng
+- Luyện tập thường xuyên
+- Tạo game và hoạt động vui chơi
+- Cho trẻ tự trải nghiệm
+- Điều chỉnh phù hợp với từng trẻ
+
+6. DẤU HIỆU PHÁT TRIỂN TÍCH CỰC:
+- Trẻ chủ động thực hiện
+- Tự tin khi làm việc
+- Kiên trì khi gặp khó khăn
+- Tự điều chỉnh hành vi
+- Có trách nhiệm với bản thân
+
+Liên hệ tư vấn: 0123.456.789 - Trường Mầm Non Thảo Nguyên Xanh`
     },
     {
       title: "Thực đơn tuần",
       description: "Thực đơn chi tiết cho từng tuần học, cập nhật hàng tháng",
       icon: "fas fa-calendar-week",
       color: "primary-green",
-      downloadUrl: "#"
+      content: `THỰC ĐƠN TUẦN CHO TRẺ MẦM NON
+===============================
+
+TUẦN 1: THỨ HAI - CHỦ NHẬT
+
+THỨ HAI:
+Bữa sáng (7:30):
+- Cháo gà + rau cải + trứng cút
+- Sữa tươi 200ml
+- Chuối tiêu
+
+Bữa trưa (11:30):
+- Cơm trắng
+- Canh chua cá basa
+- Thịt heo rim mận
+- Rau muống luộc
+- Cam vàng
+
+Bữa xế (15:00):
+- Bánh mì kẹp trứng
+- Sữa chua có đường
+
+Bữa tối (18:00):
+- Cơm trắng
+- Canh rau đậu hũ
+- Cá thu rim tỏi
+- Rau cải ngọt xào
+
+THỨ BA:
+Bữa sáng (7:30):
+- Phở tái + thịt bò
+- Nước ép táo
+- Sữa tươi 200ml
+
+Bữa trưa (11:30):
+- Cơm trắng
+- Canh bí đỏ tôm khô
+- Gà luộc xé phay
+- Rau dền luộc
+- Xoài xanh
+
+Bữa xế (15:00):
+- Bánh quy + sữa tươi
+- Nho tím
+
+Bữa tối (18:00):
+- Cơm trắng
+- Canh khổ qua tôm
+- Thịt heo kho tàu
+- Rau cải thìa xào
+
+THỨ TƯ:
+Bữa sáng (7:30):
+- Bún bò Huế (nhẹ cay)
+- Sữa tươi 200ml
+- Dưa hấu
+
+Bữa trưa (11:30):
+- Cơm trắng
+- Canh chua tôm
+- Cá diêu hồng chiên
+- Rau muống xào tỏi
+- Táo ta
+
+Bữa xế (15:00):
+- Chè đậu xanh
+- Bánh su kem mini
+
+Bữa tối (18:00):
+- Cơm trắng
+- Canh mồng tơi tôm
+- Thịt ba chỉ rim măng
+- Rau cải bẹ luộc
+
+THỨ NĂM:
+Bữa sáng (7:30):
+- Mì Quảng gà
+- Sữa tươi 200ml
+- Ổi xanh
+
+Bữa trưa (11:30):
+- Cơm trắng
+- Canh cải chua
+- Cá basa nướng lá chuối
+- Rau lang luộc
+- Chôm chôm
+
+Bữa xế (15:00):
+- Bánh flan + sữa tươi
+- Nhãn lồng
+
+Bữa tối (18:00):
+- Cơm trắng
+- Canh đậu hũ nấu nấm
+- Thịt gà rang gừng
+- Rau cải ngọt luộc
+
+THỨ SÁU:
+Bữa sáng (7:30):
+- Cháo sườn + rau cải
+- Sữa tươi 200ml
+- Mận xanh
+
+Bữa trưa (11:30):
+- Cơm trắng
+- Canh bầu tôm
+- Cá điêu hồng kho tộ
+- Rau muống luộc
+- Thanh long
+
+Bữa xế (15:00):
+- Bánh bao nhân thịt
+- Sữa chua dâu
+
+Bữa tối (18:00):
+- Cơm trắng
+- Canh rau cải tôm khô
+- Thịt heo luộc
+- Rau dền xào
+
+THỨ BẢY:
+Bữa sáng (7:30):
+- Bún riêu cua
+- Sữa tươi 200ml
+- Cam sành
+
+Bữa trưa (11:30):
+- Cơm trắng
+- Canh chua cá lóc
+- Gà nướng mật ong
+- Rau cải bẹ xào
+- Mít tươi
+
+Bữa xế (15:00):
+- Bánh su kem
+- Sữa tươi
+
+Bữa tối (18:00):
+- Cơm trắng
+- Canh khổ qua nhồi thịt
+- Cá thu rim nước mắm
+- Rau muống luộc
+
+CHỦ NHẬT:
+Bữa sáng (7:30):
+- Phở gà
+- Sữa tươi 200ml
+- Chuối sứ
+
+Bữa trưa (11:30):
+- Cơm trắng
+- Canh chua tôm
+- Thịt heo nướng
+- Rau lang luộc
+- Bưởi da xanh
+
+Bữa xế (15:00):
+- Chè bưởi
+- Bánh quy
+
+Bữa tối (18:00):
+- Cơm trắng
+- Canh cải chua
+- Cá basa chiên
+- Rau cải ngọt xào
+
+GHI CHÚ:
+- Thực đơn được điều chỉnh theo mùa và nguồn cung thực phẩm
+- Trẻ dị ứng sẽ có thực đơn riêng
+- Liên hệ cô giáo nếu trẻ có yêu cầu đặc biệt
+- Uống nước đủ 1-1.5 lít/ngày
+
+Liên hệ tư vấn: 0123.456.789 - Trường Mầm Non Thảo Nguyên Xanh`
     },
     {
       title: "Kế hoạch học tập tháng",
       description: "Chi tiết các hoạt động học tập và kỹ năng sẽ phát triển",
       icon: "fas fa-tasks",
       color: "secondary-blue",
-      downloadUrl: "#"
+      content: "KẾ HOẠCH HỌC TẬP THÁNG - TRƯỜNG MẦM NON THẢO NGUYÊN XANH\n\nChi tiết các hoạt động học tập và kỹ năng sẽ phát triển trong tháng này."
     },
     {
       title: "Hướng dẫn hoạt động tại nhà",
       description: "Các trò chơi và hoạt động phù hợp để làm tại nhà",
       icon: "fas fa-home",
       color: "accent-yellow",
-      downloadUrl: "#"
+      content: "HƯỚNG DẪN HOẠT ĐỘNG TẠI NHÀ - TRƯỜNG MẦM NON THẢO NGUYÊN XANH\n\nCác trò chơi và hoạt động phù hợp để làm tại nhà cùng con."
     }
   ];
 
@@ -461,7 +851,10 @@ export default function Parents() {
                   </div>
                   <h3 className="font-semibold text-xl text-dark-gray mb-3">{resource.title}</h3>
                   <p className="text-gray-600 mb-6">{resource.description}</p>
-                  <Button className={`w-full bg-${resource.color} hover:bg-${resource.color}/90 text-white`}>
+                  <Button 
+                    onClick={() => handleDownload(resource.title, resource.content)}
+                    className={`w-full bg-${resource.color} hover:bg-${resource.color}/90 text-white`}
+                  >
                     <i className="fas fa-download mr-2"></i>
                     Tải xuống
                   </Button>
