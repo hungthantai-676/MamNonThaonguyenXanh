@@ -25,10 +25,14 @@ export default function SimpleChatbot() {
 
   const chatMutation = useMutation({
     mutationFn: async (message: string) => {
-      const response = await apiRequest("POST", "/api/chat", { message });
-      return response.json();
+      console.log("Sending message:", message);
+      const response = await apiRequest("POST", "/api/chatbot", { message });
+      const data = await response.json();
+      console.log("API Response:", data);
+      return data;
     },
     onSuccess: (data) => {
+      console.log("Success with data:", data);
       setMessages(prev => prev.filter(msg => msg.id !== "typing"));
       const botMessage: Message = {
         id: Date.now().toString(),
