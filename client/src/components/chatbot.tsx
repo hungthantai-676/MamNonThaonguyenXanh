@@ -155,7 +155,7 @@ export default function Chatbot() {
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-2xl w-96 h-[500px] flex flex-col">
+        <div className="bg-white rounded-lg shadow-2xl w-96 h-[500px] flex flex-col" style={{ pointerEvents: 'all' }}>
           <div className="bg-gradient-to-r from-green-500 to-blue-500 text-white p-4 rounded-t-lg flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bot className="w-5 h-5" />
@@ -231,15 +231,20 @@ export default function Chatbot() {
               <input
                 type="text"
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                onChange={(e) => {
+                  console.log("Input changed:", e.target.value);
+                  setInputValue(e.target.value);
+                }}
                 onKeyPress={handleKeyPress}
+                onFocus={() => console.log("Input focused")}
                 placeholder="Nhập câu hỏi của bạn..."
                 className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                disabled={chatMutation.isPending}
+                disabled={false}
+                autoFocus
               />
               <button
                 onClick={handleSendMessage}
-                disabled={!inputValue.trim() || chatMutation.isPending}
+                disabled={!inputValue.trim()}
                 className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg disabled:opacity-50"
               >
                 <Send className="w-4 h-4" />
