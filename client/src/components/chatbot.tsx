@@ -20,7 +20,7 @@ interface ChatbotProps {
   className?: string;
 }
 
-export default function Chatbot({ className }: ChatbotProps) {
+export default function Chatbot({ className = "" }: ChatbotProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -32,7 +32,12 @@ export default function Chatbot({ className }: ChatbotProps) {
     },
   ]);
   const [inputValue, setInputValue] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
+  const [quickReplies, setQuickReplies] = useState<string[]>([
+    "Học phí các lớp như thế nào?",
+    "Thủ tục tuyển sinh năm học 2024-2025",
+    "Chương trình học có gì đặc biệt?",
+    "Thông tin liên hệ trường",
+  ]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -53,43 +58,53 @@ export default function Chatbot({ className }: ChatbotProps) {
   const chatMutation = useMutation({
     mutationFn: async (message: string) => {
       const response = await apiRequest("POST", "/api/chatbot", { message });
-      return response;
+      return response as { response: string; quickReplies: string[] };
     },
     onSuccess: (data) => {
-      setIsTyping(false);
+      // Remove typing message
+      setMessages(prev => prev.filter(msg => msg.id !== "typing"));
+      
+      // Add bot response
       const botMessage: Message = {
         id: Date.now().toString(),
         text: data.response,
         sender: "bot",
         timestamp: new Date(),
       };
-      setMessages(prev => prev.filter(msg => !msg.isTyping).concat(botMessage));
+      setMessages(prev => [...prev, botMessage]);
+      
+      // Update quick replies
+      if (data.quickReplies) {
+        setQuickReplies(data.quickReplies);
+      }
     },
     onError: (error) => {
-      setIsTyping(false);
+      console.error("Chat error:", error);
+      // Remove typing message
+      setMessages(prev => prev.filter(msg => msg.id !== "typing"));
+      
+      // Add error message
       const errorMessage: Message = {
         id: Date.now().toString(),
-        text: "Xin lỗi, tôi đang gặp sự cố. Vui lòng thử lại sau hoặc liên hệ trực tiếp qua hotline: 0856318686",
+        text: "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại sau.",
         sender: "bot",
         timestamp: new Date(),
       };
-      setMessages(prev => prev.filter(msg => !msg.isTyping).concat(errorMessage));
+      setMessages(prev => [...prev, errorMessage]);
     },
   });
 
   const handleSendMessage = () => {
     if (!inputValue.trim()) return;
 
+    // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
       text: inputValue,
       sender: "user",
       timestamp: new Date(),
     };
-
     setMessages(prev => [...prev, userMessage]);
-    setInputValue("");
-    setIsTyping(true);
 
     // Add typing indicator
     const typingMessage: Message = {
@@ -102,6 +117,31 @@ export default function Chatbot({ className }: ChatbotProps) {
     setMessages(prev => [...prev, typingMessage]);
 
     chatMutation.mutate(inputValue);
+    setInputValue("");
+  };
+
+  const handleQuickReply = (reply: string) => {
+    setInputValue(reply);
+    // Add user message
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: reply,
+      sender: "user",
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMessage]);
+
+    // Add typing indicator
+    const typingMessage: Message = {
+      id: "typing",
+      text: "Đang trả lời...",
+      sender: "bot",
+      timestamp: new Date(),
+      isTyping: true,
+    };
+    setMessages(prev => [...prev, typingMessage]);
+
+    chatMutation.mutate(reply);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -118,11 +158,16 @@ export default function Chatbot({ className }: ChatbotProps) {
     });
   };
 
+  const handleToggleChat = () => {
+    console.log("Toggle chat clicked!");
+    setIsOpen(!isOpen);
+  };
+
   if (!isOpen) {
     return (
-      <div className={`fixed right-6 z-50 ${className}`} style={{ top: '66.67vh' }}>
+      <div className="fixed right-6 z-[9999]" style={{ top: '66.67vh' }}>
         <Button
-          onClick={() => setIsOpen(true)}
+          onClick={handleToggleChat}
           className="bg-gradient-to-r from-primary-green to-secondary-blue hover:from-primary-green/90 hover:to-secondary-blue/90 text-white w-16 h-16 rounded-full shadow-lg transition-all hover:scale-110 flex items-center justify-center"
         >
           <Bot className="w-8 h-8" />
@@ -140,7 +185,7 @@ export default function Chatbot({ className }: ChatbotProps) {
   }
 
   return (
-    <div className={`fixed right-6 z-50 ${className}`} style={{ top: '66.67vh' }}>
+    <div className="fixed right-6 z-[9999]" style={{ top: '66.67vh' }}>
       <Card className={`transition-all duration-300 shadow-2xl ${
         isMinimized ? "w-80 h-16" : "w-96 h-[500px]"
       }`}>
@@ -203,15 +248,13 @@ export default function Chatbot({ className }: ChatbotProps) {
                           <p className="text-sm whitespace-pre-line">
                             {message.isTyping ? (
                               <span className="animate-pulse">
-                                {message.text}
+                                Đang trả lời...
                               </span>
                             ) : (
                               message.text
                             )}
                           </p>
-                          <p className={`text-xs mt-1 ${
-                            message.sender === "user" ? "text-green-100" : "text-gray-500"
-                          }`}>
+                          <p className="text-xs opacity-70 mt-1">
                             {formatTime(message.timestamp)}
                           </p>
                         </div>
@@ -223,6 +266,24 @@ export default function Chatbot({ className }: ChatbotProps) {
               </div>
             </ScrollArea>
 
+            {/* Quick Replies */}
+            <div className="px-4 py-2 border-t bg-gray-50">
+              <div className="flex flex-wrap gap-2">
+                {quickReplies.slice(0, 3).map((reply, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleQuickReply(reply)}
+                    className="text-xs bg-white hover:bg-primary-green hover:text-white transition-colors"
+                  >
+                    {reply}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Input Area */}
             <div className="p-4 border-t bg-white">
               <div className="flex gap-2">
                 <Input
@@ -231,36 +292,16 @@ export default function Chatbot({ className }: ChatbotProps) {
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Nhập câu hỏi của bạn..."
-                  disabled={isTyping}
                   className="flex-1"
+                  disabled={chatMutation.isPending}
                 />
                 <Button
                   onClick={handleSendMessage}
-                  disabled={!inputValue.trim() || isTyping}
+                  disabled={!inputValue.trim() || chatMutation.isPending}
                   className="bg-primary-green hover:bg-primary-green/90"
                 >
                   <Send className="w-4 h-4" />
                 </Button>
-              </div>
-              <div className="mt-2 flex flex-wrap gap-2">
-                <button
-                  onClick={() => setInputValue("Học phí các lớp như thế nào?")}
-                  className="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full text-gray-700"
-                >
-                  Học phí
-                </button>
-                <button
-                  onClick={() => setInputValue("Tuyển sinh năm học 2024-2025")}
-                  className="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full text-gray-700"
-                >
-                  Tuyển sinh
-                </button>
-                <button
-                  onClick={() => setInputValue("Chương trình học có gì?")}
-                  className="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full text-gray-700"
-                >
-                  Chương trình
-                </button>
               </div>
             </div>
           </CardContent>
