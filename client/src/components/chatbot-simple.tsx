@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, Send, X, User } from 'lucide-react';
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 interface Message {
   id: string;
@@ -21,6 +23,34 @@ export default function SimpleChatbot() {
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const chatMutation = useMutation({
+    mutationFn: async (message: string) => {
+      const response = await apiRequest("POST", "/api/chat", { message });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setMessages(prev => prev.filter(msg => msg.id !== "typing"));
+      const botMessage: Message = {
+        id: Date.now().toString(),
+        text: data.response,
+        sender: "bot",
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, botMessage]);
+    },
+    onError: (error) => {
+      console.error("Chat error:", error);
+      setMessages(prev => prev.filter(msg => msg.id !== "typing"));
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        text: "Xin lỗi, tôi gặp sự cố kỹ thuật. Vui lòng thử lại sau.",
+        sender: "bot",
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    },
+  });
+
   const handleSendMessage = () => {
     if (!inputValue.trim()) return;
 
@@ -32,18 +62,20 @@ export default function SimpleChatbot() {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const messageToSend = inputValue;
     setInputValue("");
 
-    // Simple bot response
-    setTimeout(() => {
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: "Cảm ơn bạn đã liên hệ! Tôi đã nhận được tin nhắn: \"" + inputValue + "\"",
-        sender: "bot",
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, botMessage]);
-    }, 1000);
+    // Add typing indicator
+    const typingMessage: Message = {
+      id: "typing",
+      text: "Đang trả lời...",
+      sender: "bot",
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, typingMessage]);
+
+    // Send to AI
+    chatMutation.mutate(messageToSend);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
