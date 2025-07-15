@@ -1,19 +1,23 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Bot, X } from "lucide-react";
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
 
-  const toggleChat = () => {
+  const toggleChat = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log("Chatbot toggle clicked!", isOpen);
-    setIsOpen(!isOpen);
-  };
+    setIsOpen(prev => !prev);
+  }, [isOpen]);
 
+  console.log("Chatbot render - isOpen:", isOpen);
+  
   return (
-    <div className="fixed right-6 z-[9999] bg-red-500 p-2" style={{ top: '66.67vh' }}>
+    <div className="fixed right-6 z-[9999]" style={{ top: '66.67vh' }}>
       {!isOpen ? (
-        <div className="relative bg-yellow-500 p-2">
+        <div className="relative">
           <button
             onClick={toggleChat}
             onMouseEnter={() => console.log("Mouse entered chatbot button")}

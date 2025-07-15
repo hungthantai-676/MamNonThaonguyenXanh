@@ -23,8 +23,17 @@ import AdminQuick from "@/pages/admin-quick";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import Chatbot from "@/components/chatbot";
+import { useState } from "react";
+import { Bot, X } from "lucide-react";
 
 function Router() {
+  const [chatOpen, setChatOpen] = useState(false);
+
+  const toggleChat = () => {
+    console.log("Inline chatbot clicked!");
+    setChatOpen(!chatOpen);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -52,6 +61,29 @@ function Router() {
       
       {/* AI Chatbot */}
       <Chatbot />
+      
+      {/* Inline Test Chatbot */}
+      <div className="fixed right-6 z-[9999]" style={{ top: '50vh' }}>
+        <button
+          onClick={toggleChat}
+          className="bg-red-500 hover:bg-red-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center cursor-pointer"
+        >
+          <Bot className="w-8 h-8" />
+        </button>
+        {chatOpen && (
+          <div className="absolute top-0 right-20 bg-white shadow-lg rounded-lg p-4 w-80">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-semibold">Test Chatbot</h3>
+              <button onClick={toggleChat} className="text-gray-500 hover:text-gray-700">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-sm text-gray-700">
+              Chatbot test hoạt động! Click X để đóng.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
