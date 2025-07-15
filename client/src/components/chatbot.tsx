@@ -158,7 +158,7 @@ export default function Chatbot() {
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-2xl w-96 h-[500px] flex flex-col" style={{ pointerEvents: 'all' }}>
+        <div className="bg-white rounded-lg shadow-2xl w-96 h-[400px] flex flex-col" style={{ pointerEvents: 'all' }}>
           <div className="bg-gradient-to-r from-green-500 to-blue-500 text-white p-4 rounded-t-lg flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bot className="w-5 h-5" />
@@ -229,7 +229,8 @@ export default function Chatbot() {
             </div>
           </div>
 
-          <div className="p-4 border-t bg-white">
+          <div className="p-4 border-t bg-white" style={{ minHeight: '80px' }}>
+            <p className="text-xs text-gray-500 mb-2">💬 Nhập câu hỏi tại đây:</p>
             <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} className="flex gap-2">
               <input
                 type="text"
@@ -240,14 +241,15 @@ export default function Chatbot() {
                 }}
                 onFocus={() => console.log("Input focused")}
                 placeholder="Nhập câu hỏi của bạn..."
-                className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="flex-1 px-3 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
                 autoFocus
-                style={{ pointerEvents: 'auto' }}
+                style={{ pointerEvents: 'auto', minHeight: '40px' }}
               />
               <button
                 type="submit"
                 disabled={!inputValue.trim()}
-                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg disabled:opacity-50"
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg disabled:opacity-50 flex items-center justify-center"
+                style={{ minWidth: '50px' }}
               >
                 <Send className="w-4 h-4" />
               </button>
