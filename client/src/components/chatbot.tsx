@@ -22,6 +22,7 @@ export default function Chatbot() {
     },
   ]);
   const [inputValue, setInputValue] = useState("");
+  const [debugText, setDebugText] = useState("");
   const [quickReplies, setQuickReplies] = useState<string[]>([
     "Học phí các lớp như thế nào?",
     "Thủ tục tuyển sinh năm học 2024-2025",
@@ -215,22 +216,10 @@ export default function Chatbot() {
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="px-4 py-2 border-t bg-gray-50">
-            <div className="flex flex-wrap gap-2">
-              {quickReplies.slice(0, 3).map((reply, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleQuickReply(reply)}
-                  className="text-xs bg-white hover:bg-green-500 hover:text-white transition-colors px-3 py-1 rounded-full border border-gray-200"
-                >
-                  {reply}
-                </button>
-              ))}
-            </div>
-          </div>
+
 
           <div className="p-4 border-t bg-white" style={{ minHeight: '80px' }}>
-            <p className="text-xs text-gray-500 mb-2">💬 Nhập câu hỏi tại đây:</p>
+            <p className="text-xs text-gray-500 mb-2">💬 Nhập câu hỏi tại đây: {debugText}</p>
             <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} className="flex gap-2">
               <input
                 type="text"
@@ -238,12 +227,15 @@ export default function Chatbot() {
                 onChange={(e) => {
                   console.log("Input changed:", e.target.value);
                   setInputValue(e.target.value);
+                  setDebugText(e.target.value);
                 }}
                 onFocus={() => console.log("Input focused")}
+                onKeyDown={(e) => console.log("Key pressed:", e.key)}
+                onInput={(e) => console.log("Input event:", (e.target as HTMLInputElement).value)}
                 placeholder="Nhập câu hỏi của bạn..."
-                className="flex-1 px-3 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                className="flex-1 px-3 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm bg-white"
                 autoFocus
-                style={{ pointerEvents: 'auto', minHeight: '40px' }}
+                style={{ pointerEvents: 'auto', minHeight: '40px', userSelect: 'text' }}
               />
               <button
                 type="submit"
