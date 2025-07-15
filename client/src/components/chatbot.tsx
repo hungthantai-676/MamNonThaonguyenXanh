@@ -23,13 +23,8 @@ export default function Chatbot() {
   ]);
   const [inputValue, setInputValue] = useState("");
   const [debugText, setDebugText] = useState("");
-  const [quickReplies, setQuickReplies] = useState<string[]>([
-    "Học phí các lớp như thế nào?",
-    "Thủ tục tuyển sinh năm học 2024-2025",
-    "Chương trình học có gì đặc biệt?",
-    "Thông tin liên hệ trường",
-  ]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -74,7 +69,10 @@ export default function Chatbot() {
   });
 
   const handleSendMessage = () => {
-    const message = inputValue.trim();
+    const input = inputRef.current;
+    if (!input) return;
+    
+    const message = input.value.trim();
     if (!message) return;
     
     console.log("Sending message:", message);
@@ -86,7 +84,9 @@ export default function Chatbot() {
       timestamp: new Date(),
     };
     setMessages(prev => [...prev, userMessage]);
+    input.value = "";
     setInputValue("");
+    setDebugText("");
 
     const typingMessage: Message = {
       id: "typing",
@@ -219,33 +219,44 @@ export default function Chatbot() {
 
 
           <div className="p-4 border-t bg-white" style={{ minHeight: '80px' }}>
-            <p className="text-xs text-gray-500 mb-2">💬 Nhập câu hỏi tại đây: {debugText}</p>
-            <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} className="flex gap-2">
-              <input
-                type="text"
-                value={inputValue}
-                onChange={(e) => {
-                  console.log("Input changed:", e.target.value);
-                  setInputValue(e.target.value);
-                  setDebugText(e.target.value);
+            <p className="text-xs text-gray-500 mb-2">💬 Test typing here: {debugText}</p>
+            <div className="flex gap-2">
+              <textarea
+                ref={inputRef}
+                onInput={(e) => {
+                  const value = (e.target as HTMLTextAreaElement).value;
+                  console.log("Textarea input:", value);
+                  setDebugText(value);
+                  setInputValue(value);
                 }}
-                onFocus={() => console.log("Input focused")}
-                onKeyDown={(e) => console.log("Key pressed:", e.key)}
-                onInput={(e) => console.log("Input event:", (e.target as HTMLInputElement).value)}
-                placeholder="Nhập câu hỏi của bạn..."
-                className="flex-1 px-3 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm bg-white"
-                autoFocus
-                style={{ pointerEvents: 'auto', minHeight: '40px', userSelect: 'text' }}
+                onFocus={() => console.log("Textarea focused")}
+                onKeyDown={(e) => {
+                  console.log("Key pressed:", e.key);
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+                placeholder="Gõ câu hỏi của bạn..."
+                className="flex-1 px-3 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm bg-white resize-none"
+                rows={1}
+                style={{ 
+                  pointerEvents: 'auto',
+                  userSelect: 'text',
+                  WebkitUserSelect: 'text',
+                  MozUserSelect: 'text',
+                  touchAction: 'manipulation'
+                }}
               />
               <button
-                type="submit"
+                onClick={handleSendMessage}
                 disabled={!inputValue.trim()}
                 className="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg disabled:opacity-50 flex items-center justify-center"
                 style={{ minWidth: '50px' }}
               >
                 <Send className="w-4 h-4" />
               </button>
-            </form>
+            </div>
           </div>
         </div>
       )}
