@@ -22,7 +22,7 @@ import AdminAccess from "@/pages/admin-access";
 import AdminQuick from "@/pages/admin-quick";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import Chatbot from "@/components/chatbot";
+import SimpleChatbot from "@/components/chatbot-simple";
 
 function Router() {
   return (
@@ -51,7 +51,7 @@ function Router() {
       <Footer />
       
       {/* AI Chatbot */}
-      <Chatbot />
+      <SimpleChatbot />
     </div>
   );
 }
