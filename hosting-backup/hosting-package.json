@@ -1,0 +1,20 @@
+{
+  "name": "mam-non-thao-nguyen-xanh",
+  "version": "1.0.0",
+  "description": "Vietnamese Preschool Website",
+  "main": "start.js",
+  "scripts": {
+    "start": "node start.js",
+    "dev": "node start.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "drizzle-orm": "^0.30.0",
+    "@neondatabase/serverless": "^0.9.0",
+    "zod": "^3.22.0",
+    "uuid": "^9.0.0",
+    "qrcode": "^1.5.0",
+    "ethers": "^6.7.0",
+    "ws": "^8.14.0"
+  }
+}

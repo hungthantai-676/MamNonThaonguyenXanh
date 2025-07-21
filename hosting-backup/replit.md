@@ -184,33 +184,6 @@ The application uses the following main entities:
 - Vietnamese interface
 - One-click save/publish
 
-## Deployment and Hosting
-
-### Production Deployment Options
-- **Current**: Running on Replit with full functionality
-- **External Hosting**: Complete deployment package ready for independent hosting
-- **File Backup**: `website-backup-20250721_060053.tar.gz` contains production-ready build
-- **Auto-Sync**: Scripts available for automatic updates from Replit to hosting
-
-### Deployment Files Created
-- `build-for-hosting.sh` - Full backup creation script
-- `deploy-to-hosting.sh` - Automated deployment to hosting via FTP
-- `quick-update.sh` - Fast update script for minor changes
-- `sync-to-hosting.js` - Node.js service for webhook-based auto-sync
-- `HUONG_DAN_TRIET_KHAI_HOSTING.md` - Complete hosting deployment guide
-
-### Hosting Requirements
-- Node.js 18+ runtime environment
-- PostgreSQL database (can use existing Neon database)
-- SSL certificate for HTTPS
-- FTP/SSH access for file uploads
-- Port 3000 or hosting-provided port
-
-### Update Workflow Options
-1. **Manual**: Run build script → Download → Upload to hosting → Restart
-2. **Semi-Auto**: FTP credentials in environment → Run deploy script → Auto-upload
-3. **Full Auto**: Webhook setup → One-click deploy from Replit → Auto-restart
-
 ## Changelog
 
 ```
@@ -238,8 +211,6 @@ Changelog:
 - July 16, 2025. COMPLETED: Multi-level affiliate system with full backend services, API endpoints, and frontend interface
 - July 16, 2025. IMPLEMENTED: AI Chatbot system with professional customer consultation capabilities
 - July 16, 2025. POSITIONED: Chatbot at 2/3 screen height and right corner for optimal user experience
-- July 21, 2025. COMPLETED: F1 agent customer conversion tracking with 3-color status system and automatic commission distribution
-- July 21, 2025. IMPLEMENTED: Complete hosting deployment system with automated sync capabilities and production-ready backup files
 ```
 
 ## User Preferences
