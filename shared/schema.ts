@@ -203,6 +203,47 @@ export const affiliateRewards = pgTable("affiliate_rewards", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Customer tracking for F1 agents
+export const customerConversions = pgTable("customer_conversions", {
+  id: serial("id").primaryKey(),
+  customerId: varchar("customer_id", { length: 50 }).unique().notNull(), // UUID
+  f1AgentId: varchar("f1_agent_id", { length: 50 }).notNull(), // Reference to affiliate member
+  f0ReferrerId: varchar("f0_referrer_id", { length: 50 }), // Reference to F0 who referred the F1
+  customerName: varchar("customer_name", { length: 255 }).notNull(),
+  customerPhone: varchar("customer_phone", { length: 20 }).notNull(),
+  customerEmail: varchar("customer_email", { length: 255 }),
+  conversionStatus: varchar("conversion_status", { length: 20 }).default("potential"), // "potential" (red), "high_conversion" (yellow), "payment_completed" (green)
+  paymentAmount: decimal("payment_amount", { precision: 10, scale: 2 }),
+  notes: text("notes"),
+  confirmedAt: timestamp("confirmed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Commission settings for automatic distribution
+export const commissionSettings = pgTable("commission_settings", {
+  id: serial("id").primaryKey(),
+  f1CommissionPercent: decimal("f1_commission_percent", { precision: 5, scale: 2 }).default("30.00"), // 30% for F1
+  f0CommissionPercent: decimal("f0_commission_percent", { precision: 5, scale: 2 }).default("15.00"), // 15% for F0
+  isActive: boolean("is_active").default(true),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Commission transactions
+export const commissionTransactions = pgTable("commission_transactions", {
+  id: serial("id").primaryKey(),
+  transactionId: varchar("transaction_id", { length: 100 }).unique().notNull(),
+  customerId: varchar("customer_id", { length: 50 }).notNull(),
+  recipientId: varchar("recipient_id", { length: 50 }).notNull(), // F1 or F0 member ID
+  recipientType: varchar("recipient_type", { length: 10 }).notNull(), // "F1" or "F0"
+  commissionAmount: decimal("commission_amount", { precision: 10, scale: 2 }).notNull(),
+  baseAmount: decimal("base_amount", { precision: 10, scale: 2 }).notNull(), // Original payment amount
+  commissionPercent: decimal("commission_percent", { precision: 5, scale: 2 }).notNull(),
+  status: varchar("status", { length: 50 }).default("pending"), // "pending", "completed", "failed"
+  processedAt: timestamp("processed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const dexTrades = pgTable("dex_trades", {
   id: serial("id").primaryKey(),
   tradeId: varchar("trade_id", { length: 100 }).unique().notNull(),
@@ -282,6 +323,30 @@ export const insertServiceRegistrationSchema = createInsertSchema(serviceRegistr
   createdAt: true,
   updatedAt: true,
 });
+
+export const insertCustomerConversionSchema = createInsertSchema(customerConversions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertCommissionSettingSchema = createInsertSchema(commissionSettings).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export const insertCommissionTransactionSchema = createInsertSchema(commissionTransactions).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Type exports for customer conversion tracking
+export type CustomerConversion = typeof customerConversions.$inferSelect;
+export type InsertCustomerConversion = z.infer<typeof insertCustomerConversionSchema>;
+export type CommissionSetting = typeof commissionSettings.$inferSelect;
+export type InsertCommissionSetting = z.infer<typeof insertCommissionSettingSchema>;
+export type CommissionTransaction = typeof commissionTransactions.$inferSelect;
+export type InsertCommissionTransaction = z.infer<typeof insertCommissionTransactionSchema>;
 
 export const insertAffiliateMemberSchema = createInsertSchema(affiliateMembers).omit({
   id: true,

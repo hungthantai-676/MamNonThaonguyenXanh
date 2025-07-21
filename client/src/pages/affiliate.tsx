@@ -13,7 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { QrCode, Wallet, TreePine, Users, DollarSign, Gift, Star, Crown, Shield } from "lucide-react";
+import { QrCode, Wallet, TreePine, Users, DollarSign, Gift, Star, Crown, Shield, UserCheck, Phone, Mail, Calendar, DollarSign as Money } from "lucide-react";
 
 const affiliateSchema = z.object({
   name: z.string().min(1, "Tên không được để trống"),
@@ -23,13 +23,26 @@ const affiliateSchema = z.object({
   sponsorId: z.string().optional(),
 });
 
+const customerConversionSchema = z.object({
+  customerName: z.string().min(1, "Tên khách hàng không được để trống"),
+  customerPhone: z.string().min(10, "Số điện thoại phải có ít nhất 10 số"),
+  customerEmail: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
+  f1AgentId: z.string(),
+  f0ReferrerId: z.string().optional(),
+  notes: z.string().optional(),
+});
+
 type AffiliateFormData = z.infer<typeof affiliateSchema>;
+type CustomerConversionFormData = z.infer<typeof customerConversionSchema>;
 
 export default function AffiliatePage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  const [selectedAgentForCustomers, setSelectedAgentForCustomers] = useState<string>("");
+  const [showCustomerForm, setShowCustomerForm] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
 
   const { data: members = [], isLoading } = useQuery({
     queryKey: ["/api/affiliate/members"],
@@ -43,6 +56,15 @@ export default function AffiliatePage() {
     queryKey: ["/api/affiliate/members/parent"],
   });
 
+  const { data: customerConversions = [] } = useQuery({
+    queryKey: ["/api/customer-conversions"],
+  });
+
+  const { data: agentCustomers = [] } = useQuery({
+    queryKey: ["/api/customer-conversions/agent", selectedAgentForCustomers],
+    enabled: !!selectedAgentForCustomers,
+  });
+
   const form = useForm<AffiliateFormData>({
     resolver: zodResolver(affiliateSchema),
     defaultValues: {
@@ -51,6 +73,17 @@ export default function AffiliatePage() {
       phone: "",
       memberType: "parent",
       sponsorId: "",
+    },
+  });
+
+  const customerForm = useForm<CustomerConversionFormData>({
+    resolver: zodResolver(customerConversionSchema),
+    defaultValues: {
+      customerName: "",
+      customerPhone: "",
+      customerEmail: "",
+      f1AgentId: "",
+      notes: "",
     },
   });
 
@@ -77,8 +110,70 @@ export default function AffiliatePage() {
     },
   });
 
+  const addCustomerMutation = useMutation({
+    mutationFn: async (data: CustomerConversionFormData) => {
+      const response = await apiRequest("POST", "/api/customer-conversions", data);
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/customer-conversions"] });
+      toast({
+        title: "Thêm khách hàng thành công! 📋",
+        description: "Khách hàng đã được thêm vào danh sách theo dõi.",
+      });
+      setShowCustomerForm(false);
+      customerForm.reset();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Thêm khách hàng thất bại",
+        description: error.message || "Có lỗi xảy ra khi thêm khách hàng",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateCustomerStatusMutation = useMutation({
+    mutationFn: async ({ id, status, paymentAmount }: { id: number; status: string; paymentAmount?: string }) => {
+      const response = await apiRequest("PUT", `/api/customer-conversions/${id}`, {
+        conversionStatus: status,
+        paymentAmount: paymentAmount ? parseFloat(paymentAmount) : undefined,
+      });
+      return response;
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/customer-conversions"] });
+      if (variables.status === "payment_completed") {
+        toast({
+          title: "Xác nhận thanh toán thành công! 💰",
+          description: "Hoa hồng đã được tự động phân phối cho F1 và F0.",
+        });
+      } else {
+        toast({
+          title: "Cập nhật trạng thái thành công!",
+          description: "Trạng thái khách hàng đã được cập nhật.",
+        });
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Cập nhật thất bại",
+        description: error.message || "Có lỗi xảy ra khi cập nhật trạng thái",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: AffiliateFormData) => {
     registerMutation.mutate(data);
+  };
+
+  const onCustomerSubmit = (data: CustomerConversionFormData) => {
+    addCustomerMutation.mutate(data);
+  };
+
+  const handleStatusUpdate = (customerId: number, status: string, paymentAmount?: string) => {
+    updateCustomerStatusMutation.mutate({ id: customerId, status, paymentAmount });
   };
 
   const getMemberTypeColor = (memberType: string) => {
@@ -195,10 +290,11 @@ export default function AffiliatePage() {
         </div>
 
         <Tabs defaultValue="members" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="members">Thành viên</TabsTrigger>
             <TabsTrigger value="teachers">Giáo viên</TabsTrigger>
             <TabsTrigger value="parents">Phụ huynh</TabsTrigger>
+            <TabsTrigger value="customers">Khách hàng F1</TabsTrigger>
             <TabsTrigger value="join">Tham gia</TabsTrigger>
           </TabsList>
 
@@ -487,6 +583,143 @@ export default function AffiliatePage() {
             </div>
           </TabsContent>
 
+          <TabsContent value="customers" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <UserCheck className="w-5 h-5" />
+                Theo dõi khách hàng F1
+              </h2>
+              <Button onClick={() => setShowCustomerForm(true)}>
+                Thêm khách hàng
+              </Button>
+            </div>
+            
+            <div className="mb-4">
+              <Label htmlFor="agentSelect">Chọn F1 Agent để xem khách hàng:</Label>
+              <select
+                id="agentSelect"
+                value={selectedAgentForCustomers}
+                onChange={(e) => setSelectedAgentForCustomers(e.target.value)}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+              >
+                <option value="">-- Chọn agent --</option>
+                {members.map((member: any) => (
+                  <option key={member.id} value={member.id}>
+                    {member.name} ({member.categoryName})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {selectedAgentForCustomers && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {agentCustomers.map((customer: any) => {
+                  const getStatusColor = (status: string) => {
+                    switch (status) {
+                      case "potential_info": return "bg-red-100 text-red-800 border-red-200";
+                      case "high_conversion": return "bg-yellow-100 text-yellow-800 border-yellow-200";
+                      case "payment_completed": return "bg-green-100 text-green-800 border-green-200";
+                      default: return "bg-gray-100 text-gray-800 border-gray-200";
+                    }
+                  };
+
+                  const getStatusText = (status: string) => {
+                    switch (status) {
+                      case "potential_info": return "Thông tin tiềm năng";
+                      case "high_conversion": return "Khả năng cao";
+                      case "payment_completed": return "Đã thanh toán";
+                      default: return "Chưa xác định";
+                    }
+                  };
+
+                  return (
+                    <Card key={customer.id} className="border-blue-200">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center justify-between">
+                          <span className="text-lg">{customer.customerName}</span>
+                          <Badge className={getStatusColor(customer.conversionStatus)}>
+                            {getStatusText(customer.conversionStatus)}
+                          </Badge>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Phone className="w-4 h-4 text-gray-500" />
+                            <span className="text-sm">{customer.customerPhone}</span>
+                          </div>
+                          {customer.customerEmail && (
+                            <div className="flex items-center gap-2">
+                              <Mail className="w-4 h-4 text-gray-500" />
+                              <span className="text-sm">{customer.customerEmail}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4 text-gray-500" />
+                            <span className="text-sm">
+                              {new Date(customer.createdAt).toLocaleDateString('vi-VN')}
+                            </span>
+                          </div>
+                          {customer.paymentAmount && (
+                            <div className="flex items-center gap-2">
+                              <Money className="w-4 h-4 text-green-500" />
+                              <span className="text-sm font-semibold text-green-600">
+                                {customer.paymentAmount.toLocaleString('vi-VN')} VNĐ
+                              </span>
+                            </div>
+                          )}
+                          {customer.notes && (
+                            <p className="text-sm text-gray-600 italic">{customer.notes}</p>
+                          )}
+                        </div>
+                        
+                        <div className="mt-4 space-y-2">
+                          <div className="flex gap-1">
+                            <Button
+                              size="sm"
+                              variant={customer.conversionStatus === "potential_info" ? "default" : "outline"}
+                              className="flex-1 text-xs"
+                              onClick={() => handleStatusUpdate(customer.id, "potential_info")}
+                            >
+                              🔴 Tiềm năng
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant={customer.conversionStatus === "high_conversion" ? "default" : "outline"}
+                              className="flex-1 text-xs"
+                              onClick={() => handleStatusUpdate(customer.id, "high_conversion")}
+                            >
+                              🟡 Khả năng cao
+                            </Button>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant={customer.conversionStatus === "payment_completed" ? "default" : "outline"}
+                            className="w-full text-xs"
+                            onClick={() => {
+                              const amount = prompt("Nhập số tiền thanh toán (VNĐ):");
+                              if (amount) {
+                                handleStatusUpdate(customer.id, "payment_completed", amount);
+                              }
+                            }}
+                          >
+                            🟢 Xác nhận thanh toán
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+
+            {selectedAgentForCustomers && agentCustomers.length === 0 && (
+              <div className="text-center py-8">
+                <p className="text-gray-500">Agent này chưa có khách hàng nào</p>
+              </div>
+            )}
+          </TabsContent>
+
           <TabsContent value="join" className="space-y-4">
             <Card className="max-w-md mx-auto">
               <CardHeader>
@@ -700,6 +933,100 @@ export default function AffiliatePage() {
                 <li>• Giao dịch trên sàn DEX</li>
               </ul>
             </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Customer Form Modal */}
+        <Dialog open={showCustomerForm} onOpenChange={setShowCustomerForm}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-center">
+                <UserCheck className="w-6 h-6 mx-auto mb-2" />
+                Thêm khách hàng F1
+              </DialogTitle>
+            </DialogHeader>
+            <form onSubmit={customerForm.handleSubmit(onCustomerSubmit)} className="space-y-4">
+              <div>
+                <Label htmlFor="customerName">Tên khách hàng</Label>
+                <Input
+                  id="customerName"
+                  {...customerForm.register("customerName")}
+                  placeholder="Nhập tên khách hàng"
+                />
+                {customerForm.formState.errors.customerName && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {customerForm.formState.errors.customerName.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="customerPhone">Số điện thoại</Label>
+                <Input
+                  id="customerPhone"
+                  {...customerForm.register("customerPhone")}
+                  placeholder="Nhập số điện thoại"
+                />
+                {customerForm.formState.errors.customerPhone && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {customerForm.formState.errors.customerPhone.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="customerEmail">Email (tùy chọn)</Label>
+                <Input
+                  id="customerEmail"
+                  type="email"
+                  {...customerForm.register("customerEmail")}
+                  placeholder="Nhập email nếu có"
+                />
+                {customerForm.formState.errors.customerEmail && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {customerForm.formState.errors.customerEmail.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="f1AgentId">F1 Agent</Label>
+                <select
+                  id="f1AgentId"
+                  {...customerForm.register("f1AgentId")}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+                >
+                  <option value="">-- Chọn F1 Agent --</option>
+                  {members.map((member: any) => (
+                    <option key={member.id} value={member.id}>
+                      {member.name} ({member.categoryName})
+                    </option>
+                  ))}
+                </select>
+                {customerForm.formState.errors.f1AgentId && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {customerForm.formState.errors.f1AgentId.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="notes">Ghi chú</Label>
+                <Input
+                  id="notes"
+                  {...customerForm.register("notes")}
+                  placeholder="Ghi chú thêm thông tin..."
+                />
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={addCustomerMutation.isPending}
+              >
+                {addCustomerMutation.isPending ? "Đang thêm..." : "Thêm khách hàng"}
+              </Button>
+            </form>
           </DialogContent>
         </Dialog>
       </div>

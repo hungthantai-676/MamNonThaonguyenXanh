@@ -1,4 +1,4 @@
-import { users, articles, testimonials, programs, activities, admissionForms, contactForms, chatMessages, notifications, admissionSteps, mediaCovers, socialMediaLinks, serviceRegistrations, affiliateMembers, affiliateTransactions, affiliateRewards, dexTrades, type User, type InsertUser, type Article, type InsertArticle, type Testimonial, type InsertTestimonial, type Program, type InsertProgram, type Activity, type InsertActivity, type AdmissionForm, type InsertAdmissionForm, type ContactForm, type InsertContactForm, type ChatMessage, type InsertChatMessage, type Notification, type InsertNotification, type AdmissionStep, type InsertAdmissionStep, type MediaCover, type InsertMediaCover, type SocialMediaLink, type InsertSocialMediaLink, type ServiceRegistration, type InsertServiceRegistration, type AffiliateMember, type InsertAffiliateMember, type AffiliateTransaction, type InsertAffiliateTransaction, type AffiliateReward, type InsertAffiliateReward, type DexTrade, type InsertDexTrade } from "@shared/schema";
+import { users, articles, testimonials, programs, activities, admissionForms, contactForms, chatMessages, notifications, admissionSteps, mediaCovers, socialMediaLinks, serviceRegistrations, affiliateMembers, affiliateTransactions, affiliateRewards, dexTrades, customerConversions, commissionSettings, commissionTransactions, type User, type InsertUser, type Article, type InsertArticle, type Testimonial, type InsertTestimonial, type Program, type InsertProgram, type Activity, type InsertActivity, type AdmissionForm, type InsertAdmissionForm, type ContactForm, type InsertContactForm, type ChatMessage, type InsertChatMessage, type Notification, type InsertNotification, type AdmissionStep, type InsertAdmissionStep, type MediaCover, type InsertMediaCover, type SocialMediaLink, type InsertSocialMediaLink, type ServiceRegistration, type InsertServiceRegistration, type AffiliateMember, type InsertAffiliateMember, type AffiliateTransaction, type InsertAffiliateTransaction, type AffiliateReward, type InsertAffiliateReward, type DexTrade, type InsertDexTrade, type CustomerConversion, type InsertCustomerConversion, type CommissionSetting, type InsertCommissionSetting, type CommissionTransaction, type InsertCommissionTransaction } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
@@ -112,6 +112,27 @@ export interface IStorage {
   getDexTradesByMember(memberId: string): Promise<DexTrade[]>;
   createDexTrade(trade: InsertDexTrade): Promise<DexTrade>;
   updateDexTrade(id: number, trade: Partial<InsertDexTrade>): Promise<DexTrade>;
+  
+  // Customer conversion methods
+  getCustomerConversions(): Promise<CustomerConversion[]>;
+  getCustomerConversion(id: number): Promise<CustomerConversion | undefined>;
+  getCustomerConversionsByF1Agent(f1AgentId: string): Promise<CustomerConversion[]>;
+  createCustomerConversion(conversion: InsertCustomerConversion): Promise<CustomerConversion>;
+  updateCustomerConversion(id: number, conversion: Partial<InsertCustomerConversion>): Promise<CustomerConversion>;
+  deleteCustomerConversion(id: number): Promise<void>;
+  
+  // Commission setting methods
+  getCommissionSettings(): Promise<CommissionSetting[]>;
+  getActiveCommissionSetting(): Promise<CommissionSetting | undefined>;
+  createCommissionSetting(setting: InsertCommissionSetting): Promise<CommissionSetting>;
+  updateCommissionSetting(id: number, setting: Partial<InsertCommissionSetting>): Promise<CommissionSetting>;
+  
+  // Commission transaction methods
+  getCommissionTransactions(): Promise<CommissionTransaction[]>;
+  getCommissionTransaction(id: number): Promise<CommissionTransaction | undefined>;
+  getCommissionTransactionsByRecipient(recipientId: string): Promise<CommissionTransaction[]>;
+  createCommissionTransaction(transaction: InsertCommissionTransaction): Promise<CommissionTransaction>;
+  updateCommissionTransaction(id: number, transaction: Partial<InsertCommissionTransaction>): Promise<CommissionTransaction>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -591,6 +612,99 @@ export class DatabaseStorage implements IStorage {
       .where(eq(dexTrades.id, id))
       .returning();
     return trade;
+  }
+
+  // Customer conversion methods
+  async getCustomerConversions(): Promise<CustomerConversion[]> {
+    return await db.select().from(customerConversions).orderBy(customerConversions.createdAt);
+  }
+
+  async getCustomerConversion(id: number): Promise<CustomerConversion | undefined> {
+    const [conversion] = await db.select().from(customerConversions).where(eq(customerConversions.id, id));
+    return conversion || undefined;
+  }
+
+  async getCustomerConversionsByF1Agent(f1AgentId: string): Promise<CustomerConversion[]> {
+    return await db.select().from(customerConversions).where(eq(customerConversions.f1AgentId, f1AgentId));
+  }
+
+  async createCustomerConversion(insertConversion: InsertCustomerConversion): Promise<CustomerConversion> {
+    const [conversion] = await db
+      .insert(customerConversions)
+      .values(insertConversion)
+      .returning();
+    return conversion;
+  }
+
+  async updateCustomerConversion(id: number, conversionData: Partial<InsertCustomerConversion>): Promise<CustomerConversion> {
+    const [conversion] = await db
+      .update(customerConversions)
+      .set({ ...conversionData, updatedAt: new Date() })
+      .where(eq(customerConversions.id, id))
+      .returning();
+    return conversion;
+  }
+
+  async deleteCustomerConversion(id: number): Promise<void> {
+    await db.delete(customerConversions).where(eq(customerConversions.id, id));
+  }
+
+  // Commission setting methods
+  async getCommissionSettings(): Promise<CommissionSetting[]> {
+    return await db.select().from(commissionSettings).orderBy(commissionSettings.updatedAt);
+  }
+
+  async getActiveCommissionSetting(): Promise<CommissionSetting | undefined> {
+    const [setting] = await db.select().from(commissionSettings).where(eq(commissionSettings.isActive, true));
+    return setting || undefined;
+  }
+
+  async createCommissionSetting(insertSetting: InsertCommissionSetting): Promise<CommissionSetting> {
+    const [setting] = await db
+      .insert(commissionSettings)
+      .values(insertSetting)
+      .returning();
+    return setting;
+  }
+
+  async updateCommissionSetting(id: number, settingData: Partial<InsertCommissionSetting>): Promise<CommissionSetting> {
+    const [setting] = await db
+      .update(commissionSettings)
+      .set({ ...settingData, updatedAt: new Date() })
+      .where(eq(commissionSettings.id, id))
+      .returning();
+    return setting;
+  }
+
+  // Commission transaction methods
+  async getCommissionTransactions(): Promise<CommissionTransaction[]> {
+    return await db.select().from(commissionTransactions).orderBy(commissionTransactions.createdAt);
+  }
+
+  async getCommissionTransaction(id: number): Promise<CommissionTransaction | undefined> {
+    const [transaction] = await db.select().from(commissionTransactions).where(eq(commissionTransactions.id, id));
+    return transaction || undefined;
+  }
+
+  async getCommissionTransactionsByRecipient(recipientId: string): Promise<CommissionTransaction[]> {
+    return await db.select().from(commissionTransactions).where(eq(commissionTransactions.recipientId, recipientId));
+  }
+
+  async createCommissionTransaction(insertTransaction: InsertCommissionTransaction): Promise<CommissionTransaction> {
+    const [transaction] = await db
+      .insert(commissionTransactions)
+      .values(insertTransaction)
+      .returning();
+    return transaction;
+  }
+
+  async updateCommissionTransaction(id: number, transactionData: Partial<InsertCommissionTransaction>): Promise<CommissionTransaction> {
+    const [transaction] = await db
+      .update(commissionTransactions)
+      .set({ ...transactionData })
+      .where(eq(commissionTransactions.id, id))
+      .returning();
+    return transaction;
   }
 }
 

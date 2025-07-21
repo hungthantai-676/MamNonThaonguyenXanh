@@ -6,12 +6,15 @@ import {
   insertArticleSchema, insertTestimonialSchema, insertProgramSchema, 
   insertActivitySchema, insertAdmissionFormSchema, insertContactFormSchema,
   insertAdmissionStepSchema, insertMediaCoverSchema, insertSocialMediaLinkSchema,
-  insertServiceRegistrationSchema, insertAffiliateMemberSchema, updateAffiliateMemberSchema
+  insertServiceRegistrationSchema, insertAffiliateMemberSchema, updateAffiliateMemberSchema,
+  insertCustomerConversionSchema, insertCommissionSettingSchema, insertCommissionTransactionSchema
 } from "@shared/schema";
 import { notificationService } from "./notifications";
 import { sendTestEmail } from "./email";
 import AffiliateService from "./affiliate";
 import { ChatbotService } from "./chatbot";
+import { commissionService } from "./commission";
+import { v4 as uuidv4 } from 'uuid';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Article routes
@@ -683,6 +686,143 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to validate referral code" });
     }
   });
+
+  // Customer conversion tracking routes
+  app.get("/api/customer-conversions", async (req, res) => {
+    try {
+      const conversions = await storage.getCustomerConversions();
+      res.json(conversions);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch customer conversions" });
+    }
+  });
+
+  app.get("/api/customer-conversions/agent/:agentId", async (req, res) => {
+    try {
+      const { agentId } = req.params;
+      const conversions = await storage.getCustomerConversionsByF1Agent(agentId);
+      res.json(conversions);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch agent conversions" });
+    }
+  });
+
+  app.post("/api/customer-conversions", async (req, res) => {
+    try {
+      const validatedData = insertCustomerConversionSchema.parse({
+        ...req.body,
+        customerId: uuidv4(),
+      });
+      const conversion = await storage.createCustomerConversion(validatedData);
+      res.status(201).json(conversion);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid customer conversion data" });
+    }
+  });
+
+  app.put("/api/customer-conversions/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { conversionStatus, paymentAmount, ...otherData } = req.body;
+      
+      // Update conversion status
+      const conversion = await storage.updateCustomerConversion(id, {
+        conversionStatus,
+        paymentAmount,
+        confirmedAt: conversionStatus === "payment_completed" ? new Date() : undefined,
+        ...otherData,
+      });
+
+      // If status is "payment_completed", trigger commission distribution
+      if (conversionStatus === "payment_completed" && paymentAmount) {
+        await commissionService.processCommissionDistribution(
+          conversion.customerId,
+          parseFloat(paymentAmount),
+          conversion.f1AgentId,
+          conversion.f0ReferrerId || undefined
+        );
+      }
+
+      res.json(conversion);
+    } catch (error) {
+      console.error("Error updating customer conversion:", error);
+      res.status(400).json({ message: "Failed to update customer conversion" });
+    }
+  });
+
+  app.delete("/api/customer-conversions/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteCustomerConversion(id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete customer conversion" });
+    }
+  });
+
+  // Commission settings routes
+  app.get("/api/commission-settings", async (req, res) => {
+    try {
+      const settings = await storage.getCommissionSettings();
+      res.json(settings);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch commission settings" });
+    }
+  });
+
+  app.post("/api/commission-settings", async (req, res) => {
+    try {
+      const validatedData = insertCommissionSettingSchema.parse(req.body);
+      const setting = await storage.createCommissionSetting(validatedData);
+      res.status(201).json(setting);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid commission setting data" });
+    }
+  });
+
+  app.put("/api/commission-settings/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertCommissionSettingSchema.partial().parse(req.body);
+      const setting = await storage.updateCommissionSetting(id, validatedData);
+      res.json(setting);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to update commission setting" });
+    }
+  });
+
+  // Commission transactions routes
+  app.get("/api/commission-transactions", async (req, res) => {
+    try {
+      const transactions = await storage.getCommissionTransactions();
+      res.json(transactions);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch commission transactions" });
+    }
+  });
+
+  app.get("/api/commission-transactions/recipient/:recipientId", async (req, res) => {
+    try {
+      const { recipientId } = req.params;
+      const transactions = await storage.getCommissionTransactionsByRecipient(recipientId);
+      res.json(transactions);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch recipient transactions" });
+    }
+  });
+
+  app.get("/api/commission-summary/:agentId", async (req, res) => {
+    try {
+      const { agentId } = req.params;
+      const summary = await commissionService.getCommissionSummary(agentId);
+      res.json(summary);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch commission summary" });
+    }
+  });
+
+  // Initialize commission settings on startup
+  commissionService.initializeDefaultSettings().catch(console.error);
 
   // Chatbot API endpoint
   app.post("/api/chatbot", async (req, res) => {
