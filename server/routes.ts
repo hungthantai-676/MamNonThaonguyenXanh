@@ -5,7 +5,7 @@ import {
   insertArticleSchema, insertTestimonialSchema, insertProgramSchema, 
   insertActivitySchema, insertAdmissionFormSchema, insertContactFormSchema,
   insertAdmissionStepSchema, insertMediaCoverSchema, insertSocialMediaLinkSchema,
-  insertServiceRegistrationSchema, insertAffiliateMemberSchema
+  insertServiceRegistrationSchema, insertAffiliateMemberSchema, updateAffiliateMemberSchema
 } from "@shared/schema";
 import { notificationService } from "./notifications";
 import { sendTestEmail } from "./email";
@@ -492,7 +492,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Calculate level
-      const level = AffiliateService.calculateMemberLevel(sponsor);
+      const level = AffiliateService.calculateMemberLevel(sponsor || null);
       
       // Generate referral link
       const baseUrl = `${req.protocol}://${req.get('host')}`;
@@ -529,10 +529,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const member = await storage.createAffiliateMember(memberData);
       
       // Update sponsor's referral count
-      if (sponsor) {
-        await storage.updateAffiliateMember(sponsor.id, {
+      if (sponsor && sponsor.totalReferrals !== null) {
+        const updateData = updateAffiliateMemberSchema.parse({
           totalReferrals: sponsor.totalReferrals + 1,
         });
+        await storage.updateAffiliateMember(sponsor.id, updateData);
       }
       
       res.status(201).json(member);
@@ -627,14 +628,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const trade = await storage.createDexTrade(tradeData);
       
       // Update member's token balance (simplified)
-      const currentBalance = parseFloat(member.tokenBalance);
+      const currentBalance = parseFloat(member.tokenBalance || "0");
       const newBalance = tradeType === "sell" 
         ? currentBalance - parseFloat(tokenAmount)
         : currentBalance + parseFloat(tokenAmount);
         
-      await storage.updateAffiliateMember(member.id, {
+      const updateData = updateAffiliateMemberSchema.parse({
         tokenBalance: newBalance.toString(),
       });
+      await storage.updateAffiliateMember(member.id, updateData);
       
       res.status(201).json(trade);
     } catch (error) {

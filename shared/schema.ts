@@ -298,6 +298,12 @@ export const insertAffiliateMemberSchema = createInsertSchema(affiliateMembers).
   updatedAt: true,
 });
 
+export const updateAffiliateMemberSchema = createInsertSchema(affiliateMembers).omit({
+  id: true,
+  memberId: true,
+  createdAt: true,
+}).partial();
+
 export const insertAffiliateTransactionSchema = createInsertSchema(affiliateTransactions).omit({
   id: true,
   transactionId: true,
