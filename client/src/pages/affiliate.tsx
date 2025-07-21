@@ -252,8 +252,8 @@ export default function AffiliatePage() {
                     <div className="mt-4 flex gap-2">
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <QrCode className="w-4 h-4 mr-1" />
+                          <Button variant="outline" size="sm" className="flex items-center gap-1">
+                            <QrCode className="w-4 h-4" />
                             QR Code
                           </Button>
                         </DialogTrigger>
@@ -271,8 +271,31 @@ export default function AffiliatePage() {
                             <p className="text-sm text-gray-600 mb-2">
                               Chia sẻ QR code này để mời người khác tham gia
                             </p>
-                            <div className="bg-gray-100 p-2 rounded text-xs font-mono break-all">
+                            <div className="bg-gray-100 p-2 rounded text-xs font-mono break-all mb-3">
                               {member.referralLink}
+                            </div>
+                            <div className="space-y-2">
+                              <Button
+                                onClick={() => {
+                                  navigator.clipboard.writeText(member.referralLink);
+                                  toast({
+                                    title: "Đã sao chép!",
+                                    description: "Link giới thiệu đã được sao chép vào clipboard",
+                                  });
+                                }}
+                                size="sm"
+                                className="w-full"
+                              >
+                                Sao chép link
+                              </Button>
+                              <div className="text-center">
+                                <p className="text-sm font-semibold text-green-600">
+                                  Mã giới thiệu: {member.memberId}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  Người khác có thể nhập mã này khi đăng ký
+                                </p>
+                              </div>
                             </div>
                           </div>
                         </DialogContent>
@@ -320,6 +343,58 @@ export default function AffiliatePage() {
                         </span>
                       </div>
                     </div>
+                    <div className="mt-3">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="w-full flex items-center gap-1">
+                            <QrCode className="w-4 h-4" />
+                            Xem mã giới thiệu
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>QR Code giới thiệu - {member.name}</DialogTitle>
+                          </DialogHeader>
+                          <div className="text-center">
+                            <img 
+                              src={member.qrCode} 
+                              alt="QR Code" 
+                              className="mx-auto mb-4"
+                              style={{ maxWidth: '200px' }}
+                            />
+                            <p className="text-sm text-gray-600 mb-2">
+                              Chia sẻ QR code này để mời người khác tham gia
+                            </p>
+                            <div className="bg-gray-100 p-2 rounded text-xs font-mono break-all mb-3">
+                              {member.referralLink}
+                            </div>
+                            <div className="space-y-2">
+                              <Button
+                                onClick={() => {
+                                  navigator.clipboard.writeText(member.referralLink);
+                                  toast({
+                                    title: "Đã sao chép!",
+                                    description: "Link giới thiệu đã được sao chép vào clipboard",
+                                  });
+                                }}
+                                size="sm"
+                                className="w-full"
+                              >
+                                Sao chép link
+                              </Button>
+                              <div className="text-center">
+                                <p className="text-sm font-semibold text-green-600">
+                                  Mã giới thiệu: {member.memberId}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  Người khác có thể nhập mã này khi đăng ký
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -353,6 +428,58 @@ export default function AffiliatePage() {
                           {member.totalReferrals} giới thiệu
                         </span>
                       </div>
+                    </div>
+                    <div className="mt-3">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="w-full flex items-center gap-1">
+                            <QrCode className="w-4 h-4" />
+                            Xem mã giới thiệu
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>QR Code giới thiệu - {member.name}</DialogTitle>
+                          </DialogHeader>
+                          <div className="text-center">
+                            <img 
+                              src={member.qrCode} 
+                              alt="QR Code" 
+                              className="mx-auto mb-4"
+                              style={{ maxWidth: '200px' }}
+                            />
+                            <p className="text-sm text-gray-600 mb-2">
+                              Chia sẻ QR code này để mời người khác tham gia
+                            </p>
+                            <div className="bg-gray-100 p-2 rounded text-xs font-mono break-all mb-3">
+                              {member.referralLink}
+                            </div>
+                            <div className="space-y-2">
+                              <Button
+                                onClick={() => {
+                                  navigator.clipboard.writeText(member.referralLink);
+                                  toast({
+                                    title: "Đã sao chép!",
+                                    description: "Link giới thiệu đã được sao chép vào clipboard",
+                                  });
+                                }}
+                                size="sm"
+                                className="w-full"
+                              >
+                                Sao chép link
+                              </Button>
+                              <div className="text-center">
+                                <p className="text-sm font-semibold text-purple-600">
+                                  Mã giới thiệu: {member.memberId}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  Người khác có thể nhập mã này khi đăng ký
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </CardContent>
                 </Card>
