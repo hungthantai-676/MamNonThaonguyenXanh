@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { z } from "zod";
 import { storage } from "./storage";
 import { 
   insertArticleSchema, insertTestimonialSchema, insertProgramSchema, 
@@ -470,8 +471,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/affiliate/register", async (req, res) => {
     try {
-      const parsed = insertAffiliateMemberSchema.parse(req.body);
-      const { name, email, phone, memberType, sponsorId } = parsed;
+      // First parse with just the basic fields (without categoryName)
+      const basicData = z.object({
+        name: z.string().min(1),
+        email: z.string().email(),
+        phone: z.string().min(1),
+        memberType: z.enum(["teacher", "parent"]),
+        sponsorId: z.string().optional(),
+      }).parse(req.body);
+      
+      const { name, email, phone, memberType, sponsorId } = basicData;
+      
+      // Calculate category name from member type
+      const categoryName = memberType === "teacher" 
+        ? "Chăm sóc phụ huynh" 
+        : "Đại sứ thương hiệu";
       
       // Check if email already exists
       const existingMember = await storage.getAffiliateMemberByEmail(email);
@@ -503,9 +517,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Encrypt private key
       const encryptedPrivateKey = AffiliateService.encryptPrivateKey(wallet.privateKey);
-      
-      // Get category name
-      const categoryName = AffiliateService.getMemberTypeDisplayName(memberType);
       
       // Create member
       const memberData = {
