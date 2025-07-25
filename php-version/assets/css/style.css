@@ -314,8 +314,119 @@ footer a:hover {
     letter-spacing: 1px;
 }
 
+/* Affiliate specific styles */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress {
+    height: 8px;
+}
+
+.affiliate-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.affiliate-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.wallet-balance {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.referral-link {
+    font-family: 'Courier New', monospace;
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+}
+
+.qr-code-container {
+    max-width: 200px;
+    margin: 0 auto;
+}
+
+.status-badge {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+}
+
+.milestone-progress {
+    position: relative;
+}
+
+.milestone-progress::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #e9ecef;
+    z-index: 1;
+}
+
+.milestone-progress .progress-bar {
+    z-index: 2;
+    position: relative;
+}
+
+.conversion-status {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.conversion-status:hover {
+    transform: scale(1.05);
+}
+
+.affiliate-stats .card {
+    border-left: 4px solid transparent;
+}
+
+.affiliate-stats .card.border-success {
+    border-left-color: #28a745;
+}
+
+.affiliate-stats .card.border-warning {
+    border-left-color: #ffc107;
+}
+
+.affiliate-stats .card.border-info {
+    border-left-color: #17a2b8;
+}
+
+.affiliate-stats .card.border-primary {
+    border-left-color: #007bff;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
+    .wallet-balance {
+        font-size: 1.5rem;
+    }
+    
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .affiliate-card {
+        margin-bottom: 1rem;
+    }
+    
     .hero {
         min-height: 50vh;
         text-align: center;

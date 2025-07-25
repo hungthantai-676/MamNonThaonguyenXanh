@@ -385,3 +385,92 @@ const utils = {
 
 // Export utils for global use
 window.utils = utils;
+
+// Affiliate system functions
+window.affiliate = {
+    // Auto-detect referral code from URL
+    checkReferralCode: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const refCode = urlParams.get('ref');
+        
+        if (refCode) {
+            // Store in localStorage for later use
+            localStorage.setItem('referral_code', refCode);
+            
+            // Validate referral code
+            fetch(`ajax/affiliate_actions.php?action=validate_referral&code=${refCode}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.valid) {
+                        showAlert('info', `Bạn được giới thiệu bởi ${data.referrer.name}`);
+                    }
+                });
+        }
+    },
+    
+    // Register affiliate member
+    register: function(formData) {
+        return fetch('ajax/affiliate_actions.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json());
+    },
+    
+    // Get dashboard data
+    getDashboard: function(memberId) {
+        return fetch(`ajax/affiliate_actions.php?action=get_dashboard&member_id=${memberId}`)
+            .then(response => response.json());
+    },
+    
+    // Add customer conversion
+    addConversion: function(data) {
+        const formData = new FormData();
+        formData.append('action', 'add_conversion');
+        Object.keys(data).forEach(key => {
+            formData.append(key, data[key]);
+        });
+        
+        return fetch('ajax/affiliate_actions.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json());
+    },
+    
+    // Update conversion status
+    updateConversionStatus: function(conversionId, status, manualStatus = '', notes = '', assignedStaff = '') {
+        const formData = new FormData();
+        formData.append('action', 'update_conversion_status');
+        formData.append('conversion_id', conversionId);
+        formData.append('status', status);
+        formData.append('manual_status', manualStatus);
+        formData.append('notes', notes);
+        formData.append('assigned_staff', assignedStaff);
+        
+        return fetch('ajax/affiliate_actions.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json());
+    },
+    
+    // Get top performers
+    getTopPerformers: function(limit = 10) {
+        return fetch(`ajax/affiliate_actions.php?action=get_top_performers&limit=${limit}`)
+            .then(response => response.json());
+    },
+    
+    // Search members
+    searchMembers: function(query, role = '') {
+        return fetch(`ajax/affiliate_actions.php?action=search_members&q=${encodeURIComponent(query)}&role=${role}`)
+            .then(response => response.json());
+    }
+};
+
+// Auto-check referral code on page load
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.location.pathname.includes('admission') || utils.getUrlParameter('ref')) {
+        affiliate.checkReferralCode();
+    }
+});

@@ -183,6 +183,48 @@
     </div>
 </section>
 
+<!-- Affiliate Program CTA -->
+<section class="py-5 bg-gradient-primary text-white">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-12">
+                <h3 class="fw-bold mb-3">🎯 Chương trình Affiliate - Kiếm thưởng cùng chúng tôi!</h3>
+                <p class="lead mb-4">Giới thiệu học sinh và nhận thưởng hấp dẫn. Dành cho giáo viên và phụ huynh.</p>
+                
+                <div class="row justify-content-center">
+                    <div class="col-md-5 mb-3">
+                        <div class="card bg-light text-dark h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-chalkboard-teacher fa-3x text-success mb-3"></i>
+                                <h5 class="fw-bold">Giáo viên</h5>
+                                <p class="mb-2"><strong>2.000.000 VNĐ</strong> mỗi học sinh</p>
+                                <p class="mb-3"><strong>+10.000.000 VNĐ</strong> thưởng mốc 5 HS</p>
+                                <a href="?page=affiliate_register" class="btn btn-success">Đăng ký ngay</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-5 mb-3">
+                        <div class="card bg-light text-dark h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-users fa-3x text-warning mb-3"></i>
+                                <h5 class="fw-bold">Phụ huynh</h5>
+                                <p class="mb-2"><strong>2.000 điểm</strong> mỗi học sinh</p>
+                                <p class="mb-3"><strong>+10.000 điểm</strong> thưởng mốc 5 HS</p>
+                                <a href="?page=affiliate_register" class="btn btn-warning">Đăng ký ngay</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <p class="mb-0">✨ Tự động theo dõi • ✨ Tự động tính thưởng • ✨ Ví cá nhân riêng biệt</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- CTA Section -->
 <section class="bg-primary text-white py-5">
     <div class="container text-center">

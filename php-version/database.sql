@@ -198,3 +198,109 @@ INSERT INTO media_coverage (outlet, title, date, type, url, summary) VALUES
 ('VTC News', 'Mầm non Thảo Nguyên Xanh - Điểm sáng trong giáo dục mầm non', '2024-03-15', 'online', 'https://vtc.vn/mam-non-thao-nguyen-xanh', 'Báo cáo về chất lượng giáo dục tại trường'),
 ('HTV', 'Chương trình giáo dục sáng tạo cho trẻ em', '2024-02-20', 'tv', 'https://htv.vn/chuong-trinh-giao-duc', 'Phóng sự về phương pháp giáo dục hiện đại'),
 ('Tuổi Trẻ', 'Môi trường học tập lý tưởng cho trẻ mầm non', '2024-01-10', 'newspaper', 'https://tuoitre.vn/moi-truong-hoc-tap', 'Bài viết về cơ sở vật chất và đội ngũ giáo viên');
+
+-- Affiliate system tables
+CREATE TABLE affiliate_members (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    member_id VARCHAR(20) UNIQUE NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    email VARCHAR(100),
+    role ENUM('teacher', 'parent') NOT NULL,
+    referral_code VARCHAR(10) UNIQUE NOT NULL,
+    qr_code_path VARCHAR(255),
+    total_referrals INT DEFAULT 0,
+    wallet_balance DECIMAL(15,0) DEFAULT 0,
+    points_balance INT DEFAULT 0,
+    current_milestone INT DEFAULT 0,
+    next_milestone_target INT DEFAULT 5,
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Referral tracking
+CREATE TABLE referrals (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    referrer_id VARCHAR(20) NOT NULL,
+    student_name VARCHAR(100) NOT NULL,
+    parent_name VARCHAR(100) NOT NULL,
+    parent_phone VARCHAR(20) NOT NULL,
+    parent_email VARCHAR(100),
+    admission_form_id INT,
+    status ENUM('pending', 'confirmed', 'enrolled') DEFAULT 'pending',
+    reward_amount DECIMAL(15,0) DEFAULT 0,
+    reward_points INT DEFAULT 0,
+    reward_paid ENUM('yes', 'no') DEFAULT 'no',
+    milestone_bonus DECIMAL(15,0) DEFAULT 0,
+    milestone_bonus_points INT DEFAULT 0,
+    confirmed_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (referrer_id) REFERENCES affiliate_members(member_id) ON DELETE CASCADE,
+    FOREIGN KEY (admission_form_id) REFERENCES admission_forms(id) ON DELETE SET NULL
+);
+
+-- Wallet transactions
+CREATE TABLE wallet_transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    member_id VARCHAR(20) NOT NULL,
+    transaction_type ENUM('referral_reward', 'milestone_bonus', 'withdrawal', 'adjustment') NOT NULL,
+    amount DECIMAL(15,0) NOT NULL,
+    points INT DEFAULT 0,
+    description TEXT,
+    referral_id INT,
+    status ENUM('pending', 'completed', 'failed') DEFAULT 'completed',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (member_id) REFERENCES affiliate_members(member_id) ON DELETE CASCADE,
+    FOREIGN KEY (referral_id) REFERENCES referrals(id) ON DELETE SET NULL
+);
+
+-- Customer conversion tracking
+CREATE TABLE customer_conversions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    referrer_id VARCHAR(20) NOT NULL,
+    customer_name VARCHAR(100) NOT NULL,
+    customer_phone VARCHAR(20) NOT NULL,
+    customer_email VARCHAR(100),
+    conversion_source VARCHAR(50),
+    status ENUM('lead', 'consultation', 'enrolled') DEFAULT 'lead',
+    manual_status ENUM('white', 'yellow', 'green') DEFAULT 'white',
+    notes TEXT,
+    assigned_staff VARCHAR(100),
+    conversion_value DECIMAL(15,0) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (referrer_id) REFERENCES affiliate_members(member_id) ON DELETE CASCADE
+);
+
+-- Milestone rewards configuration
+CREATE TABLE milestone_rewards (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    milestone_number INT NOT NULL,
+    required_referrals INT NOT NULL,
+    teacher_bonus DECIMAL(15,0) NOT NULL,
+    parent_bonus_points INT NOT NULL,
+    description VARCHAR(255),
+    active ENUM('yes', 'no') DEFAULT 'yes',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert milestone rewards configuration
+INSERT INTO milestone_rewards (milestone_number, required_referrals, teacher_bonus, parent_bonus_points, description) VALUES
+(1, 5, 10000000, 10000, 'Mốc 5 học sinh đầu tiên'),
+(2, 10, 10000000, 10000, 'Mốc 10 học sinh'),
+(3, 15, 10000000, 10000, 'Mốc 15 học sinh'),
+(4, 20, 10000000, 10000, 'Mốc 20 học sinh'),
+(5, 25, 10000000, 10000, 'Mốc 25 học sinh'),
+(6, 30, 10000000, 10000, 'Mốc 30 học sinh');
+
+-- Insert sample affiliate members
+INSERT INTO affiliate_members (member_id, name, phone, email, role, referral_code, total_referrals, wallet_balance, points_balance) VALUES
+('TCH001', 'Cô Hương Nguyễn', '0912345001', 'huong.nguyen@gmail.com', 'teacher', 'TCH001', 3, 6000000, 0),
+('TCH002', 'Thầy Minh Đặng', '0912345002', 'minh.dang@gmail.com', 'teacher', 'TCH002', 7, 24000000, 0),
+('PAR001', 'Chị Lan Phạm', '0912345003', 'lan.pham@gmail.com', 'parent', 'PAR001', 2, 0, 4000),
+('PAR002', 'Anh Tuấn Lê', '0912345004', 'tuan.le@gmail.com', 'parent', 'PAR002', 8, 0, 26000);
+
+-- Update admission_forms table to include referrer tracking
+ALTER TABLE admission_forms ADD COLUMN referrer_code VARCHAR(10) AFTER special_needs;
+ALTER TABLE admission_forms ADD COLUMN referrer_id VARCHAR(20) AFTER referrer_code;

@@ -69,6 +69,11 @@ if (!in_array($page, $allowed_pages)) {
                         <a class="nav-link <?= $page == 'contact' ? 'active' : '' ?>" href="?page=contact">Liên hệ</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link text-warning" href="?page=affiliate_register">
+                            <i class="fas fa-handshake"></i> Affiliate
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link text-warning" href="?page=admin">
                             <i class="fas fa-user-shield"></i> Quản trị
                         </a>
@@ -81,7 +86,45 @@ if (!in_array($page, $allowed_pages)) {
 
 <!-- Main Content -->
 <main>
-    <?php include "pages/{$page}.php"; ?>
+    <?php 
+    switch($page) {
+        case 'home':
+            include 'pages/home.php';
+            break;
+        case 'about':
+            include 'pages/about.php';
+            break;
+        case 'programs':
+            include 'pages/programs.php';
+            break;
+        case 'activities':
+            include 'pages/activities.php';
+            break;
+        case 'parents':
+            include 'pages/parents.php';
+            break;
+        case 'admission':
+            include 'pages/admission.php';
+            break;
+        case 'news':
+            include 'pages/news.php';
+            break;
+        case 'contact':
+            include 'pages/contact.php';
+            break;
+        case 'affiliate_register':
+            include 'pages/affiliate_register.php';
+            break;
+        case 'affiliate_dashboard':
+            include 'pages/affiliate_dashboard.php';
+            break;
+        case 'admin':
+            include 'pages/admin/dashboard.php';
+            break;
+        default:
+            include 'pages/home.php';
+    }
+    ?>
 </main>
 
 <!-- Footer -->
@@ -103,6 +146,19 @@ if (!in_array($page, $allowed_pages)) {
             <div class="col-md-4 mb-3">
                 <h5>Theo dõi chúng tôi</h5>
                 <div class="d-flex gap-2">
+                    <a href="#" class="text-white"><i class="fab fa-facebook fa-2x"></i></a>
+                    <a href="#" class="text-white"><i class="fab fa-youtube fa-2x"></i></a>
+                </div>
+                <div class="mt-3">
+                    <h6>🎯 Chương trình Affiliate</h6>
+                    <p><a href="?page=affiliate_register" class="text-warning">Đăng ký ngay</a> để kiếm thưởng từ giới thiệu học sinh!</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12 text-center">
+                <hr class="my-3">
+                <p>&copy; 2024 Mầm Non Thảo Nguyên Xanh. Tất cả quyền được bảo lưu.</p>
                     <a href="<?= getSocialMedia('facebook') ?>" class="text-white" target="_blank">
                         <i class="fab fa-facebook fa-2x"></i>
                     </a>
