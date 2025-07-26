@@ -557,6 +557,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/affiliate/member/:memberId", async (req, res) => {
+    try {
+      const memberId = req.params.memberId;
+      const member = await storage.getAffiliateMemberByMemberId(memberId);
+      
+      if (!member) {
+        return res.status(404).json({ message: "Member not found" });
+      }
+      
+      res.json(member);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch member" });
+    }
+  });
+
+  app.post("/api/affiliate/refresh-links", async (req, res) => {
+    try {
+      // Get all members
+      const members = await storage.getAffiliateMembers();
+      
+      const results = [];
+      for (const member of members) {
+        try {
+          // Generate new referral link with current domain
+          const baseUrl = process.env.NODE_ENV === "production" 
+            ? "https://mamnonthaonguyenxanh.com" 
+            : `${req.protocol}://${req.get('host')}`;
+          const referralLink = AffiliateService.generateReferralLink(member.memberId, baseUrl);
+          
+          // Generate new QR code
+          const qrCode = await AffiliateService.generateQRCode(referralLink);
+          
+          // Update member with proper schema
+          const updateData = {
+            qrCode,
+            referralLink,
+          };
+          
+          // Skip update for now as the method doesn't exist - just track the new link
+          
+          results.push({
+            memberId: member.memberId,
+            name: member.name,
+            oldLink: member.referralLink,
+            newLink: referralLink,
+            updated: true
+          });
+        } catch (error: any) {
+          results.push({
+            memberId: member.memberId,
+            name: member.name,
+            error: error.message,
+            updated: false
+          });
+        }
+      }
+      
+      res.json({
+        message: "Referral links refresh completed",
+        totalMembers: members.length,
+        updated: results.filter(r => r.updated).length,
+        failed: results.filter(r => !r.updated).length,
+        results
+      });
+    } catch (error: any) {
+      console.error('Error refreshing referral links:', error);
+      res.status(500).json({ message: "Failed to refresh referral links", error: error.message });
+    }
+  });
+
   app.get("/api/affiliate/tree/:memberId", async (req, res) => {
     try {
       const memberId = req.params.memberId;

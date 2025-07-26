@@ -198,10 +198,11 @@ export default function AffiliatePage() {
   };
 
   const getReferralLink = (member: any) => {
+    // Always generate current domain link instead of stored one which might be localhost
     return `${window.location.origin}/affiliate/join?ref=${member.memberId}`;
   };
 
-  const handleCopyLink = (member: any) => {
+  const copyReferralLink = (member: any) => {
     const link = getReferralLink(member);
     navigator.clipboard.writeText(link);
     toast({
@@ -387,7 +388,9 @@ export default function AffiliatePage() {
                             </div>
                             <div className="space-y-2">
                               <Button
-                                onClick={() => handleCopyLink(member)}
+                                onClick={() => 
+                                  copyReferralLink(member)
+                                }}
                                 size="sm"
                                 className="w-full"
                               >
@@ -475,7 +478,9 @@ export default function AffiliatePage() {
                             </div>
                             <div className="space-y-2">
                               <Button
-                                onClick={() => handleCopyLink(member)}
+                                onClick={() => 
+                                  copyReferralLink(member)
+                                }}
                                 size="sm"
                                 className="w-full"
                               >
@@ -555,7 +560,9 @@ export default function AffiliatePage() {
                             </div>
                             <div className="space-y-2">
                               <Button
-                                onClick={() => handleCopyLink(member)}
+                                onClick={() => 
+                                  copyReferralLink(member)
+                                }}
                                 size="sm"
                                 className="w-full"
                               >
@@ -693,7 +700,7 @@ export default function AffiliatePage() {
                             size="sm"
                             variant={customer.conversionStatus === "payment_completed" ? "default" : "outline"}
                             className="w-full text-xs"
-                            onClick={() => {
+                            onClick={() => 
                               const amount = prompt("Nhập số tiền thanh toán (VNĐ):");
                               if (amount) {
                                 handleStatusUpdate(customer.id, "payment_completed", amount);

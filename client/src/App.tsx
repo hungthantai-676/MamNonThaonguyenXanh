@@ -16,6 +16,7 @@ import NewsDetailTest from "@/pages/news-detail-test";
 import Test from "@/pages/test";
 import Contact from "@/pages/contact";
 import Affiliate from "@/pages/affiliate";
+import AffiliateJoin from "@/pages/affiliate-join";
 import AdminLogin from "@/pages/admin/login";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AffiliateDashboard from "@/pages/admin/affiliate-dashboard";
@@ -41,6 +42,7 @@ function Router() {
           <Route path="/news/:id" component={NewsDetail} />
           <Route path="/contact" component={Contact} />
           <Route path="/affiliate" component={Affiliate} />
+          <Route path="/affiliate/join" component={AffiliateJoin} />
           <Route path="/admin-access" component={AdminAccess} />
           <Route path="/admin-quick" component={AdminQuick} />
           <Route path="/admin/login" component={AdminLogin} />
