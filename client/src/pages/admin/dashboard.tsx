@@ -315,6 +315,13 @@ export default function AdminDashboard() {
           <h1 className="text-2xl font-bold text-dark-gray">🏫 Quản trị Mầm Non Thảo Nguyên Xanh</h1>
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-600">Xin chào Admin</span>
+            <Button 
+              variant="outline" 
+              onClick={() => window.open('/php-version/admin_affiliate.php', '_blank')}
+              className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+            >
+              🔗 Quản trị Affiliate
+            </Button>
             <Button variant="outline" onClick={logout}>
               Đăng xuất
             </Button>
