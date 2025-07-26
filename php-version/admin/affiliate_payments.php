@@ -1,430 +1,472 @@
 <?php
-require_once '../includes/affiliate_functions.php';
-
+// Affiliate Payments Management
 $db = getDB();
 
-// Get all referrals with payment status
-$referrals = $db->fetchAll("
-    SELECT r.*, 
-           am.name as referrer_name, 
-           am.role as referrer_role,
-           am.phone as referrer_phone,
-           am.wallet_balance,
-           am.points_balance,
-           CASE 
-               WHEN r.payment_status = 'pending' THEN 'Chờ thanh toán'
-               WHEN r.payment_status = 'confirmed' THEN 'Đã xác nhận'
-               WHEN r.payment_status = 'paid' THEN 'Đã thanh toán'
-               ELSE 'Chưa xác định'
-           END as payment_status_text
-    FROM referrals r 
-    JOIN affiliate_members am ON r.referrer_id = am.member_id 
-    WHERE r.status IN ('confirmed', 'enrolled')
-    ORDER BY r.created_at DESC
-");
-
-// Calculate totals
-$totalPending = 0;
-$totalConfirmed = 0;
-$totalPaid = 0;
-
-foreach ($referrals as $ref) {
-    $amount = ($ref['referrer_role'] === 'teacher') ? 2000000 : 2000;
+// Handle payment actions
+if ($_POST && isset($_POST['action'])) {
+    $response = ['success' => false, 'message' => ''];
     
-    switch ($ref['payment_status']) {
-        case 'pending':
-            $totalPending += $amount;
-            break;
-        case 'confirmed':
-            $totalConfirmed += $amount;
-            break;
-        case 'paid':
-            $totalPaid += $amount;
+    switch ($_POST['action']) {
+        case 'process_withdrawal':
+            $withdrawalId = (int)$_POST['withdrawal_id'];
+            $status = $_POST['status'];
+            $notes = $_POST['notes'] ?? '';
+            
+            try {
+                $db->beginTransaction();
+                
+                // Get withdrawal details
+                $stmt = $db->prepare("
+                    SELECT aw.*, am.name, am.phone 
+                    FROM affiliate_withdrawals aw 
+                    JOIN affiliate_members am ON aw.member_id = am.id 
+                    WHERE aw.id = ?
+                ");
+                $stmt->execute([$withdrawalId]);
+                $withdrawal = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                if (!$withdrawal) {
+                    throw new Exception('Không tìm thấy yêu cầu rút tiền!');
+                }
+                
+                // Update withdrawal status
+                $updateStmt = $db->prepare("
+                    UPDATE affiliate_withdrawals 
+                    SET status = ?, admin_notes = ?, processed_at = NOW(), updated_at = NOW()
+                    WHERE id = ?
+                ");
+                $updateStmt->execute([$status, $notes, $withdrawalId]);
+                
+                // If rejected, return money to wallet
+                if ($status === 'rejected') {
+                    $walletStmt = $db->prepare("
+                        UPDATE affiliate_wallets 
+                        SET balance = balance + ? 
+                        WHERE member_id = ?
+                    ");
+                    $walletStmt->execute([$withdrawal['amount'], $withdrawal['member_id']]);
+                    
+                    // Log transaction
+                    $transactionStmt = $db->prepare("
+                        INSERT INTO affiliate_transactions 
+                        (member_id, type, amount, description, status, created_at)
+                        VALUES (?, 'withdrawal_rejected', ?, ?, 'completed', NOW())
+                    ");
+                    $transactionStmt->execute([
+                        $withdrawal['member_id'], 
+                        $withdrawal['amount'], 
+                        "Hoàn tiền rút bị từ chối - ID: {$withdrawalId}"
+                    ]);
+                }
+                
+                $db->commit();
+                $response['success'] = true;
+                $response['message'] = 'Xử lý yêu cầu rút tiền thành công!';
+                
+            } catch (Exception $e) {
+                $db->rollBack();
+                $response['message'] = 'Lỗi: ' . $e->getMessage();
+            }
+            
+            header('Content-Type: application/json');
+            echo json_encode($response);
+            exit();
             break;
     }
 }
+
+// Get withdrawal requests with pagination
+$page = (int)($_GET['p'] ?? 1);
+$perPage = 20;
+$offset = ($page - 1) * $perPage;
+
+// Filter options
+$statusFilter = $_GET['status'] ?? '';
+$searchTerm = $_GET['search'] ?? '';
+
+$whereClause = "WHERE 1=1";
+$params = [];
+
+if ($statusFilter) {
+    $whereClause .= " AND aw.status = ?";
+    $params[] = $statusFilter;
+}
+
+if ($searchTerm) {
+    $whereClause .= " AND (am.name LIKE ? OR am.phone LIKE ?)";
+    $params[] = "%$searchTerm%";
+    $params[] = "%$searchTerm%";
+}
+
+// Get total count
+$countStmt = $db->prepare("
+    SELECT COUNT(*) as total
+    FROM affiliate_withdrawals aw
+    JOIN affiliate_members am ON aw.member_id = am.id
+    $whereClause
+");
+$countStmt->execute($params);
+$totalCount = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
+$totalPages = ceil($totalCount / $perPage);
+
+// Get withdrawals data
+$stmt = $db->prepare("
+    SELECT 
+        aw.*,
+        am.name,
+        am.phone,
+        am.role,
+        am.bank_info
+    FROM affiliate_withdrawals aw
+    JOIN affiliate_members am ON aw.member_id = am.id
+    $whereClause
+    ORDER BY aw.created_at DESC
+    LIMIT ? OFFSET ?
+");
+
+$params[] = $perPage;
+$params[] = $offset;
+$stmt->execute($params);
+$withdrawals = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Get payment statistics
+$statsStmt = $db->prepare("
+    SELECT 
+        aw.status,
+        COUNT(*) as count,
+        SUM(aw.amount) as total_amount
+    FROM affiliate_withdrawals aw
+    GROUP BY aw.status
+");
+$statsStmt->execute();
+$stats = $statsStmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3">💰 Quản lý Thanh toán</h1>
+    <h2><i class="fas fa-money-bill-wave text-success"></i> Quản lý Thanh toán</h2>
     <div>
-        <button class="btn btn-warning btn-sm" onclick="confirmAllPayments()">
-            <i class="fas fa-check-double"></i> Xác nhận tất cả
+        <button class="btn btn-outline-primary" onclick="location.reload()">
+            <i class="fas fa-sync-alt"></i> Làm mới
         </button>
-        <button class="btn btn-success btn-sm" onclick="exportPaymentReport()">
-            <i class="fas fa-download"></i> Xuất báo cáo
+        <button class="btn btn-success" onclick="affiliateAdmin.exportData('payments')">
+            <i class="fas fa-download"></i> Xuất Excel
         </button>
     </div>
 </div>
 
-<!-- Payment Statistics -->
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card bg-warning text-white">
-            <div class="card-body text-center">
-                <i class="fas fa-clock fa-2x mb-2"></i>
-                <h4><?= formatCurrency($totalPending) ?></h4>
-                <p class="mb-0">Chờ xác nhận</p>
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <?php 
+    $statusColors = [
+        'pending' => ['bg-warning', 'text-dark', 'Chờ xử lý'],
+        'approved' => ['bg-success', 'text-white', 'Đã duyệt'], 
+        'rejected' => ['bg-danger', 'text-white', 'Từ chối'],
+        'completed' => ['bg-info', 'text-white', 'Hoàn thành']
+    ];
+    
+    foreach ($stats as $stat): 
+        $colors = $statusColors[$stat['status']] ?? ['bg-secondary', 'text-white', ucfirst($stat['status'])];
+    ?>
+    <div class="col-md-3 mb-3">
+        <div class="card <?= $colors[0] ?> <?= $colors[1] ?>">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title"><?= $colors[2] ?></h6>
+                        <h3 class="mb-0"><?= number_format($stat['count']) ?></h3>
+                        <small>Tổng: <?= number_format($stat['total_amount']) ?></small>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-<?= $stat['status'] === 'pending' ? 'clock' : 
+                                         ($stat['status'] === 'approved' ? 'check-circle' : 
+                                         ($stat['status'] === 'completed' ? 'check-double' : 'times-circle')) ?> fa-2x"></i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card bg-info text-white">
-            <div class="card-body text-center">
-                <i class="fas fa-check fa-2x mb-2"></i>
-                <h4><?= formatCurrency($totalConfirmed) ?></h4>
-                <p class="mb-0">Đã xác nhận</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-success text-white">
-            <div class="card-body text-center">
-                <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
-                <h4><?= formatCurrency($totalPaid) ?></h4>
-                <p class="mb-0">Đã thanh toán</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-primary text-white">
-            <div class="card-body text-center">
-                <i class="fas fa-calculator fa-2x mb-2"></i>
-                <h4><?= formatCurrency($totalPending + $totalConfirmed + $totalPaid) ?></h4>
-                <p class="mb-0">Tổng cộng</p>
-            </div>
-        </div>
-    </div>
+    <?php endforeach; ?>
 </div>
 
-<!-- Filter Controls -->
+<!-- Filters -->
 <div class="card mb-4">
     <div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-3">
-                <select id="filterPaymentStatus" class="form-select">
-                    <option value="">Tất cả trạng thái</option>
-                    <option value="pending">Chờ xác nhận</option>
-                    <option value="confirmed">Đã xác nhận</option>
-                    <option value="paid">Đã thanh toán</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <select id="filterRole" class="form-select">
-                    <option value="">Tất cả vai trò</option>
-                    <option value="teacher">Giáo viên</option>
-                    <option value="parent">Phụ huynh</option>
-                </select>
-            </div>
+        <form method="GET" class="row g-3">
+            <input type="hidden" name="page" value="admin_affiliate">
+            <input type="hidden" name="action" value="payments">
+            
             <div class="col-md-4">
-                <input type="text" id="searchPayment" class="form-control" placeholder="Tìm kiếm theo tên, SĐT...">
+                <label class="form-label">Tìm kiếm</label>
+                <input type="text" name="search" class="form-control" placeholder="Tên, SĐT..." value="<?= htmlspecialchars($searchTerm) ?>">
             </div>
-            <div class="col-md-2">
-                <button class="btn btn-primary w-100" onclick="filterPayments()">
-                    <i class="fas fa-filter"></i> Lọc
-                </button>
+            
+            <div class="col-md-3">
+                <label class="form-label">Trạng thái</label>
+                <select name="status" class="form-select">
+                    <option value="">Tất cả</option>
+                    <option value="pending" <?= $statusFilter === 'pending' ? 'selected' : '' ?>>Chờ xử lý</option>
+                    <option value="approved" <?= $statusFilter === 'approved' ? 'selected' : '' ?>>Đã duyệt</option>
+                    <option value="rejected" <?= $statusFilter === 'rejected' ? 'selected' : '' ?>>Từ chối</option>
+                    <option value="completed" <?= $statusFilter === 'completed' ? 'selected' : '' ?>>Hoàn thành</option>
+                </select>
             </div>
-        </div>
+            
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter"></i> Lọc
+                    </button>
+                    <a href="?page=admin_affiliate&action=payments" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Xóa lọc
+                    </a>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 
-<!-- Payment List -->
+<!-- Withdrawals Table -->
 <div class="card">
     <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-list"></i> Danh sách Thanh toán</h5>
+        <h5><i class="fas fa-list"></i> Danh sách yêu cầu rút tiền (<?= number_format($totalCount) ?> yêu cầu)</h5>
     </div>
-    <div class="card-body">
-        <?php if (empty($referrals)): ?>
-            <div class="text-center py-5">
-                <i class="fas fa-money-bill-wave fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">Chưa có giao dịch nào</h5>
-            </div>
-        <?php else: ?>
-            <div class="table-responsive">
-                <table class="table table-hover" id="paymentsTable">
-                    <thead class="table-dark">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Thành viên</th>
+                        <th>Số tiền</th>
+                        <th>Thông tin NH</th>
+                        <th>Ngày yêu cầu</th>
+                        <th>Trạng thái</th>
+                        <th>Ghi chú Admin</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($withdrawals)): ?>
                         <tr>
-                            <th>Thành viên</th>
-                            <th>Học sinh</th>
-                            <th>Vai trò</th>
-                            <th>Số tiền</th>
-                            <th>Trạng thái</th>
-                            <th>Ngày tạo</th>
-                            <th>Hành động</th>
+                            <td colspan="8" class="text-center py-4">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">Chưa có yêu cầu rút tiền nào</p>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($referrals as $ref): ?>
-                            <tr data-payment-status="<?= $ref['payment_status'] ?>" data-role="<?= $ref['referrer_role'] ?>">
+                    <?php else: ?>
+                        <?php foreach ($withdrawals as $withdrawal): ?>
+                            <tr>
+                                <td>
+                                    <span class="badge bg-secondary">#<?= $withdrawal['id'] ?></span>
+                                </td>
                                 <td>
                                     <div>
-                                        <strong><?= htmlspecialchars($ref['referrer_name']) ?></strong>
+                                        <strong><?= htmlspecialchars($withdrawal['name']) ?></strong>
                                         <br>
-                                        <small class="text-muted"><?= $ref['referrer_phone'] ?></small>
+                                        <small class="text-muted">
+                                            <i class="fas fa-phone"></i> <?= htmlspecialchars($withdrawal['phone']) ?>
+                                        </small>
                                         <br>
-                                        <small class="text-muted">ID: <?= $ref['referrer_id'] ?></small>
+                                        <span class="badge bg-<?= $withdrawal['role'] === 'teacher' ? 'info' : 'warning' ?> badge-sm">
+                                            <?= $withdrawal['role'] === 'teacher' ? 'Giáo viên' : 'Phụ huynh' ?>
+                                        </span>
                                     </div>
                                 </td>
                                 <td>
-                                    <strong><?= htmlspecialchars($ref['student_name']) ?></strong>
+                                    <strong class="text-success"><?= number_format($withdrawal['amount']) ?></strong>
                                     <br>
-                                    <small class="text-muted">Tuổi: <?= $ref['student_age'] ?></small>
+                                    <small class="text-muted">
+                                        <?= $withdrawal['role'] === 'teacher' ? 'VND' : 'Điểm' ?>
+                                    </small>
                                 </td>
                                 <td>
-                                    <span class="badge bg-<?= $ref['referrer_role'] === 'teacher' ? 'success' : 'warning' ?>">
-                                        <?= $ref['referrer_role'] === 'teacher' ? 'Giáo viên' : 'Phụ huynh' ?>
-                                    </span>
+                                    <?php if ($withdrawal['bank_info']): ?>
+                                        <?php $bankInfo = json_decode($withdrawal['bank_info'], true); ?>
+                                        <div>
+                                            <strong><?= htmlspecialchars($bankInfo['bank_name'] ?? '') ?></strong>
+                                            <br>
+                                            <small class="text-muted">STK: <?= htmlspecialchars($bankInfo['account_number'] ?? '') ?></small>
+                                            <br>
+                                            <small class="text-muted">Tên: <?= htmlspecialchars($bankInfo['account_name'] ?? '') ?></small>
+                                        </div>
+                                    <?php else: ?>
+                                        <span class="text-danger">Chưa có thông tin NH</span>
+                                    <?php endif; ?>
                                 </td>
                                 <td>
-                                    <strong class="text-primary">
-                                        <?php if ($ref['referrer_role'] === 'teacher'): ?>
-                                            <?= formatCurrency(2000000) ?>
-                                        <?php else: ?>
-                                            <?= formatPoints(2000) ?> điểm
-                                        <?php endif; ?>
-                                    </strong>
+                                    <?= date('d/m/Y H:i', strtotime($withdrawal['created_at'])) ?>
                                 </td>
                                 <td>
-                                    <span class="badge payment-status-badge 
-                                        <?php 
-                                        switch($ref['payment_status']) {
-                                            case 'pending': echo 'bg-warning'; break;
-                                            case 'confirmed': echo 'bg-info'; break;
-                                            case 'paid': echo 'bg-success'; break;
-                                            default: echo 'bg-secondary';
-                                        }
-                                        ?>">
-                                        <?= $ref['payment_status_text'] ?>
-                                    </span>
+                                    <?php
+                                    $statusBadge = [
+                                        'pending' => '<span class="badge bg-warning text-dark"><i class="fas fa-clock"></i> Chờ xử lý</span>',
+                                        'approved' => '<span class="badge bg-success"><i class="fas fa-check-circle"></i> Đã duyệt</span>',
+                                        'rejected' => '<span class="badge bg-danger"><i class="fas fa-times-circle"></i> Từ chối</span>',
+                                        'completed' => '<span class="badge bg-info"><i class="fas fa-check-double"></i> Hoàn thành</span>'
+                                    ];
+                                    echo $statusBadge[$withdrawal['status']] ?? '<span class="badge bg-secondary">Unknown</span>';
+                                    ?>
+                                    <?php if ($withdrawal['processed_at']): ?>
+                                        <br>
+                                        <small class="text-muted"><?= date('d/m/Y H:i', strtotime($withdrawal['processed_at'])) ?></small>
+                                    <?php endif; ?>
                                 </td>
                                 <td>
-                                    <?= date('d/m/Y H:i', strtotime($ref['created_at'])) ?>
+                                    <?php if ($withdrawal['admin_notes']): ?>
+                                        <small><?= htmlspecialchars($withdrawal['admin_notes']) ?></small>
+                                    <?php else: ?>
+                                        <span class="text-muted">-</span>
+                                    <?php endif; ?>
                                 </td>
                                 <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <?php if ($ref['payment_status'] === 'pending'): ?>
-                                            <button class="btn btn-warning btn-sm" 
-                                                    onclick="confirmPayment(<?= $ref['id'] ?>)"
-                                                    title="Xác nhận đã nhận tiền">
-                                                <i class="fas fa-check"></i> Xác nhận
-                                            </button>
-                                        <?php elseif ($ref['payment_status'] === 'confirmed'): ?>
+                                    <?php if ($withdrawal['status'] === 'pending'): ?>
+                                        <div class="btn-group" role="group">
                                             <button class="btn btn-success btn-sm" 
-                                                    onclick="markAsPaid(<?= $ref['id'] ?>)"
-                                                    title="Đánh dấu đã thanh toán">
-                                                <i class="fas fa-money-bill-wave"></i> Thanh toán
+                                                    onclick="processWithdrawal(<?= $withdrawal['id'] ?>, 'approved')"
+                                                    title="Duyệt">
+                                                <i class="fas fa-check"></i>
                                             </button>
-                                        <?php else: ?>
-                                            <button class="btn btn-secondary btn-sm" disabled>
-                                                <i class="fas fa-check-double"></i> Hoàn tất
+                                            <button class="btn btn-danger btn-sm"
+                                                    onclick="processWithdrawal(<?= $withdrawal['id'] ?>, 'rejected')"
+                                                    title="Từ chối">
+                                                <i class="fas fa-times"></i>
                                             </button>
-                                        <?php endif; ?>
-                                        
-                                        <button class="btn btn-info btn-sm" 
-                                                onclick="viewPaymentDetails(<?= $ref['id'] ?>)"
-                                                title="Xem chi tiết">
-                                            <i class="fas fa-eye"></i>
+                                        </div>
+                                    <?php elseif ($withdrawal['status'] === 'approved'): ?>
+                                        <button class="btn btn-info btn-sm"
+                                                onclick="processWithdrawal(<?= $withdrawal['id'] ?>, 'completed')"
+                                                title="Đánh dấu hoàn thành">
+                                            <i class="fas fa-check-double"></i> Hoàn thành
                                         </button>
-                                    </div>
+                                    <?php else: ?>
+                                        <button class="btn btn-outline-secondary btn-sm" disabled>
+                                            <i class="fas fa-<?= $withdrawal['status'] === 'completed' ? 'check-double' : 'times' ?>"></i>
+                                            Đã xử lý
+                                        </button>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php endif; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-<!-- Payment Details Modal -->
-<div class="modal fade" id="paymentDetailsModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+<!-- Pagination -->
+<?php if ($totalPages > 1): ?>
+<nav aria-label="Payment pagination" class="mt-4">
+    <ul class="pagination justify-content-center">
+        <?php if ($page > 1): ?>
+            <li class="page-item">
+                <a class="page-link" href="?page=admin_affiliate&action=payments&p=<?= $page - 1 ?><?= $statusFilter ? '&status=' . $statusFilter : '' ?><?= $searchTerm ? '&search=' . urlencode($searchTerm) : '' ?>">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+        <?php endif; ?>
+        
+        <?php
+        $startPage = max(1, $page - 2);
+        $endPage = min($totalPages, $page + 2);
+        
+        for ($i = $startPage; $i <= $endPage; $i++):
+        ?>
+            <li class="page-item <?= $i === $page ? 'active' : '' ?>">
+                <a class="page-link" href="?page=admin_affiliate&action=payments&p=<?= $i ?><?= $statusFilter ? '&status=' . $statusFilter : '' ?><?= $searchTerm ? '&search=' . urlencode($searchTerm) : '' ?>">
+                    <?= $i ?>
+                </a>
+            </li>
+        <?php endfor; ?>
+        
+        <?php if ($page < $totalPages): ?>
+            <li class="page-item">
+                <a class="page-link" href="?page=admin_affiliate&action=payments&p=<?= $page + 1 ?><?= $statusFilter ? '&status=' . $statusFilter : '' ?><?= $searchTerm ? '&search=' . urlencode($searchTerm) : '' ?>">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        <?php endif; ?>
+    </ul>
+</nav>
+<?php endif; ?>
+
+<!-- Process Withdrawal Modal -->
+<div class="modal fade" id="processWithdrawalModal" tabindex="-1">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Chi tiết Thanh toán</h5>
+                <h5 class="modal-title">Xử lý yêu cầu rút tiền</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" id="paymentDetailsContent">
-                <!-- Content loaded via AJAX -->
+            <div class="modal-body">
+                <form id="processWithdrawalForm">
+                    <input type="hidden" id="withdrawalId" name="withdrawal_id">
+                    <input type="hidden" id="withdrawalStatus" name="status">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Ghi chú Admin</label>
+                        <textarea class="form-control" name="notes" rows="3" placeholder="Nhập ghi chú (tùy chọn)"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="submitWithdrawalProcess()">Xác nhận</button>
             </div>
         </div>
     </div>
 </div>
 
-<style>
-.payment-status-badge {
-    font-size: 0.9em;
-    padding: 6px 12px;
-}
-
-.table td {
-    vertical-align: middle;
-}
-
-.btn-group .btn {
-    margin-right: 2px;
-}
-
-.payment-row-pending {
-    background-color: #fff3cd;
-}
-
-.payment-row-confirmed {
-    background-color: #d1ecf1;
-}
-
-.payment-row-paid {
-    background-color: #d4edda;
-}
-
-.filtered-out {
-    display: none !important;
-}
-</style>
-
 <script>
-function confirmPayment(referralId) {
-    if (confirm('Xác nhận đã nhận được thanh toán từ khách hàng?\nHệ thống sẽ cộng tiền vào tài khoản thành viên.')) {
-        fetch('ajax/affiliate_actions.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `action=confirm_payment&referral_id=${referralId}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showAlert('success', 'Xác nhận thành công! Đã cộng tiền vào tài khoản thành viên.');
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                showAlert('danger', data.message || 'Có lỗi xảy ra');
-            }
-        })
-        .catch(error => {
-            showAlert('danger', 'Lỗi kết nối: ' + error.message);
-        });
-    }
-}
-
-function markAsPaid(referralId) {
-    if (confirm('Xác nhận đã thanh toán hoa hồng cho thành viên?\nHệ thống sẽ trừ tiền từ tài khoản thành viên.')) {
-        fetch('ajax/affiliate_actions.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `action=mark_as_paid&referral_id=${referralId}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showAlert('success', 'Đã cập nhật trạng thái thanh toán!');
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                showAlert('danger', data.message || 'Có lỗi xảy ra');
-            }
-        })
-        .catch(error => {
-            showAlert('danger', 'Lỗi kết nối: ' + error.message);
-        });
-    }
-}
-
-function viewPaymentDetails(referralId) {
-    fetch(`ajax/affiliate_actions.php?action=get_payment_details&referral_id=${referralId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('paymentDetailsContent').innerHTML = data.html;
-                new bootstrap.Modal(document.getElementById('paymentDetailsModal')).show();
-            } else {
-                showAlert('danger', data.message);
-            }
-        });
-}
-
-function confirmAllPayments() {
-    if (confirm('Xác nhận tất cả các thanh toán đang chờ?\nHành động này không thể hoàn tác.')) {
-        fetch('ajax/affiliate_actions.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'action=confirm_all_payments'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showAlert('success', `Đã xác nhận ${data.count} thanh toán!`);
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                showAlert('danger', data.message);
-            }
-        });
-    }
-}
-
-function filterPayments() {
-    const statusFilter = document.getElementById('filterPaymentStatus').value;
-    const roleFilter = document.getElementById('filterRole').value;
-    const searchTerm = document.getElementById('searchPayment').value.toLowerCase();
+function processWithdrawal(withdrawalId, status) {
+    const statusText = {
+        'approved': 'duyệt',
+        'rejected': 'từ chối',
+        'completed': 'đánh dấu hoàn thành'
+    };
     
-    const rows = document.querySelectorAll('#paymentsTable tbody tr');
+    document.getElementById('withdrawalId').value = withdrawalId;
+    document.getElementById('withdrawalStatus').value = status;
+    document.querySelector('.modal-title').textContent = `${statusText[status].charAt(0).toUpperCase() + statusText[status].slice(1)} yêu cầu rút tiền`;
     
-    rows.forEach(row => {
-        const status = row.getAttribute('data-payment-status');
-        const role = row.getAttribute('data-role');
-        const text = row.textContent.toLowerCase();
-        
-        let shouldShow = true;
-        
-        if (statusFilter && status !== statusFilter) {
-            shouldShow = false;
+    new bootstrap.Modal(document.getElementById('processWithdrawalModal')).show();
+}
+
+function submitWithdrawalProcess() {
+    const form = document.getElementById('processWithdrawalForm');
+    const formData = new FormData(form);
+    formData.append('action', 'process_withdrawal');
+    
+    fetch('?page=admin_affiliate&action=payments', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message);
+            bootstrap.Modal.getInstance(document.getElementById('processWithdrawalModal')).hide();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showAlert('danger', data.message);
         }
-        
-        if (roleFilter && role !== roleFilter) {
-            shouldShow = false;
-        }
-        
-        if (searchTerm && !text.includes(searchTerm)) {
-            shouldShow = false;
-        }
-        
-        row.classList.toggle('filtered-out', !shouldShow);
+    })
+    .catch(error => {
+        showAlert('danger', 'Lỗi kết nối: ' + error.message);
     });
 }
 
-function exportPaymentReport() {
-    const csvData = [
-        ['Thành viên', 'SĐT', 'Vai trò', 'Học sinh', 'Tuổi', 'Số tiền', 'Trạng thái', 'Ngày tạo']
-    ];
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alertDiv);
     
-    const rows = document.querySelectorAll('#paymentsTable tbody tr:not(.filtered-out)');
-    rows.forEach(row => {
-        const cells = row.querySelectorAll('td');
-        const memberName = cells[0].querySelector('strong').textContent;
-        const phone = cells[0].querySelector('small').textContent;
-        const role = cells[2].textContent.trim();
-        const studentName = cells[1].querySelector('strong').textContent;
-        const age = cells[1].querySelector('small').textContent;
-        const amount = cells[3].textContent.trim();
-        const status = cells[4].textContent.trim();
-        const date = cells[5].textContent.trim();
-        
-        csvData.push([memberName, phone, role, studentName, age, amount, status, date]);
-    });
-    
-    const csvContent = csvData.map(row => row.map(field => `"${field}"`).join(',')).join('\n');
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `bao_cao_thanh_toan_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
+    setTimeout(() => alertDiv.remove(), 5000);
 }
-
-// Real-time search
-document.getElementById('searchPayment').addEventListener('input', filterPayments);
-document.getElementById('filterPaymentStatus').addEventListener('change', filterPayments);
-document.getElementById('filterRole').addEventListener('change', filterPayments);
 </script>

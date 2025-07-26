@@ -1,121 +1,153 @@
 <?php
-require_once '../includes/affiliate_functions.php';
-
+// Affiliate Members Management
 $db = getDB();
-$search = $_GET['search'] ?? '';
-$role = $_GET['role'] ?? '';
-$status = $_GET['status'] ?? 'active';
 
-// Build query
-$whereConditions = ["status = ?"];
-$params = [$status];
-
-if ($search) {
-    $whereConditions[] = "(name LIKE ? OR phone LIKE ? OR email LIKE ? OR member_id LIKE ?)";
-    $searchTerm = "%$search%";
-    $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm, $searchTerm]);
+// Handle member actions
+if ($_POST && isset($_POST['action'])) {
+    $response = ['success' => false, 'message' => ''];
+    
+    switch ($_POST['action']) {
+        case 'update_status':
+            $memberId = (int)$_POST['member_id'];
+            $status = $_POST['status'];
+            
+            try {
+                $stmt = $db->prepare("UPDATE affiliate_members SET status = ?, updated_at = NOW() WHERE id = ?");
+                if ($stmt->execute([$status, $memberId])) {
+                    $response['success'] = true;
+                    $response['message'] = 'Cập nhật trạng thái thành công!';
+                } else {
+                    $response['message'] = 'Lỗi cập nhật database!';
+                }
+            } catch (Exception $e) {
+                $response['message'] = 'Lỗi: ' . $e->getMessage();
+            }
+            
+            header('Content-Type: application/json');
+            echo json_encode($response);
+            exit();
+            break;
+    }
 }
 
-if ($role) {
-    $whereConditions[] = "role = ?";
-    $params[] = $role;
+// Get members list with pagination
+$page = (int)($_GET['p'] ?? 1);
+$perPage = 20;
+$offset = ($page - 1) * $perPage;
+
+// Filter options
+$statusFilter = $_GET['status'] ?? '';
+$roleFilter = $_GET['role'] ?? '';
+$searchTerm = $_GET['search'] ?? '';
+
+$whereClause = "WHERE 1=1";
+$params = [];
+
+if ($statusFilter) {
+    $whereClause .= " AND am.status = ?";
+    $params[] = $statusFilter;
 }
 
-$whereClause = implode(' AND ', $whereConditions);
+if ($roleFilter) {
+    $whereClause .= " AND am.role = ?";
+    $params[] = $roleFilter;
+}
 
-$members = $db->fetchAll("
-    SELECT * FROM affiliate_members 
-    WHERE $whereClause 
-    ORDER BY registered_at DESC
-", $params);
+if ($searchTerm) {
+    $whereClause .= " AND (am.name LIKE ? OR am.phone LIKE ? OR am.email LIKE ?)";
+    $params[] = "%$searchTerm%";
+    $params[] = "%$searchTerm%";
+    $params[] = "%$searchTerm%";
+}
 
-$totalMembers = count($members);
-$totalTeachers = count(array_filter($members, fn($m) => $m['role'] === 'teacher'));
-$totalParents = count(array_filter($members, fn($m) => $m['role'] === 'parent'));
+// Get total count
+$countStmt = $db->prepare("
+    SELECT COUNT(*) as total
+    FROM affiliate_members am
+    $whereClause
+");
+$countStmt->execute($params);
+$totalCount = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
+$totalPages = ceil($totalCount / $perPage);
+
+// Get members data
+$stmt = $db->prepare("
+    SELECT 
+        am.*,
+        aw.balance,
+        aw.total_earned,
+        aw.total_withdrawn,
+        COUNT(ar.id) as referral_count,
+        COUNT(CASE WHEN ac.manual_status = 'confirmed' THEN 1 END) as confirmed_count
+    FROM affiliate_members am
+    LEFT JOIN affiliate_wallets aw ON am.id = aw.member_id
+    LEFT JOIN affiliate_referrals ar ON am.id = ar.referrer_id
+    LEFT JOIN affiliate_conversions ac ON ar.id = ac.referral_id
+    $whereClause
+    GROUP BY am.id
+    ORDER BY am.created_at DESC
+    LIMIT ? OFFSET ?
+");
+
+$params[] = $perPage;
+$params[] = $offset;
+$stmt->execute($params);
+$members = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3">👥 Quản lý Thành viên</h1>
+    <h2><i class="fas fa-users text-primary"></i> Quản lý Thành viên</h2>
     <div>
-        <a href="?page=affiliate_register" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Thêm thành viên
-        </a>
-        <button class="btn btn-success btn-sm" onclick="affiliateAdmin.exportData('members')">
+        <button class="btn btn-outline-primary" onclick="location.reload()">
+            <i class="fas fa-sync-alt"></i> Làm mới
+        </button>
+        <button class="btn btn-success" onclick="affiliateAdmin.exportData('members')">
             <i class="fas fa-download"></i> Xuất Excel
         </button>
     </div>
 </div>
 
-<!-- Statistics -->
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card bg-primary text-white">
-            <div class="card-body text-center">
-                <h4><?= $totalMembers ?></h4>
-                <p class="mb-0">Tổng thành viên</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-success text-white">
-            <div class="card-body text-center">
-                <h4><?= $totalTeachers ?></h4>
-                <p class="mb-0">Giáo viên</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-warning text-white">
-            <div class="card-body text-center">
-                <h4><?= $totalParents ?></h4>
-                <p class="mb-0">Phụ huynh</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-info text-white">
-            <div class="card-body text-center">
-                <h4><?= array_sum(array_column($members, 'total_referrals')) ?></h4>
-                <p class="mb-0">Tổng giới thiệu</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Search and Filters -->
+<!-- Filters -->
 <div class="card mb-4">
     <div class="card-body">
         <form method="GET" class="row g-3">
+            <input type="hidden" name="page" value="admin_affiliate">
             <input type="hidden" name="action" value="members">
             
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label">Tìm kiếm</label>
-                <input type="text" name="search" class="form-control" 
-                       placeholder="Tên, SĐT, Email, Mã TV..." value="<?= htmlspecialchars($search) ?>">
+                <input type="text" name="search" class="form-control" placeholder="Tên, SĐT, Email..." value="<?= htmlspecialchars($searchTerm) ?>">
             </div>
             
-            <div class="col-md-3">
-                <label class="form-label">Vai trò</label>
-                <select name="role" class="form-select">
-                    <option value="">Tất cả</option>
-                    <option value="teacher" <?= $role === 'teacher' ? 'selected' : '' ?>>Giáo viên</option>
-                    <option value="parent" <?= $role === 'parent' ? 'selected' : '' ?>>Phụ huynh</option>
-                </select>
-            </div>
-            
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label">Trạng thái</label>
                 <select name="status" class="form-select">
-                    <option value="active" <?= $status === 'active' ? 'selected' : '' ?>>Hoạt động</option>
-                    <option value="inactive" <?= $status === 'inactive' ? 'selected' : '' ?>>Tạm khóa</option>
+                    <option value="">Tất cả</option>
+                    <option value="active" <?= $statusFilter === 'active' ? 'selected' : '' ?>>Hoạt động</option>
+                    <option value="inactive" <?= $statusFilter === 'inactive' ? 'selected' : '' ?>>Tạm ngưng</option>
+                    <option value="banned" <?= $statusFilter === 'banned' ? 'selected' : '' ?>>Bị cấm</option>
                 </select>
             </div>
             
             <div class="col-md-2">
+                <label class="form-label">Vai trò</label>
+                <select name="role" class="form-select">
+                    <option value="">Tất cả</option>
+                    <option value="teacher" <?= $roleFilter === 'teacher' ? 'selected' : '' ?>>Giáo viên</option>
+                    <option value="parent" <?= $roleFilter === 'parent' ? 'selected' : '' ?>>Phụ huynh</option>
+                </select>
+            </div>
+            
+            <div class="col-md-3">
                 <label class="form-label">&nbsp;</label>
-                <button type="submit" class="btn btn-primary d-block w-100">
-                    <i class="fas fa-search"></i> Tìm
-                </button>
+                <div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Tìm kiếm
+                    </button>
+                    <a href="?page=admin_affiliate&action=members" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Xóa lọc
+                    </a>
+                </div>
             </div>
         </form>
     </div>
@@ -123,111 +155,166 @@ $totalParents = count(array_filter($members, fn($m) => $m['role'] === 'parent'))
 
 <!-- Members Table -->
 <div class="card">
-    <div class="card-body">
-        <?php if (empty($members)): ?>
-            <div class="text-center py-5">
-                <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">Không tìm thấy thành viên nào</h5>
-                <p class="text-muted">Thử thay đổi bộ lọc hoặc thêm thành viên mới</p>
-            </div>
-        <?php else: ?>
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead class="table-dark">
+    <div class="card-header">
+        <h5><i class="fas fa-list"></i> Danh sách Thành viên (<?= number_format($totalCount) ?> thành viên)</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Thông tin thành viên</th>
+                        <th>Vai trò</th>
+                        <th>Giới thiệu</th>
+                        <th>Ví tiền</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày tham gia</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($members)): ?>
                         <tr>
-                            <th>Thành viên</th>
-                            <th>Liên hệ</th>
-                            <th>Vai trò</th>
-                            <th>Giới thiệu</th>
-                            <th>Thưởng</th>
-                            <th>Trạng thái</th>
-                            <th>Ngày ĐK</th>
-                            <th>Hành động</th>
+                            <td colspan="8" class="text-center py-4">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">Chưa có thành viên nào</p>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
+                    <?php else: ?>
                         <?php foreach ($members as $member): ?>
-                        <tr>
-                            <td>
-                                <div>
-                                    <strong><?= htmlspecialchars($member['name']) ?></strong><br>
-                                    <small class="text-muted">
-                                        <i class="fas fa-id-card"></i> <?= $member['member_id'] ?>
-                                    </small><br>
-                                    <small class="text-primary">
-                                        <i class="fas fa-qrcode"></i> <?= $member['referral_code'] ?>
-                                    </small>
-                                </div>
-                            </td>
-                            <td>
-                                <div>
-                                    <i class="fas fa-phone text-success"></i> <?= $member['phone'] ?><br>
-                                    <?php if ($member['email']): ?>
-                                        <i class="fas fa-envelope text-info"></i> 
-                                        <small><?= htmlspecialchars($member['email']) ?></small>
-                                    <?php endif; ?>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="badge bg-<?= $member['role'] === 'teacher' ? 'success' : 'warning' ?> p-2">
-                                    <i class="fas fa-<?= $member['role'] === 'teacher' ? 'chalkboard-teacher' : 'users' ?>"></i>
-                                    <?= $member['role'] === 'teacher' ? 'Giáo viên' : 'Phụ huynh' ?>
-                                </span>
-                            </td>
-                            <td>
-                                <div class="text-center">
-                                    <h5 class="mb-1"><?= $member['total_referrals'] ?></h5>
-                                    <small class="text-muted">học sinh</small><br>
-                                    <small class="text-info">Mốc: <?= $member['current_milestone'] ?></small>
-                                </div>
-                            </td>
-                            <td>
-                                <?php if ($member['role'] === 'teacher'): ?>
-                                    <div class="text-success">
-                                        <strong><?= formatCurrency($member['wallet_balance']) ?></strong><br>
-                                        <small>Ví tiền mặt</small>
+                            <tr>
+                                <td>
+                                    <span class="badge bg-secondary">#<?= $member['id'] ?></span>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong><?= htmlspecialchars($member['name']) ?></strong>
+                                        <br>
+                                        <small class="text-muted">
+                                            <i class="fas fa-phone"></i> <?= htmlspecialchars($member['phone']) ?>
+                                        </small>
+                                        <?php if ($member['email']): ?>
+                                            <br>
+                                            <small class="text-muted">
+                                                <i class="fas fa-envelope"></i> <?= htmlspecialchars($member['email']) ?>
+                                            </small>
+                                        <?php endif; ?>
+                                        <?php if ($member['bank_info']): ?>
+                                            <br>
+                                            <small class="text-info">
+                                                <i class="fas fa-credit-card"></i> Có TK ngân hàng
+                                            </small>
+                                        <?php endif; ?>
                                     </div>
-                                <?php else: ?>
-                                    <div class="text-warning">
-                                        <strong><?= formatPoints($member['points_balance']) ?> điểm</strong><br>
-                                        <small>Điểm tích lũy</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-<?= $member['role'] === 'teacher' ? 'info' : 'warning' ?>">
+                                        <i class="fas fa-<?= $member['role'] === 'teacher' ? 'chalkboard-teacher' : 'user-friends' ?>"></i>
+                                        <?= $member['role'] === 'teacher' ? 'Giáo viên' : 'Phụ huynh' ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div>
+                                        <span class="badge bg-primary"><?= (int)$member['referral_count'] ?> tổng</span>
+                                        <br>
+                                        <span class="badge bg-success"><?= (int)$member['confirmed_count'] ?> thành công</span>
                                     </div>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <span class="badge bg-<?= $member['status'] === 'active' ? 'success' : 'secondary' ?>">
-                                    <?= $member['status'] === 'active' ? 'Hoạt động' : 'Tạm khóa' ?>
-                                </span>
-                            </td>
-                            <td>
-                                <small><?= formatDate($member['registered_at']) ?></small>
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <a href="?page=affiliate_dashboard&member_id=<?= $member['member_id'] ?>" 
-                                       class="btn btn-outline-primary" title="Xem dashboard">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <button class="btn btn-outline-info" 
-                                            onclick="showMemberDetails('<?= $member['member_id'] ?>')" 
-                                            title="Chi tiết">
-                                        <i class="fas fa-info-circle"></i>
-                                    </button>
-                                    <button class="btn btn-outline-<?= $member['status'] === 'active' ? 'warning' : 'success' ?>" 
-                                            onclick="toggleMemberStatus('<?= $member['member_id'] ?>', '<?= $member['status'] ?>')"
-                                            title="<?= $member['status'] === 'active' ? 'Khóa' : 'Kích hoạt' ?>">
-                                        <i class="fas fa-<?= $member['status'] === 'active' ? 'lock' : 'unlock' ?>"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong class="text-success"><?= number_format($member['balance'] ?? 0) ?></strong>
+                                        <small class="text-muted d-block">
+                                            Tổng kiếm: <?= number_format($member['total_earned'] ?? 0) ?>
+                                        </small>
+                                        <small class="text-muted d-block">
+                                            Đã rút: <?= number_format($member['total_withdrawn'] ?? 0) ?>
+                                        </small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-<?= $member['status'] === 'active' ? 'success' : 
+                                                            ($member['status'] === 'inactive' ? 'warning' : 'danger') ?>">
+                                        <?= $member['status'] === 'active' ? 'Hoạt động' : 
+                                            ($member['status'] === 'inactive' ? 'Tạm ngưng' : 'Bị cấm') ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <?= date('d/m/Y', strtotime($member['created_at'])) ?>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-outline-primary btn-sm" 
+                                                onclick="viewMemberDetails(<?= $member['id'] ?>)"
+                                                title="Xem chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        
+                                        <?php if ($member['status'] === 'active'): ?>
+                                            <button class="btn btn-outline-warning btn-sm"
+                                                    onclick="updateMemberStatus(<?= $member['id'] ?>, 'inactive')"
+                                                    title="Tạm ngưng">
+                                                <i class="fas fa-pause"></i>
+                                            </button>
+                                        <?php else: ?>
+                                            <button class="btn btn-outline-success btn-sm"
+                                                    onclick="updateMemberStatus(<?= $member['id'] ?>, 'active')"
+                                                    title="Kích hoạt">
+                                                <i class="fas fa-play"></i>
+                                            </button>
+                                        <?php endif; ?>
+                                        
+                                        <button class="btn btn-outline-danger btn-sm"
+                                                onclick="updateMemberStatus(<?= $member['id'] ?>, 'banned')"
+                                                title="Cấm tài khoản">
+                                            <i class="fas fa-ban"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
                         <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php endif; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
+
+<!-- Pagination -->
+<?php if ($totalPages > 1): ?>
+<nav aria-label="Member pagination" class="mt-4">
+    <ul class="pagination justify-content-center">
+        <?php if ($page > 1): ?>
+            <li class="page-item">
+                <a class="page-link" href="?page=admin_affiliate&action=members&p=<?= $page - 1 ?><?= $statusFilter ? '&status=' . $statusFilter : '' ?><?= $roleFilter ? '&role=' . $roleFilter : '' ?><?= $searchTerm ? '&search=' . urlencode($searchTerm) : '' ?>">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+        <?php endif; ?>
+        
+        <?php
+        $startPage = max(1, $page - 2);
+        $endPage = min($totalPages, $page + 2);
+        
+        for ($i = $startPage; $i <= $endPage; $i++):
+        ?>
+            <li class="page-item <?= $i === $page ? 'active' : '' ?>">
+                <a class="page-link" href="?page=admin_affiliate&action=members&p=<?= $i ?><?= $statusFilter ? '&status=' . $statusFilter : '' ?><?= $roleFilter ? '&role=' . $roleFilter : '' ?><?= $searchTerm ? '&search=' . urlencode($searchTerm) : '' ?>">
+                    <?= $i ?>
+                </a>
+            </li>
+        <?php endfor; ?>
+        
+        <?php if ($page < $totalPages): ?>
+            <li class="page-item">
+                <a class="page-link" href="?page=admin_affiliate&action=members&p=<?= $page + 1 ?><?= $statusFilter ? '&status=' . $statusFilter : '' ?><?= $roleFilter ? '&role=' . $roleFilter : '' ?><?= $searchTerm ? '&search=' . urlencode($searchTerm) : '' ?>">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        <?php endif; ?>
+    </ul>
+</nav>
+<?php endif; ?>
 
 <!-- Member Details Modal -->
 <div class="modal fade" id="memberDetailsModal" tabindex="-1">
@@ -245,43 +332,63 @@ $totalParents = count(array_filter($members, fn($m) => $m['role'] === 'parent'))
 </div>
 
 <script>
-function showMemberDetails(memberId) {
-    // Load member details via AJAX
-    fetch(`ajax/affiliate_actions.php?action=get_member_details&member_id=${memberId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('memberDetailsContent').innerHTML = data.html;
-                new bootstrap.Modal(document.getElementById('memberDetailsModal')).show();
-            } else {
-                showAlert('danger', 'Không thể tải thông tin thành viên');
-            }
-        });
-}
-
-function toggleMemberStatus(memberId, currentStatus) {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-    const action = newStatus === 'active' ? 'kích hoạt' : 'khóa';
+function updateMemberStatus(memberId, status) {
+    const statusText = {
+        'active': 'kích hoạt',
+        'inactive': 'tạm ngưng',
+        'banned': 'cấm'
+    };
     
-    if (confirm(`Bạn có chắc muốn ${action} thành viên này?`)) {
+    const message = `Bạn có chắc muốn ${statusText[status]} thành viên này?`;
+    
+    if (confirm(message)) {
         const formData = new FormData();
-        formData.append('action', 'toggle_member_status');
+        formData.append('action', 'update_status');
         formData.append('member_id', memberId);
-        formData.append('status', newStatus);
+        formData.append('status', status);
         
-        fetch('ajax/affiliate_actions.php', {
+        fetch('?page=admin_affiliate&action=members', {
             method: 'POST',
             body: formData
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                showAlert('success', `Đã ${action} thành viên thành công`);
-                location.reload();
+                showAlert('success', data.message);
+                setTimeout(() => location.reload(), 1500);
             } else {
                 showAlert('danger', data.message);
             }
+        })
+        .catch(error => {
+            showAlert('danger', 'Lỗi kết nối: ' + error.message);
         });
     }
+}
+
+function viewMemberDetails(memberId) {
+    // Load member details via AJAX
+    fetch(`ajax/get_member_details.php?id=${memberId}`)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('memberDetailsContent').innerHTML = html;
+            new bootstrap.Modal(document.getElementById('memberDetailsModal')).show();
+        })
+        .catch(error => {
+            showAlert('danger', 'Lỗi tải thông tin: ' + error.message);
+        });
+}
+
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => alertDiv.remove(), 5000);
 }
 </script>

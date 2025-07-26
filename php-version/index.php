@@ -7,7 +7,7 @@ require_once 'includes/functions.php';
 $page = $_GET['page'] ?? 'home';
 
 // Security: whitelist allowed pages
-$allowed_pages = ['home', 'about', 'programs', 'activities', 'parents', 'admission', 'news', 'contact', 'admin'];
+$allowed_pages = ['home', 'about', 'programs', 'activities', 'parents', 'admission', 'news', 'contact', 'admin', 'affiliate_register', 'affiliate_dashboard', 'admin_affiliate'];
 if (!in_array($page, $allowed_pages)) {
     $page = 'home';
 }
@@ -120,6 +120,9 @@ if (!in_array($page, $allowed_pages)) {
             break;
         case 'admin':
             include 'pages/admin/dashboard.php';
+            break;
+        case 'admin_affiliate':
+            include 'admin_affiliate.php';
             break;
         default:
             include 'pages/home.php';

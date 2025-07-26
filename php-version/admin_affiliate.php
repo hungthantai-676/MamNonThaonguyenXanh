@@ -88,13 +88,13 @@ $db = getDB();
                         include 'admin/affiliate_payments.php';
                         break;
                     case 'conversions':
-                        echo '<div class="alert alert-info">Trang quản lý conversion đang được phát triển...</div>';
+                        include 'admin/affiliate_conversions.php';
                         break;
                     case 'transactions':
-                        echo '<div class="alert alert-info">Trang quản lý giao dịch đang được phát triển...</div>';
+                        include 'admin/affiliate_transactions.php';
                         break;
                     case 'settings':
-                        echo '<div class="alert alert-info">Trang cài đặt đang được phát triển...</div>';
+                        include 'admin/affiliate_settings.php';
                         break;
                     default:
                         include 'admin/affiliate_overview.php';
