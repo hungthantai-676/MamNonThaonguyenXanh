@@ -210,6 +210,45 @@ export default function AffiliatePage() {
     });
   };
 
+  // Helper function to calculate correct rewards based on conversions
+  const calculateCorrectReward = (confirmedStudents: number, memberType: "teacher" | "parent") => {
+    if (memberType === "teacher") {
+      // Teachers: 2M VND per student + 10M VND bonus every 5 students
+      const baseReward = confirmedStudents * 2000000;
+      const milestonesCompleted = Math.floor(confirmedStudents / 5);
+      const milestoneBonus = milestonesCompleted * 10000000;
+      return {
+        baseReward,
+        milestoneBonus,
+        totalReward: baseReward + milestoneBonus,
+        unit: "VND",
+        nextMilestone: Math.ceil(confirmedStudents / 5) * 5,
+        progressToMilestone: confirmedStudents % 5
+      };
+    } else {
+      // Parents: 2000 points per student + 10000 points bonus every 5 students
+      const baseReward = confirmedStudents * 2000;
+      const milestonesCompleted = Math.floor(confirmedStudents / 5);
+      const milestoneBonus = milestonesCompleted * 10000;
+      return {
+        baseReward,
+        milestoneBonus,
+        totalReward: baseReward + milestoneBonus,
+        unit: "điểm",
+        nextMilestone: Math.ceil(confirmedStudents / 5) * 5,
+        progressToMilestone: confirmedStudents % 5
+      };
+    }
+  };
+
+  const formatReward = (amount: number, unit: string) => {
+    if (unit === "VND") {
+      return `${amount.toLocaleString('vi-VN')} VND`;
+    } else {
+      return `${amount.toLocaleString('vi-VN')} ${unit}`;
+    }
+  };
+
 
 
   if (isLoading) {
@@ -281,23 +320,42 @@ export default function AffiliatePage() {
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-blue-700">
                 <DollarSign className="w-5 h-5" />
-                Tổng Token
+                Tổng Thưởng
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600 mb-3">
-                Tổng token trong hệ thống
+                Thưởng theo quy tắc mới
               </p>
               <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold text-blue-600">
-                  {formatTokenBalance(
-                    members.reduce((sum: number, member: any) => 
-                      sum + parseFloat(member.tokenBalance || "0"), 0
-                    ).toString()
-                  )}
-                </span>
+                <div>
+                  <div className="text-lg font-bold text-blue-600">
+                    Giáo viên: {formatReward(
+                      teacherMembers.reduce((sum: number, member: any) => {
+                        const confirmedStudents = customerConversions.filter((c: any) => 
+                          c.agentMemberId === member.memberId && c.conversionStatus === "payment_completed"
+                        ).length;
+                        const reward = calculateCorrectReward(confirmedStudents, "teacher");
+                        return sum + reward.totalReward;
+                      }, 0), 
+                      "VND"
+                    )}
+                  </div>
+                  <div className="text-sm font-bold text-purple-600">
+                    Phụ huynh: {formatReward(
+                      parentMembers.reduce((sum: number, member: any) => {
+                        const confirmedStudents = customerConversions.filter((c: any) => 
+                          c.referrerId === member.memberId && c.conversionStatus === "payment_completed"
+                        ).length;
+                        const reward = calculateCorrectReward(confirmedStudents, "parent");
+                        return sum + reward.totalReward;
+                      }, 0), 
+                      "điểm"
+                    )}
+                  </div>
+                </div>
                 <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                  TNG Token
+                  Theo quy tắc
                 </Badge>
               </div>
             </CardContent>
@@ -344,7 +402,14 @@ export default function AffiliatePage() {
                       <div className="flex items-center gap-2">
                         <DollarSign className="w-4 h-4 text-gray-500" />
                         <span className="text-sm font-semibold">
-                          {formatTokenBalance(member.tokenBalance)} TNG
+                          {(() => {
+                            const confirmedStudents = customerConversions.filter((c: any) => 
+                              (c.agentMemberId === member.memberId || c.referrerId === member.memberId) && 
+                              c.conversionStatus === "payment_completed"
+                            ).length;
+                            const reward = calculateCorrectReward(confirmedStudents, member.categoryName === "Giáo viên" ? "teacher" : "parent");
+                            return formatReward(reward.totalReward, reward.unit);
+                          })()}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -438,7 +503,27 @@ export default function AffiliatePage() {
                       <div className="flex items-center gap-2">
                         <DollarSign className="w-4 h-4 text-green-500" />
                         <span className="text-sm font-semibold">
-                          {formatTokenBalance(member.tokenBalance)} TNG
+                          {(() => {
+                            const confirmedStudents = customerConversions.filter((c: any) => 
+                              c.agentMemberId === member.memberId && 
+                              c.conversionStatus === "payment_completed"
+                            ).length;
+                            const reward = calculateCorrectReward(confirmedStudents, "teacher");
+                            return formatReward(reward.totalReward, reward.unit);
+                          })()}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-green-500" />
+                        <span className="text-xs text-gray-500">
+                          {(() => {
+                            const confirmedStudents = customerConversions.filter((c: any) => 
+                              c.agentMemberId === member.memberId && 
+                              c.conversionStatus === "payment_completed"
+                            ).length;
+                            const reward = calculateCorrectReward(confirmedStudents, "teacher");
+                            return `Đã xác nhận: ${confirmedStudents} học sinh | Tiến độ milestone: ${reward.progressToMilestone}/5`;
+                          })()}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -518,7 +603,27 @@ export default function AffiliatePage() {
                       <div className="flex items-center gap-2">
                         <DollarSign className="w-4 h-4 text-purple-500" />
                         <span className="text-sm font-semibold">
-                          {formatTokenBalance(member.tokenBalance)} TNG
+                          {(() => {
+                            const confirmedStudents = customerConversions.filter((c: any) => 
+                              c.referrerId === member.memberId && 
+                              c.conversionStatus === "payment_completed"
+                            ).length;
+                            const reward = calculateCorrectReward(confirmedStudents, "parent");
+                            return formatReward(reward.totalReward, reward.unit);
+                          })()}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Crown className="w-4 h-4 text-purple-500" />
+                        <span className="text-xs text-gray-500">
+                          {(() => {
+                            const confirmedStudents = customerConversions.filter((c: any) => 
+                              c.referrerId === member.memberId && 
+                              c.conversionStatus === "payment_completed"
+                            ).length;
+                            const reward = calculateCorrectReward(confirmedStudents, "parent");
+                            return `Đã xác nhận: ${confirmedStudents} học sinh | Tiến độ milestone: ${reward.progressToMilestone}/5`;
+                          })()}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">

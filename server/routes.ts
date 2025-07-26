@@ -14,6 +14,7 @@ import { sendTestEmail } from "./email";
 import AffiliateService from "./affiliate";
 import { ChatbotService } from "./chatbot";
 import { commissionService } from "./commission";
+import { RewardCalculator } from "./reward-calculator";
 import { v4 as uuidv4 } from 'uuid';
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -803,11 +804,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...otherData,
       });
 
-      // If status is "payment_completed", trigger commission distribution
-      if (conversionStatus === "payment_completed" && paymentAmount) {
-        await commissionService.processCommissionDistribution(
+      // If status is "payment_completed", trigger reward distribution using new calculation
+      if (conversionStatus === "payment_completed") {
+        await RewardCalculator.processRewardDistribution(
           conversion.customerId,
-          parseFloat(paymentAmount),
           conversion.f1AgentId,
           conversion.f0ReferrerId || undefined
         );
@@ -888,6 +888,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(summary);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch commission summary" });
+    }
+  });
+
+  // New reward breakdown API with accurate calculation
+  app.get("/api/reward-breakdown/:memberId", async (req, res) => {
+    try {
+      const memberId = req.params.memberId;
+      const memberType = req.query.type as "teacher" | "parent" || "teacher";
+      const breakdown = await RewardCalculator.getRewardBreakdown(memberId, memberType);
+      res.json(breakdown);
+    } catch (error) {
+      console.error("Error getting reward breakdown:", error);
+      res.status(500).json({ message: "Failed to get reward breakdown" });
     }
   });
 
