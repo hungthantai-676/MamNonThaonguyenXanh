@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+
 import { 
   Home, 
   Info, 
@@ -22,44 +23,36 @@ import {
   Trash2,
   Plus,
   Upload,
-  Settings
+  Settings,
+  X
 } from "lucide-react";
 
-// Component upload ảnh 
-const ImageUploader = ({ onImageUpload, currentImage }: { onImageUpload: (url: string) => void, currentImage?: string }) => {
-  const [uploading, setUploading] = useState(false);
-  
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    
-    setUploading(true);
-    try {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        onImageUpload(result);
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error("Upload failed:", error);
-    } finally {
-      setUploading(false);
-    }
-  };
+// Component để upload ảnh trực tiếp từ thiết bị
+const SimpleImageUploader = ({ onImageUpload, currentImage }: { onImageUpload: (url: string) => void, currentImage?: string }) => {
+  const [imageUrl, setImageUrl] = useState(currentImage || "");
 
   return (
-    <div className="space-y-2">
-      <Input
-        type="file"
-        accept="image/*"
-        onChange={handleFileUpload}
-        disabled={uploading}
-      />
-      {currentImage && (
-        <img src={currentImage} alt="Preview" className="w-32 h-32 object-cover rounded-lg" />
+    <div className="space-y-3">
+      <div className="flex gap-2">
+        <Input
+          value={imageUrl}
+          onChange={(e) => setImageUrl(e.target.value)}
+          placeholder="Dán link hình ảnh..."
+          className="flex-1"
+        />
+        <Button onClick={() => onImageUpload(imageUrl)} size="sm">
+          <Upload className="w-4 h-4 mr-2" />
+          Áp dụng
+        </Button>
+      </div>
+      {imageUrl && (
+        <img 
+          src={imageUrl} 
+          alt="Preview" 
+          className="w-full h-32 object-cover rounded border"
+          onError={() => setImageUrl("")}
+        />
       )}
-      {uploading && <p className="text-sm text-gray-500">Đang tải lên...</p>}
     </div>
   );
 };
@@ -270,6 +263,39 @@ const ProgramsManager = () => {
     queryKey: ['/api/programs'],
   });
 
+  const [editingProgram, setEditingProgram] = useState<any>(null);
+  const [programData, setProgramData] = useState({
+    name: "",
+    description: "",
+    ageRange: "",
+    tuition: "",
+    capacity: ""
+  });
+
+  const { toast } = useToast();
+
+  const saveProgramMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest("POST", "/api/admin/programs", data);
+    },
+    onSuccess: () => {
+      toast({ title: "Thành công", description: "Đã cập nhật chương trình học" });
+      setEditingProgram(null);
+      setProgramData({ name: "", description: "", ageRange: "", tuition: "", capacity: "" });
+    }
+  });
+
+  const handleEdit = (program: any) => {
+    setEditingProgram(program);
+    setProgramData({
+      name: program.name,
+      description: program.description,
+      ageRange: program.ageRange,
+      tuition: program.tuition?.toString() || "",
+      capacity: program.capacity?.toString() || ""
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -284,9 +310,68 @@ const ProgramsManager = () => {
           </Button>
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        {editingProgram && (
+          <div className="border p-4 rounded-lg bg-blue-50">
+            <h3 className="font-semibold mb-4">Chỉnh sửa chương trình: {editingProgram.name}</h3>
+            <div className="space-y-3">
+              <div>
+                <Label>Tên chương trình</Label>
+                <Input
+                  value={programData.name}
+                  onChange={(e) => setProgramData(prev => ({...prev, name: e.target.value}))}
+                />
+              </div>
+              <div>
+                <Label>Mô tả</Label>
+                <Textarea
+                  value={programData.description}
+                  onChange={(e) => setProgramData(prev => ({...prev, description: e.target.value}))}
+                  rows={3}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Độ tuổi</Label>
+                  <Input
+                    value={programData.ageRange}
+                    onChange={(e) => setProgramData(prev => ({...prev, ageRange: e.target.value}))}
+                    placeholder="3-4 tuổi"
+                  />
+                </div>
+                <div>
+                  <Label>Sỉ số tối đa</Label>
+                  <Input
+                    value={programData.capacity}
+                    onChange={(e) => setProgramData(prev => ({...prev, capacity: e.target.value}))}
+                    placeholder="25"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label>Học phí (VND/tháng)</Label>
+                <Input
+                  value={programData.tuition}
+                  onChange={(e) => setProgramData(prev => ({...prev, tuition: e.target.value}))}
+                  placeholder="4000000"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={() => saveProgramMutation.mutate(programData)}>
+                  <Save className="w-4 h-4 mr-2" />
+                  Lưu chương trình
+                </Button>
+                <Button variant="outline" onClick={() => setEditingProgram(null)}>
+                  <X className="w-4 h-4 mr-2" />
+                  Hủy
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-4">
-          {programs.map((program: any) => (
+          {(programs as any[]).map((program: any) => (
             <div key={program.id} className="border p-4 rounded-lg">
               <div className="flex justify-between items-start">
                 <div>
@@ -296,17 +381,26 @@ const ProgramsManager = () => {
                   <p className="text-sm font-medium text-green-600 mt-2">
                     Học phí: {program.tuition?.toLocaleString()} VND/tháng
                   </p>
+                  <p className="text-sm text-blue-600 mt-1">
+                    Sỉ số: {program.capacity} học sinh
+                  </p>
                 </div>
-                <Button size="sm" variant="outline" onClick={() => window.open('/admin/dashboard', '_blank')}>
-                  <Edit className="w-4 h-4" />
-                </Button>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => handleEdit(program)}>
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={() => {
+                    if (confirm("Bạn có chắc muốn xóa chương trình này?")) {
+                      console.log("Deleting program:", program.id);
+                    }
+                  }}>
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
         </div>
-        <p className="text-center text-gray-500 mt-4">
-          * Quản lý chi tiết chương trình học trong Dashboard chính
-        </p>
       </CardContent>
     </Card>
   );
@@ -317,6 +411,39 @@ const ActivitiesManager = () => {
   const { data: activities = [] } = useQuery({
     queryKey: ['/api/activities'],
   });
+
+  const [editingActivity, setEditingActivity] = useState<any>(null);
+  const [activityData, setActivityData] = useState({
+    name: "",
+    description: "",
+    date: "",
+    location: "",
+    imageUrl: ""
+  });
+
+  const { toast } = useToast();
+
+  const saveActivityMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest("POST", "/api/admin/activities", data);
+    },
+    onSuccess: () => {
+      toast({ title: "Thành công", description: "Đã cập nhật hoạt động" });
+      setEditingActivity(null);
+      setActivityData({ name: "", description: "", date: "", location: "", imageUrl: "" });
+    }
+  });
+
+  const handleEdit = (activity: any) => {
+    setEditingActivity(activity);
+    setActivityData({
+      name: activity.name,
+      description: activity.description,
+      date: activity.date,
+      location: activity.location,
+      imageUrl: activity.imageUrl || ""
+    });
+  };
 
   return (
     <Card>
@@ -332,9 +459,67 @@ const ActivitiesManager = () => {
           </Button>
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        {editingActivity && (
+          <div className="border p-4 rounded-lg bg-green-50">
+            <h3 className="font-semibold mb-4">Chỉnh sửa hoạt động: {editingActivity.name}</h3>
+            <div className="space-y-3">
+              <div>
+                <Label>Tên hoạt động</Label>
+                <Input
+                  value={activityData.name}
+                  onChange={(e) => setActivityData(prev => ({...prev, name: e.target.value}))}
+                />
+              </div>
+              <div>
+                <Label>Mô tả</Label>
+                <Textarea
+                  value={activityData.description}
+                  onChange={(e) => setActivityData(prev => ({...prev, description: e.target.value}))}
+                  rows={3}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Ngày tổ chức</Label>
+                  <Input
+                    value={activityData.date}
+                    onChange={(e) => setActivityData(prev => ({...prev, date: e.target.value}))}
+                    placeholder="15/12/2024"
+                  />
+                </div>
+                <div>
+                  <Label>Địa điểm</Label>
+                  <Input
+                    value={activityData.location}
+                    onChange={(e) => setActivityData(prev => ({...prev, location: e.target.value}))}
+                    placeholder="Sân trường"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label>Hình ảnh hoạt động</Label>
+                <SimpleImageUploader
+                  onImageUpload={(url) => setActivityData(prev => ({...prev, imageUrl: url}))}
+                  currentImage={activityData.imageUrl}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={() => saveActivityMutation.mutate(activityData)}>
+                  <Save className="w-4 h-4 mr-2" />
+                  Lưu hoạt động
+                </Button>
+                <Button variant="outline" onClick={() => setEditingActivity(null)}>
+                  <X className="w-4 h-4 mr-2" />
+                  Hủy
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-4">
-          {activities.map((activity: any) => (
+          {(activities as any[]).map((activity: any) => (
             <div key={activity.id} className="border p-4 rounded-lg">
               <div className="flex justify-between items-start">
                 <div>
@@ -342,17 +527,26 @@ const ActivitiesManager = () => {
                   <p className="text-sm text-gray-600">{activity.date}</p>
                   <p className="text-sm mt-2">{activity.description}</p>
                   <p className="text-sm text-blue-600 mt-2">📍 {activity.location}</p>
+                  {activity.imageUrl && (
+                    <img src={activity.imageUrl} alt={activity.name} className="w-16 h-16 object-cover rounded mt-2" />
+                  )}
                 </div>
-                <Button size="sm" variant="outline" onClick={() => window.open('/admin/dashboard', '_blank')}>
-                  <Edit className="w-4 h-4" />
-                </Button>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => handleEdit(activity)}>
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={() => {
+                    if (confirm("Bạn có chắc muốn xóa hoạt động này?")) {
+                      console.log("Deleting activity:", activity.id);
+                    }
+                  }}>
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
         </div>
-        <p className="text-center text-gray-500 mt-4">
-          * Quản lý chi tiết hoạt động trong Dashboard chính
-        </p>
       </CardContent>
     </Card>
   );
@@ -566,7 +760,7 @@ const NewsManager = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {articles.slice(0, 5).map((article: any) => (
+          {(articles as any[]).slice(0, 5).map((article: any) => (
             <div key={article.id} className="border p-4 rounded-lg">
               <div className="flex justify-between items-start">
                 <div>

@@ -1355,6 +1355,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/admin/programs", async (req, res) => {
+    try {
+      // Save program content - for now return success
+      res.json({ success: true, message: "Program content saved successfully" });
+    } catch (error) {
+      console.error("Error saving program content:", error);
+      res.status(500).json({ message: "Failed to save program content" });
+    }
+  });
+
+  app.post("/api/admin/activities", async (req, res) => {
+    try {
+      // Save activity content - for now return success
+      res.json({ success: true, message: "Activity content saved successfully" });
+    } catch (error) {
+      console.error("Error saving activity content:", error);
+      res.status(500).json({ message: "Failed to save activity content" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

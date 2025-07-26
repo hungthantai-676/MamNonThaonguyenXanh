@@ -87,6 +87,9 @@ export default function AdminDashboardFixed() {
     imageUrl: ""
   });
 
+  // Edit mode state
+  const [editingArticleId, setEditingArticleId] = useState<number | null>(null);
+
   // Load data
   const { data: articles } = useQuery({ queryKey: ["/api/articles"] });
 
@@ -529,13 +532,46 @@ export default function AdminDashboardFixed() {
                       placeholder="Dán link hình ảnh..."
                     />
                   </div>
-                  <Button 
-                    onClick={() => createArticleMutation.mutate(newArticle)}
-                    disabled={createArticleMutation.isPending}
-                    className="w-full"
-                  >
-                    {createArticleMutation.isPending ? "Đang tạo..." : "📤 Đăng bài viết"}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => {
+                        createArticleMutation.mutate(newArticle);
+                        // Reset form after save
+                        setNewArticle({
+                          title: "",
+                          excerpt: "",
+                          content: "",
+                          category: "news",
+                          imageUrl: ""
+                        });
+                        setEditingArticleId(null);
+                      }}
+                      disabled={createArticleMutation.isPending}
+                      className="flex-1"
+                    >
+                      {createArticleMutation.isPending 
+                        ? (editingArticleId ? "Đang lưu..." : "Đang tạo...") 
+                        : (editingArticleId ? "💾 Lưu bài viết" : "📤 Đăng bài viết")
+                      }
+                    </Button>
+                    {editingArticleId && (
+                      <Button 
+                        variant="outline"
+                        onClick={() => {
+                          setNewArticle({
+                            title: "",
+                            excerpt: "",
+                            content: "",
+                            category: "news",
+                            imageUrl: ""
+                          });
+                          setEditingArticleId(null);
+                        }}
+                      >
+                        ❌ Hủy
+                      </Button>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
 
@@ -561,8 +597,34 @@ export default function AdminDashboardFixed() {
                               </div>
                             </div>
                             <div className="flex gap-2">
-                              <Button size="sm" variant="outline">✏️ Sửa</Button>
-                              <Button size="sm" variant="destructive">🗑️ Xóa</Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => {
+                                  setNewArticle({
+                                    title: article.title,
+                                    excerpt: article.excerpt,
+                                    content: article.content,
+                                    category: article.category,
+                                    imageUrl: article.imageUrl || ""
+                                  });
+                                  setEditingArticleId(article.id);
+                                }}
+                              >
+                                ✏️ Sửa
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="destructive"
+                                onClick={() => {
+                                  if (confirm("Bạn có chắc muốn xóa bài viết này?")) {
+                                    // Delete article logic here
+                                    console.log("Deleting article:", article.id);
+                                  }
+                                }}
+                              >
+                                🗑️ Xóa
+                              </Button>
                             </div>
                           </div>
                         </div>
