@@ -55,8 +55,31 @@ export default function AdminDashboardFixed() {
       const targetTab = sectionToTab[editSection];
       if (targetTab) {
         setActiveTab(targetTab);
-        // Clear the localStorage item after using it
+        
+        // Check for specific item IDs and pre-load edit data
+        const editArticleId = localStorage.getItem('editArticleId');
+        const editProgramId = localStorage.getItem('editProgramId');
+        const editActivityId = localStorage.getItem('editActivityId');
+        
+        if (editArticleId && articles) {
+          const articleToEdit = (articles as any[]).find(a => a.id.toString() === editArticleId);
+          if (articleToEdit) {
+            setNewArticle({
+              title: articleToEdit.title,
+              excerpt: articleToEdit.excerpt,
+              content: articleToEdit.content,
+              category: articleToEdit.category,
+              imageUrl: articleToEdit.imageUrl || ""
+            });
+            setEditingArticleId(parseInt(editArticleId));
+          }
+          localStorage.removeItem('editArticleId');
+        }
+        
+        // Clear the localStorage items after using them
         localStorage.removeItem('editSection');
+        localStorage.removeItem('editProgramId');
+        localStorage.removeItem('editActivityId');
         
         toast({
           title: "Đã chuyển đến tab tương ứng",
@@ -236,12 +259,15 @@ export default function AdminDashboardFixed() {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="contact">📞 Liên hệ</TabsTrigger>
             <TabsTrigger value="media">🖼️ Ảnh/Video</TabsTrigger>
             <TabsTrigger value="homepage">🏠 Trang chủ</TabsTrigger>
+            <TabsTrigger value="about">ℹ️ Giới thiệu</TabsTrigger>
+            <TabsTrigger value="admission">🎓 Tuyển sinh</TabsTrigger>
+            <TabsTrigger value="programs">📚 Chương trình</TabsTrigger>
+            <TabsTrigger value="activities">🎯 Hoạt động</TabsTrigger>
             <TabsTrigger value="articles">📰 Bài viết</TabsTrigger>
-            <TabsTrigger value="affiliate">💼 Affiliate</TabsTrigger>
           </TabsList>
 
           {/* Contact Tab */}
@@ -672,7 +698,69 @@ export default function AdminDashboardFixed() {
             </div>
           </TabsContent>
 
-          {/* Affiliate Tab */}
+          {/* About Tab */}
+          <TabsContent value="about">
+            <Card>
+              <CardHeader>
+                <CardTitle>ℹ️ Quản lý trang Giới thiệu</CardTitle>
+                <CardDescription>Cập nhật lịch sử, sứ mệnh, tầm nhìn và thông tin đội ngũ</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-gray-500">
+                  <div className="text-4xl mb-2">🔧</div>
+                  <p>Tính năng đang được phát triển</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Admission Tab */}
+          <TabsContent value="admission">
+            <Card>
+              <CardHeader>
+                <CardTitle>🎓 Quản lý trang Tuyển sinh</CardTitle>
+                <CardDescription>Cập nhật thông tin tuyển sinh, học phí và quy trình</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-gray-500">
+                  <div className="text-4xl mb-2">🔧</div>
+                  <p>Tính năng đang được phát triển</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Programs Tab */}
+          <TabsContent value="programs">
+            <Card>
+              <CardHeader>
+                <CardTitle>📚 Quản lý Chương trình học</CardTitle>
+                <CardDescription>Cập nhật chương trình theo độ tuổi và nội dung giảng dạy</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-gray-500">
+                  <div className="text-4xl mb-2">🔧</div>
+                  <p>Tính năng đang được phát triển</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Activities Tab */}
+          <TabsContent value="activities">
+            <Card>
+              <CardHeader>
+                <CardTitle>🎯 Quản lý Hoạt động</CardTitle>
+                <CardDescription>Cập nhật hoạt động ngoại khóa và sự kiện đặc biệt</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-gray-500">
+                  <div className="text-4xl mb-2">🔧</div>
+                  <p>Tính năng đang được phát triển</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
           <TabsContent value="affiliate">
             <Card>
               <CardHeader>

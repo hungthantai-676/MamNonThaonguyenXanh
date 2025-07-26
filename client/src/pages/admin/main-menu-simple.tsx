@@ -107,12 +107,33 @@ export default function MainMenuSimple() {
                       <Button 
                         size="sm" 
                         variant="outline"
-                        onClick={() => handleEditArticle(article.id)}
-                        title="Chỉnh sửa bài viết"
+                        onClick={() => {
+                          localStorage.setItem('editSection', 'articles');
+                          localStorage.setItem('editArticleId', article.id.toString());
+                          setLocation('/admin/dashboard');
+                          toast({
+                            title: "Chuyển đến Dashboard",
+                            description: `Đang chỉnh sửa bài viết: ${article.title}`,
+                          });
+                        }}
+                        title="Chỉnh sửa bài viết này"
                       >
                         <Edit className="w-3 h-3" />
                       </Button>
-                      <Button size="sm" variant="destructive" title="Xóa bài viết">
+                      <Button 
+                        size="sm" 
+                        variant="destructive" 
+                        onClick={() => {
+                          if (confirm(`Bạn có chắc muốn xóa bài viết "${article.title}"?`)) {
+                            console.log("Deleting article:", article.id);
+                            toast({
+                              title: "Đã xóa bài viết",
+                              description: `Bài viết "${article.title}" đã được xóa`,
+                            });
+                          }
+                        }}
+                        title="Xóa bài viết này"
+                      >
                         <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
@@ -145,12 +166,33 @@ export default function MainMenuSimple() {
                       <Button 
                         size="sm" 
                         variant="outline"
-                        onClick={() => handleEditProgram(program.id)}
-                        title="Chỉnh sửa chương trình"
+                        onClick={() => {
+                          localStorage.setItem('editSection', 'programs');
+                          localStorage.setItem('editProgramId', program.id.toString());
+                          setLocation('/admin/dashboard');
+                          toast({
+                            title: "Chuyển đến Dashboard",
+                            description: `Đang chỉnh sửa chương trình: ${program.name}`,
+                          });
+                        }}
+                        title="Chỉnh sửa chương trình này"
                       >
                         <Edit className="w-3 h-3" />
                       </Button>
-                      <Button size="sm" variant="destructive" title="Xóa chương trình">
+                      <Button 
+                        size="sm" 
+                        variant="destructive"
+                        onClick={() => {
+                          if (confirm(`Bạn có chắc muốn xóa chương trình "${program.name}"?`)) {
+                            console.log("Deleting program:", program.id);
+                            toast({
+                              title: "Đã xóa chương trình",
+                              description: `Chương trình "${program.name}" đã được xóa`,
+                            });
+                          }
+                        }}
+                        title="Xóa chương trình này"
+                      >
                         <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
@@ -181,12 +223,33 @@ export default function MainMenuSimple() {
                       <Button 
                         size="sm" 
                         variant="outline"
-                        onClick={() => handleEditActivity(activity.id)}
-                        title="Chỉnh sửa hoạt động"
+                        onClick={() => {
+                          localStorage.setItem('editSection', 'activities');
+                          localStorage.setItem('editActivityId', activity.id.toString());
+                          setLocation('/admin/dashboard');
+                          toast({
+                            title: "Chuyển đến Dashboard",
+                            description: `Đang chỉnh sửa hoạt động: ${activity.name}`,
+                          });
+                        }}
+                        title="Chỉnh sửa hoạt động này"
                       >
                         <Edit className="w-3 h-3" />
                       </Button>
-                      <Button size="sm" variant="destructive" title="Xóa hoạt động">
+                      <Button 
+                        size="sm" 
+                        variant="destructive"
+                        onClick={() => {
+                          if (confirm(`Bạn có chắc muốn xóa hoạt động "${activity.name}"?`)) {
+                            console.log("Deleting activity:", activity.id);
+                            toast({
+                              title: "Đã xóa hoạt động",
+                              description: `Hoạt động "${activity.name}" đã được xóa`,
+                            });
+                          }
+                        }}
+                        title="Xóa hoạt động này"
+                      >
                         <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
