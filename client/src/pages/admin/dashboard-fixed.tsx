@@ -656,7 +656,7 @@ export default function AdminDashboardFixed() {
                     Quản lý toàn bộ hệ thống affiliate, thành viên, hoa hồng và thanh toán
                   </p>
                   <div className="flex gap-4 justify-center">
-                    <Button onClick={() => window.open("/admin/affiliate", "_blank")}>
+                    <Button onClick={() => window.location.href = "/admin/affiliate"}>
                       🚀 Mở Admin Affiliate
                     </Button>
                     <Button variant="outline" onClick={() => window.open("/affiliate", "_blank")}>

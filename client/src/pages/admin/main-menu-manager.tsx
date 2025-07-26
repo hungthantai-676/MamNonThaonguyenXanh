@@ -24,8 +24,10 @@ import {
   Plus,
   Upload,
   Settings,
-  X
+  X,
+  ArrowLeft
 } from "lucide-react";
+import { useLocation } from "wouter";
 
 // Component để upload ảnh trực tiếp từ thiết bị
 const SimpleImageUploader = ({ onImageUpload, currentImage }: { onImageUpload: (url: string) => void, currentImage?: string }) => {
