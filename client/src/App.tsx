@@ -20,6 +20,8 @@ import AffiliateJoin from "@/pages/affiliate-join";
 import AdminLogin from "@/pages/admin/login";
 import AdminDashboardFixed from "@/pages/admin/dashboard-fixed";
 import AffiliateDashboard from "@/pages/admin/affiliate-dashboard";
+import ContentManagement from "@/pages/admin/content-management";
+import FullContentManager from "@/pages/admin/full-content-manager";
 import AdminAccess from "@/pages/admin-access";
 import AdminQuick from "@/pages/admin-quick";
 import Header from "@/components/header";
@@ -48,6 +50,8 @@ function Router() {
           <Route path="/admin/login" component={AdminLogin} />
           <Route path="/admin/dashboard" component={AdminDashboardFixed} />
           <Route path="/admin/affiliate" component={AffiliateDashboard} />
+          <Route path="/admin/content" component={ContentManagement} />
+          <Route path="/admin/full-content" component={FullContentManager} />
           <Route path="/test" component={Test} />
           <Route component={NotFound} />
         </Switch>

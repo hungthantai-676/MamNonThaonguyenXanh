@@ -12,11 +12,12 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { QrCode, UserCheck, Clock, Users, TrendingUp, Wallet, Star, Gift, ArrowDownLeft, ArrowUpRight, Phone, Mail, Eye, EyeOff, Banknote, History, Scan } from "lucide-react";
 import AffiliateTree from "@/components/affiliate-tree";
+import QRCode from "qrcode";
 
 // QR Code Scanner Component
 const QRScanner = ({ member }: { member: any }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [qrValue, setQrValue] = useState("");
+  const [qrDataURL, setQrDataURL] = useState("");
   const { toast } = useToast();
   
   const generateQRCode = () => {
@@ -31,10 +32,26 @@ const QRScanner = ({ member }: { member: any }) => {
     return JSON.stringify(qrData);
   };
 
-  const handleShowQR = () => {
-    const qrData = generateQRCode();
-    setQrValue(qrData);
-    setIsOpen(true);
+  const handleShowQR = async () => {
+    try {
+      const qrData = generateQRCode();
+      const dataURL = await QRCode.toDataURL(qrData, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+      setQrDataURL(dataURL);
+      setIsOpen(true);
+    } catch (error) {
+      toast({
+        title: "Lỗi",
+        description: "Không thể tạo QR code",
+        variant: "destructive",
+      });
+    }
   };
 
   const copyToClipboard = async () => {
@@ -77,12 +94,19 @@ const QRScanner = ({ member }: { member: any }) => {
           <div className="space-y-4">
             {/* QR Code Display Area */}
             <div className="bg-white p-6 rounded-lg border-2 border-gray-200 flex flex-col items-center">
-              <div className="bg-gray-100 w-48 h-48 flex items-center justify-center rounded-lg mb-4">
-                <div className="text-center text-gray-600">
-                  <QrCode className="w-16 h-16 mx-auto mb-2" />
-                  <p className="text-sm font-medium">QR Code</p>
-                  <p className="text-xs">ID: {member.memberId}</p>
-                </div>
+              <div className="w-48 h-48 flex items-center justify-center rounded-lg mb-4">
+                {qrDataURL ? (
+                  <img 
+                    src={qrDataURL} 
+                    alt="QR Code" 
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <div className="text-center text-gray-600">
+                    <QrCode className="w-16 h-16 mx-auto mb-2" />
+                    <p className="text-sm font-medium">Đang tạo QR Code...</p>
+                  </div>
+                )}
               </div>
               
               <div className="text-center space-y-2">

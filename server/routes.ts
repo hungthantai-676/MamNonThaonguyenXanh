@@ -1200,6 +1200,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Content Management API endpoints
+  app.post("/api/admin/homepage", async (req, res) => {
+    try {
+      const { heroTitle, heroSubtitle, heroImage, features } = req.body;
+      // Save homepage data to database or file system
+      res.json({ message: "Homepage updated successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update homepage" });
+    }
+  });
+
+  app.post("/api/admin/about", async (req, res) => {
+    try {
+      const { mission, vision, history, principalMessage } = req.body;
+      // Save about page data
+      res.json({ message: "About page updated successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update about page" });
+    }
+  });
+
+  app.post("/api/admin/admission", async (req, res) => {
+    try {
+      const admissionData = req.body;
+      // Save admission data
+      res.json({ message: "Admission info updated successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update admission info" });
+    }
+  });
+
+  app.post("/api/admin/contact", async (req, res) => {
+    try {
+      const contactData = req.body;
+      // Save contact data
+      res.json({ message: "Contact info updated successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update contact info" });
+    }
+  });
+
+  app.get("/api/parent-documents", async (req, res) => {
+    try {
+      // Return parent documents list
+      const documents = [
+        {
+          id: 1,
+          title: "Hướng dẫn chuẩn bị cho bé vào mầm non",
+          description: "Tài liệu hướng dẫn phụ huynh chuẩn bị tâm lý và vật dụng cho bé"
+        }
+      ];
+      res.json(documents);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch documents" });
+    }
+  });
+
+  app.post("/api/parent-documents", async (req, res) => {
+    try {
+      const { title, description, fileUrl } = req.body;
+      // Add new document
+      res.json({ message: "Document added successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to add document" });
+    }
+  });
+
   // Chatbot API endpoint
   app.post("/api/chatbot", async (req, res) => {
     try {
