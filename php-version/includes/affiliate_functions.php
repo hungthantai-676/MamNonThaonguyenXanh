@@ -112,12 +112,12 @@ function processReferral($admissionId, $referrerCode) {
         return false;
     }
     
-    // Create referral record
+    // Create referral record with pending status (NO REWARDS YET)
     $rewardAmount = ($referrer['role'] === 'teacher') ? 2000000 : 0;
     $rewardPoints = ($referrer['role'] === 'parent') ? 2000 : 0;
     
     $referralId = $db->insert(
-        "INSERT INTO referrals (referrer_id, student_name, parent_name, parent_phone, parent_email, admission_form_id, reward_amount, reward_points) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO referrals (referrer_id, student_name, parent_name, parent_phone, parent_email, admission_form_id, reward_amount, reward_points, status, reward_paid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'no')",
         [$referrer['member_id'], $admission['child_name'], $admission['parent_name'], $admission['phone'], $admission['email'], $admissionId, $rewardAmount, $rewardPoints]
     );
     
@@ -128,20 +128,21 @@ function processReferral($admissionId, $referrerCode) {
             [$referrerCode, $referrer['member_id'], $admissionId]
         );
         
-        return confirmReferral($referralId);
+        // DO NOT auto-confirm - wait for manual confirmation
+        return $referralId;
     }
     
     return false;
 }
 
-// Confirm referral and add rewards
+// Confirm referral and add rewards (ONLY when customer actually converts)
 function confirmReferral($referralId) {
     $db = getDB();
     
     // Get referral info
-    $referral = $db->fetch("SELECT * FROM referrals WHERE id = ?", [$referralId]);
+    $referral = $db->fetch("SELECT * FROM referrals WHERE id = ? AND status = 'pending'", [$referralId]);
     if (!$referral) {
-        return false;
+        return false; // Only process pending referrals
     }
     
     // Get referrer info
@@ -150,29 +151,29 @@ function confirmReferral($referralId) {
         return false;
     }
     
-    // Add reward to wallet
+    // Add reward to wallet ONLY when confirmed
     if ($referrer['role'] === 'teacher') {
         // Add money for teachers
         $db->update(
-            "UPDATE affiliate_members SET wallet_balance = wallet_balance + ?, total_referrals = total_referrals + 1 WHERE member_id = ?",
+            "UPDATE affiliate_members SET wallet_balance = wallet_balance + ?, total_referrals = total_referrals + 1, updated_at = NOW() WHERE member_id = ?",
             [$referral['reward_amount'], $referrer['member_id']]
         );
         
         // Add transaction record
         $db->insert(
-            "INSERT INTO wallet_transactions (member_id, transaction_type, amount, description, referral_id) VALUES (?, 'referral_reward', ?, ?, ?)",
+            "INSERT INTO wallet_transactions (member_id, transaction_type, amount, points, description, referral_id, status) VALUES (?, 'referral_reward', ?, 0, ?, ?, 'completed')",
             [$referrer['member_id'], $referral['reward_amount'], 'Thưởng giới thiệu học sinh: ' . $referral['student_name'], $referralId]
         );
     } else {
         // Add points for parents
         $db->update(
-            "UPDATE affiliate_members SET points_balance = points_balance + ?, total_referrals = total_referrals + 1 WHERE member_id = ?",
+            "UPDATE affiliate_members SET points_balance = points_balance + ?, total_referrals = total_referrals + 1, updated_at = NOW() WHERE member_id = ?",
             [$referral['reward_points'], $referrer['member_id']]
         );
         
         // Add transaction record
         $db->insert(
-            "INSERT INTO wallet_transactions (member_id, transaction_type, points, description, referral_id) VALUES (?, 'referral_reward', ?, ?, ?)",
+            "INSERT INTO wallet_transactions (member_id, transaction_type, amount, points, description, referral_id, status) VALUES (?, 'referral_reward', 0, ?, ?, ?, 'completed')",
             [$referrer['member_id'], $referral['reward_points'], 'Điểm thưởng giới thiệu học sinh: ' . $referral['student_name'], $referralId]
         );
     }

@@ -294,12 +294,12 @@ INSERT INTO milestone_rewards (milestone_number, required_referrals, teacher_bon
 (5, 25, 10000000, 10000, 'Mốc 25 học sinh'),
 (6, 30, 10000000, 10000, 'Mốc 30 học sinh');
 
--- Insert sample affiliate members
+-- Insert sample affiliate members (new registrations start with 0 balance)
 INSERT INTO affiliate_members (member_id, name, phone, email, role, referral_code, total_referrals, wallet_balance, points_balance) VALUES
-('TCH001', 'Cô Hương Nguyễn', '0912345001', 'huong.nguyen@gmail.com', 'teacher', 'TCH001', 3, 6000000, 0),
-('TCH002', 'Thầy Minh Đặng', '0912345002', 'minh.dang@gmail.com', 'teacher', 'TCH002', 7, 24000000, 0),
-('PAR001', 'Chị Lan Phạm', '0912345003', 'lan.pham@gmail.com', 'parent', 'PAR001', 2, 0, 4000),
-('PAR002', 'Anh Tuấn Lê', '0912345004', 'tuan.le@gmail.com', 'parent', 'PAR002', 8, 0, 26000);
+('TCH001', 'Cô Hương Nguyễn', '0912345001', 'huong.nguyen@gmail.com', 'teacher', 'TCH001', 0, 0, 0),
+('TCH002', 'Thầy Minh Đặng', '0912345002', 'minh.dang@gmail.com', 'teacher', 'TCH002', 0, 0, 0),
+('PAR001', 'Chị Lan Phạm', '0912345003', 'lan.pham@gmail.com', 'parent', 'PAR001', 0, 0, 0),
+('PAR002', 'Anh Tuấn Lê', '0912345004', 'tuan.le@gmail.com', 'parent', 'PAR002', 0, 0, 0);
 
 -- Update admission_forms table to include referrer tracking
 ALTER TABLE admission_forms ADD COLUMN referrer_code VARCHAR(10) AFTER special_needs;

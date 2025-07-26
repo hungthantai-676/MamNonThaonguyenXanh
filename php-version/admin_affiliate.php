@@ -73,7 +73,7 @@ $db = getDB();
                         include 'admin/affiliate_members.php';
                         break;
                     case 'referrals':
-                        echo '<div class="alert alert-info">Trang quản lý giới thiệu đang được phát triển...</div>';
+                        include 'admin/affiliate_referrals.php';
                         break;
                     case 'conversions':
                         echo '<div class="alert alert-info">Trang quản lý conversion đang được phát triển...</div>';

@@ -1,228 +1,322 @@
 <?php
-header('Content-Type: application/json');
+require_once '../includes/config.php';
 require_once '../includes/affiliate_functions.php';
 
+header('Content-Type: application/json');
+
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
-$response = ['success' => false, 'message' => 'Invalid action'];
 
 switch ($action) {
-    case 'register':
-        $name = sanitize($_POST['name'] ?? '');
-        $phone = sanitize($_POST['phone'] ?? '');
-        $email = sanitize($_POST['email'] ?? '');
-        $role = sanitize($_POST['role'] ?? '');
-        
-        if (empty($name) || empty($phone) || empty($role)) {
-            $response['message'] = 'Vui lòng điền đầy đủ thông tin bắt buộc';
-        } elseif (!in_array($role, ['teacher', 'parent'])) {
-            $response['message'] = 'Vai trò không hợp lệ';
-        } else {
-            $result = registerAffiliateMember($name, $phone, $email, $role);
-            $response = $result;
-        }
-        break;
-        
-    case 'get_dashboard':
-        $memberId = sanitize($_GET['member_id'] ?? '');
-        
-        if (empty($memberId)) {
-            $response['message'] = 'Thiếu mã thành viên';
-        } else {
-            $dashboard = getMemberDashboard($memberId);
-            if ($dashboard) {
-                $response = ['success' => true, 'data' => $dashboard];
-            } else {
-                $response['message'] = 'Không tìm thấy thông tin thành viên';
-            }
-        }
-        break;
-        
-    case 'validate_referral':
-        $code = sanitize($_GET['code'] ?? '');
-        
-        if (empty($code)) {
-            $response['message'] = 'Thiếu mã giới thiệu';
-        } else {
-            $memberId = isValidReferralCode($code);
-            if ($memberId) {
-                $db = getDB();
-                $member = $db->fetch("SELECT name, role FROM affiliate_members WHERE member_id = ?", [$memberId]);
-                $response = [
-                    'success' => true, 
-                    'valid' => true,
-                    'referrer' => $member
-                ];
-            } else {
-                $response = [
-                    'success' => true, 
-                    'valid' => false,
-                    'message' => 'Mã giới thiệu không hợp lệ'
-                ];
-            }
-        }
-        break;
-        
     case 'confirm_referral':
-        $referralId = (int)($_POST['referral_id'] ?? 0);
-        
-        if ($referralId <= 0) {
-            $response['message'] = 'ID giới thiệu không hợp lệ';
-        } else {
-            $result = confirmReferral($referralId);
-            if ($result) {
-                $response = ['success' => true, 'message' => 'Xác nhận thành công'];
-            } else {
-                $response['message'] = 'Có lỗi xảy ra khi xác nhận';
-            }
-        }
+        handleConfirmReferral();
         break;
-        
-    case 'add_conversion':
-        $referrerId = sanitize($_POST['referrer_id'] ?? '');
-        $customerName = sanitize($_POST['customer_name'] ?? '');
-        $customerPhone = sanitize($_POST['customer_phone'] ?? '');
-        $customerEmail = sanitize($_POST['customer_email'] ?? '');
-        $source = sanitize($_POST['source'] ?? 'website');
-        
-        if (empty($referrerId) || empty($customerName) || empty($customerPhone)) {
-            $response['message'] = 'Thiếu thông tin bắt buộc';
-        } else {
-            $result = addCustomerConversion($referrerId, $customerName, $customerPhone, $customerEmail, $source);
-            if ($result) {
-                $response = ['success' => true, 'message' => 'Thêm conversion thành công'];
-            } else {
-                $response['message'] = 'Khách hàng đã tồn tại hoặc có lỗi xảy ra';
-            }
-        }
+    case 'enroll_student':
+        handleEnrollStudent();
         break;
-        
-    case 'update_conversion_status':
-        $conversionId = (int)($_POST['conversion_id'] ?? 0);
-        $status = sanitize($_POST['status'] ?? '');
-        $manualStatus = sanitize($_POST['manual_status'] ?? '');
-        $notes = sanitize($_POST['notes'] ?? '');
-        $assignedStaff = sanitize($_POST['assigned_staff'] ?? '');
-        
-        if ($conversionId <= 0 || empty($status)) {
-            $response['message'] = 'Thiếu thông tin bắt buộc';
-        } else {
-            $result = updateCustomerStatus($conversionId, $status, $manualStatus, $notes, $assignedStaff);
-            if ($result) {
-                $response = ['success' => true, 'message' => 'Cập nhật thành công'];
-            } else {
-                $response['message'] = 'Có lỗi xảy ra khi cập nhật';
-            }
-        }
+    case 'get_member_details':
+        handleGetMemberDetails();
         break;
-        
-    case 'get_top_performers':
-        $limit = (int)($_GET['limit'] ?? 10);
-        $performers = getTopPerformers($limit);
-        $response = ['success' => true, 'data' => $performers];
+    case 'toggle_member_status':
+        handleToggleMemberStatus();
         break;
-        
-    case 'get_conversion_stats':
-        $referrerId = sanitize($_GET['referrer_id'] ?? '');
-        $stats = getConversionStats($referrerId ?: null);
-        $response = ['success' => true, 'data' => $stats];
+    case 'export_referrals':
+        handleExportReferrals();
         break;
-        
-    case 'search_members':
-        $query = sanitize($_GET['q'] ?? '');
-        $role = sanitize($_GET['role'] ?? '');
-        
-        if (strlen($query) < 2) {
-            $response['message'] = 'Từ khóa quá ngắn';
-        } else {
-            $db = getDB();
-            $whereClause = "WHERE (name LIKE ? OR member_id LIKE ? OR phone LIKE ?)";
-            $params = ["%{$query}%", "%{$query}%", "%{$query}%"];
-            
-            if ($role) {
-                $whereClause .= " AND role = ?";
-                $params[] = $role;
-            }
-            
-            $members = $db->fetchAll(
-                "SELECT member_id, name, phone, role, total_referrals, wallet_balance, points_balance, status FROM affiliate_members {$whereClause} ORDER BY total_referrals DESC LIMIT 20",
-                $params
-            );
-            
-            $response = ['success' => true, 'data' => $members];
-        }
-        break;
-        
-    case 'get_referral_details':
-        $referralId = (int)($_GET['referral_id'] ?? 0);
-        
-        if ($referralId <= 0) {
-            $response['message'] = 'ID không hợp lệ';
-        } else {
-            $db = getDB();
-            $referral = $db->fetch(
-                "SELECT r.*, am.name as referrer_name, am.role as referrer_role 
-                FROM referrals r 
-                JOIN affiliate_members am ON r.referrer_id = am.member_id 
-                WHERE r.id = ?",
-                [$referralId]
-            );
-            
-            if ($referral) {
-                $response = ['success' => true, 'data' => $referral];
-            } else {
-                $response['message'] = 'Không tìm thấy thông tin';
-            }
-        }
-        break;
-        
-    case 'get_member_transactions':
-        $memberId = sanitize($_GET['member_id'] ?? '');
-        $limit = (int)($_GET['limit'] ?? 50);
-        
-        if (empty($memberId)) {
-            $response['message'] = 'Thiếu mã thành viên';
-        } else {
-            $db = getDB();
-            $transactions = $db->fetchAll(
-                "SELECT * FROM wallet_transactions WHERE member_id = ? ORDER BY created_at DESC LIMIT ?",
-                [$memberId, $limit]
-            );
-            
-            $response = ['success' => true, 'data' => $transactions];
-        }
-        break;
-        
-    case 'generate_qr_code':
-        $memberId = sanitize($_POST['member_id'] ?? '');
-        
-        if (empty($memberId)) {
-            $response['message'] = 'Thiếu mã thành viên';
-        } else {
-            $db = getDB();
-            $member = $db->fetch("SELECT referral_code FROM affiliate_members WHERE member_id = ?", [$memberId]);
-            
-            if ($member) {
-                $qrCodePath = generateQRCode($memberId, $member['referral_code']);
-                
-                if ($qrCodePath) {
-                    $db->update(
-                        "UPDATE affiliate_members SET qr_code_path = ? WHERE member_id = ?",
-                        [$qrCodePath, $memberId]
-                    );
-                    
-                    $response = ['success' => true, 'qr_code' => $qrCodePath];
-                } else {
-                    $response['message'] = 'Có lỗi tạo QR code';
-                }
-            } else {
-                $response['message'] = 'Không tìm thấy thành viên';
-            }
-        }
-        break;
-        
     default:
-        $response['message'] = 'Hành động không được hỗ trợ';
+        echo json_encode(['success' => false, 'message' => 'Invalid action']);
 }
 
-echo json_encode($response);
+function handleConfirmReferral() {
+    $referralId = $_POST['referral_id'] ?? '';
+    
+    if (!$referralId) {
+        echo json_encode(['success' => false, 'message' => 'Thiếu ID giới thiệu']);
+        return;
+    }
+    
+    $result = confirmReferral($referralId);
+    
+    if ($result) {
+        echo json_encode(['success' => true, 'message' => 'Đã xác nhận giới thiệu và cộng thưởng thành công']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Không thể xác nhận giới thiệu']);
+    }
+}
+
+function handleEnrollStudent() {
+    $referralId = $_POST['referral_id'] ?? '';
+    
+    if (!$referralId) {
+        echo json_encode(['success' => false, 'message' => 'Thiếu ID giới thiệu']);
+        return;
+    }
+    
+    $db = getDB();
+    $result = $db->update(
+        "UPDATE referrals SET status = 'enrolled', updated_at = NOW() WHERE id = ?",
+        [$referralId]
+    );
+    
+    if ($result) {
+        echo json_encode(['success' => true, 'message' => 'Đã cập nhật trạng thái nhập học']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Không thể cập nhật trạng thái']);
+    }
+}
+
+function handleGetMemberDetails() {
+    $memberId = $_GET['member_id'] ?? '';
+    
+    if (!$memberId) {
+        echo json_encode(['success' => false, 'message' => 'Thiếu ID thành viên']);
+        return;
+    }
+    
+    $db = getDB();
+    
+    // Get member info
+    $member = $db->fetch("SELECT * FROM affiliate_members WHERE member_id = ?", [$memberId]);
+    if (!$member) {
+        echo json_encode(['success' => false, 'message' => 'Không tìm thấy thành viên']);
+        return;
+    }
+    
+    // Get referrals
+    $referrals = $db->fetchAll(
+        "SELECT * FROM referrals WHERE referrer_id = ? ORDER BY created_at DESC LIMIT 10",
+        [$memberId]
+    );
+    
+    // Get transactions
+    $transactions = $db->fetchAll(
+        "SELECT * FROM wallet_transactions WHERE member_id = ? ORDER BY created_at DESC LIMIT 10",
+        [$memberId]
+    );
+    
+    ob_start();
+    ?>
+    <div class="row">
+        <div class="col-md-6">
+            <h6>Thông tin cơ bản</h6>
+            <table class="table table-sm">
+                <tr><td>ID:</td><td><?= $member['member_id'] ?></td></tr>
+                <tr><td>Tên:</td><td><?= htmlspecialchars($member['name']) ?></td></tr>
+                <tr><td>SĐT:</td><td><?= $member['phone'] ?></td></tr>
+                <tr><td>Email:</td><td><?= htmlspecialchars($member['email'] ?? '') ?></td></tr>
+                <tr><td>Vai trò:</td><td><?= $member['role'] === 'teacher' ? 'Giáo viên' : 'Phụ huynh' ?></td></tr>
+                <tr><td>Mã giới thiệu:</td><td><code><?= $member['referral_code'] ?></code></td></tr>
+                <tr><td>Tổng giới thiệu:</td><td><?= $member['total_referrals'] ?></td></tr>
+                <tr><td>Trạng thái:</td><td>
+                    <span class="badge bg-<?= $member['status'] === 'active' ? 'success' : 'secondary' ?>">
+                        <?= $member['status'] === 'active' ? 'Hoạt động' : 'Tạm khóa' ?>
+                    </span>
+                </td></tr>
+                <tr><td>Ngày ĐK:</td><td><?= formatDate($member['registered_at']) ?></td></tr>
+            </table>
+        </div>
+        
+        <div class="col-md-6">
+            <h6>Số dư hiện tại</h6>
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <?php if ($member['role'] === 'teacher'): ?>
+                        <h4 class="text-success"><?= formatCurrency($member['wallet_balance']) ?></h4>
+                        <p class="text-muted mb-0">Ví tiền mặt</p>
+                    <?php else: ?>
+                        <h4 class="text-warning"><?= formatPoints($member['points_balance']) ?> điểm</h4>
+                        <p class="text-muted mb-0">Điểm tích lũy</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+            
+            <h6 class="mt-3">Mốc thưởng</h6>
+            <div class="progress mb-2">
+                <?php
+                $nextTarget = $member['next_milestone_target'];
+                $current = $member['total_referrals'];
+                $progress = $nextTarget > 0 ? ($current % 5) / 5 * 100 : 0;
+                ?>
+                <div class="progress-bar" style="width: <?= $progress ?>%"></div>
+            </div>
+            <small class="text-muted">
+                Đã đạt <?= $member['current_milestone'] ?> mốc. 
+                Còn <?= max(0, $nextTarget - $current) ?> giới thiệu nữa để đạt mốc tiếp theo.
+            </small>
+        </div>
+    </div>
+    
+    <hr>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <h6>Giới thiệu gần đây</h6>
+            <?php if (empty($referrals)): ?>
+                <p class="text-muted">Chưa có giới thiệu nào</p>
+            <?php else: ?>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Học sinh</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($referrals as $ref): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($ref['student_name']) ?></td>
+                                <td>
+                                    <span class="badge bg-<?= $ref['status'] === 'confirmed' ? 'success' : ($ref['status'] === 'pending' ? 'warning' : 'primary') ?>">
+                                        <?= $ref['status'] === 'confirmed' ? 'Đã xác nhận' : ($ref['status'] === 'pending' ? 'Chờ' : 'Nhập học') ?>
+                                    </span>
+                                </td>
+                                <td><small><?= formatDate($ref['created_at']) ?></small></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+        
+        <div class="col-md-6">
+            <h6>Giao dịch gần đây</h6>
+            <?php if (empty($transactions)): ?>
+                <p class="text-muted">Chưa có giao dịch nào</p>
+            <?php else: ?>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Loại</th>
+                                <th>Số tiền/điểm</th>
+                                <th>Ngày</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($transactions as $trans): ?>
+                            <tr>
+                                <td>
+                                    <small><?= 
+                                        $trans['transaction_type'] === 'referral_reward' ? 'Thưởng giới thiệu' :
+                                        ($trans['transaction_type'] === 'milestone_bonus' ? 'Thưởng mốc' : $trans['transaction_type'])
+                                    ?></small>
+                                </td>
+                                <td>
+                                    <?php if ($trans['amount'] > 0): ?>
+                                        <span class="text-success"><?= formatCurrency($trans['amount']) ?></span>
+                                    <?php endif; ?>
+                                    <?php if ($trans['points'] > 0): ?>
+                                        <span class="text-warning"><?= formatPoints($trans['points']) ?> điểm</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><small><?= formatDate($trans['created_at']) ?></small></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php
+    $html = ob_get_clean();
+    
+    echo json_encode(['success' => true, 'html' => $html]);
+}
+
+function handleToggleMemberStatus() {
+    $memberId = $_POST['member_id'] ?? '';
+    $status = $_POST['status'] ?? '';
+    
+    if (!$memberId || !in_array($status, ['active', 'inactive'])) {
+        echo json_encode(['success' => false, 'message' => 'Dữ liệu không hợp lệ']);
+        return;
+    }
+    
+    $db = getDB();
+    $result = $db->update(
+        "UPDATE affiliate_members SET status = ?, updated_at = NOW() WHERE member_id = ?",
+        [$status, $memberId]
+    );
+    
+    if ($result) {
+        echo json_encode(['success' => true, 'message' => 'Đã cập nhật trạng thái thành viên']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Không thể cập nhật trạng thái']);
+    }
+}
+
+function handleExportReferrals() {
+    // Simple CSV export
+    $status = $_GET['status'] ?? 'pending';
+    $search = $_GET['search'] ?? '';
+    
+    $db = getDB();
+    
+    $whereConditions = ["r.status = ?"];
+    $params = [$status];
+    
+    if ($search) {
+        $whereConditions[] = "(r.student_name LIKE ? OR r.parent_name LIKE ? OR r.parent_phone LIKE ?)";
+        $searchTerm = "%$search%";
+        $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm]);
+    }
+    
+    $whereClause = implode(' AND ', $whereConditions);
+    
+    $referrals = $db->fetchAll("
+        SELECT r.*, am.name as referrer_name, am.role as referrer_role 
+        FROM referrals r 
+        JOIN affiliate_members am ON r.referrer_id = am.member_id 
+        WHERE $whereClause 
+        ORDER BY r.created_at DESC
+    ", $params);
+    
+    header('Content-Type: text/csv');
+    header('Content-Disposition: attachment; filename="gioithieu_' . $status . '_' . date('Y-m-d') . '.csv"');
+    
+    $output = fopen('php://output', 'w');
+    
+    // UTF-8 BOM for Excel
+    fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+    
+    // Header
+    fputcsv($output, [
+        'Ngày',
+        'Người giới thiệu',
+        'Vai trò',
+        'Học sinh',
+        'Phụ huynh',
+        'SĐT',
+        'Email',
+        'Thưởng',
+        'Trạng thái',
+        'Ngày xác nhận'
+    ]);
+    
+    // Data
+    foreach ($referrals as $ref) {
+        $reward = $ref['referrer_role'] === 'teacher' ? 
+            number_format($ref['reward_amount']) . ' VNĐ' : 
+            number_format($ref['reward_points']) . ' điểm';
+            
+        fputcsv($output, [
+            date('d/m/Y', strtotime($ref['created_at'])),
+            $ref['referrer_name'],
+            $ref['referrer_role'] === 'teacher' ? 'Giáo viên' : 'Phụ huynh',
+            $ref['student_name'],
+            $ref['parent_name'],
+            $ref['parent_phone'],
+            $ref['parent_email'],
+            $reward,
+            $ref['status'] === 'confirmed' ? 'Đã xác nhận' : ($ref['status'] === 'pending' ? 'Chờ xác nhận' : 'Đã nhập học'),
+            $ref['confirmed_at'] ? date('d/m/Y', strtotime($ref['confirmed_at'])) : ''
+        ]);
+    }
+    
+    fclose($output);
+    exit;
+}
 ?>

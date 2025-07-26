@@ -240,6 +240,8 @@ Changelog:
 - July 16, 2025. POSITIONED: Chatbot at 2/3 screen height and right corner for optimal user experience
 - July 21, 2025. COMPLETED: F1 agent customer conversion tracking with 3-color status system and automatic commission distribution
 - July 21, 2025. IMPLEMENTED: Complete hosting deployment system with automated sync capabilities and production-ready backup files
+- July 26, 2025. UPDATED: Affiliate reward system - New members start with 0 balance, rewards only added upon confirmed conversion
+- July 26, 2025. ENHANCED: Admin referral management with manual confirmation system to prevent premature reward distribution
 ```
 
 ## User Preferences
