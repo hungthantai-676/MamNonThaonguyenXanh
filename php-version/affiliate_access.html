@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truy cập Hệ thống Affiliate</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h3><i class="fas fa-network-wired"></i> Hệ thống Quản trị Affiliate</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <h5><i class="fas fa-info-circle"></i> Thông tin quan trọng</h5>
+                            <p>Hệ thống Affiliate được xây dựng bằng PHP và cần web server hỗ trợ PHP để chạy.</p>
+                        </div>
+
+                        <h5>🚀 Các cách để truy cập:</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title"><i class="fas fa-server text-primary"></i> Cách 1: XAMPP/WAMP</h6>
+                                        <p class="card-text small">
+                                            1. Tải và cài đặt XAMPP<br>
+                                            2. Copy thư mục php-version vào htdocs<br>
+                                            3. Truy cập: <strong>localhost/php-version/admin_affiliate.php</strong>
+                                        </p>
+                                        <a href="https://www.apachefriends.org/download.html" class="btn btn-outline-primary btn-sm" target="_blank">
+                                            <i class="fas fa-download"></i> Tải XAMPP
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title"><i class="fas fa-cloud text-success"></i> Cách 2: Hosting</h6>
+                                        <p class="card-text small">
+                                            1. Upload files PHP lên hosting<br>
+                                            2. Import database<br>
+                                            3. Cấu hình kết nối database<br>
+                                            4. Truy cập qua domain
+                                        </p>
+                                        <button class="btn btn-outline-success btn-sm" onclick="showHostingGuide()">
+                                            <i class="fas fa-book"></i> Xem hướng dẫn
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <h6><i class="fas fa-exclamation-triangle"></i> Tính năng có sẵn:</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="small mb-0">
+                                        <li>📊 Dashboard tổng quan</li>
+                                        <li>👥 Quản lý thành viên</li>
+                                        <li>💰 Quản lý thanh toán</li>
+                                        <li>📈 Thống kê conversion</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="small mb-0">
+                                        <li>🌳 Cây phả hệ affiliate</li>
+                                        <li>💳 Hệ thống ví điện tử</li>
+                                        <li>🎯 Tooltip hướng dẫn</li>
+                                        <li>📱 Giao diện responsive</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <button class="btn btn-primary" onclick="tryDirectAccess()">
+                                <i class="fas fa-external-link-alt"></i> Thử truy cập trực tiếp
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="window.close()">
+                                <i class="fas fa-times"></i> Đóng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal hướng dẫn hosting -->
+    <div class="modal fade" id="hostingGuideModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-server"></i> Hướng dẫn Deploy lên Hosting</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>📋 Các bước thực hiện:</h6>
+                    <ol>
+                        <li><strong>Chuẩn bị:</strong>
+                            <ul>
+                                <li>Tài khoản hosting hỗ trợ PHP 7.4+</li>
+                                <li>MySQL database</li>
+                                <li>FTP client (FileZilla)</li>
+                            </ul>
+                        </li>
+                        <li><strong>Upload files:</strong>
+                            <ul>
+                                <li>Nén thư mục php-version</li>
+                                <li>Upload và giải nén trên hosting</li>
+                                <li>Set permission 755 cho thư mục</li>
+                            </ul>
+                        </li>
+                        <li><strong>Database:</strong>
+                            <ul>
+                                <li>Tạo database mới</li>
+                                <li>Import file database.sql</li>
+                                <li>Cập nhật connection string</li>
+                            </ul>
+                        </li>
+                        <li><strong>Cấu hình:</strong>
+                            <ul>
+                                <li>Sửa config.php với thông tin database</li>
+                                <li>Test kết nối</li>
+                                <li>Kiểm tra các chức năng</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    
+                    <div class="alert alert-info">
+                        <strong><i class="fas fa-lightbulb"></i> Gợi ý:</strong>
+                        Sử dụng subdomain như <code>affiliate.mamnonthaonguyenxanh.com</code> để dễ quản lý.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showHostingGuide() {
+            new bootstrap.Modal(document.getElementById('hostingGuideModal')).show();
+        }
+
+        function tryDirectAccess() {
+            const urls = [
+                'admin_affiliate.php',
+                '../admin_affiliate.php',
+                'php-version/admin_affiliate.php'
+            ];
+            
+            let found = false;
+            urls.forEach(url => {
+                try {
+                    window.open(url, '_blank');
+                    found = true;
+                } catch (e) {
+                    console.log('Cannot access:', url);
+                }
+            });
+            
+            if (!found) {
+                alert('Không thể truy cập trực tiếp. Vui lòng sử dụng XAMPP hoặc hosting hỗ trợ PHP.');
+            }
+        }
+
+        // Auto-detect and show appropriate message
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if we're in localhost environment
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success mt-3';
+                alertDiv.innerHTML = `
+                    <strong><i class="fas fa-check-circle"></i> Môi trường localhost phát hiện!</strong><br>
+                    Bạn có thể sử dụng XAMPP để chạy PHP hoặc truy cập trực tiếp qua hosting.
+                `;
+                document.querySelector('.card-body').appendChild(alertDiv);
+            }
+        });
+    </script>
+</body>
+</html>
