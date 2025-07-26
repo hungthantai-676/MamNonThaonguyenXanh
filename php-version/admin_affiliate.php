@@ -45,6 +45,9 @@ $db = getDB();
                     <a class="nav-link text-white <?= $action == 'genealogy' ? 'active bg-primary' : '' ?>" href="?action=genealogy">
                         <i class="fas fa-sitemap"></i> Cây Phả Hệ
                     </a>
+                    <a class="nav-link text-white <?= $action == 'payments' ? 'active bg-primary' : '' ?>" href="?action=payments">
+                        <i class="fas fa-money-bill-wave"></i> Thanh toán
+                    </a>
                     <a class="nav-link text-white <?= $action == 'conversions' ? 'active bg-primary' : '' ?>" href="?action=conversions">
                         <i class="fas fa-user-check"></i> Conversion
                     </a>
@@ -80,6 +83,9 @@ $db = getDB();
                         break;
                     case 'genealogy':
                         include 'admin/affiliate_genealogy.php';
+                        break;
+                    case 'payments':
+                        include 'admin/affiliate_payments.php';
                         break;
                     case 'conversions':
                         echo '<div class="alert alert-info">Trang quản lý conversion đang được phát triển...</div>';

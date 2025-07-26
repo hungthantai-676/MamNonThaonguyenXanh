@@ -224,17 +224,22 @@ CREATE TABLE referrals (
     id INT AUTO_INCREMENT PRIMARY KEY,
     referrer_id VARCHAR(20) NOT NULL,
     student_name VARCHAR(100) NOT NULL,
+    student_age INT DEFAULT 3,
     parent_name VARCHAR(100) NOT NULL,
     parent_phone VARCHAR(20) NOT NULL,
     parent_email VARCHAR(100),
     admission_form_id INT,
+    notes TEXT,
     status ENUM('pending', 'confirmed', 'enrolled') DEFAULT 'pending',
+    payment_status ENUM('pending', 'confirmed', 'paid') DEFAULT 'pending',
     reward_amount DECIMAL(15,0) DEFAULT 0,
     reward_points INT DEFAULT 0,
     reward_paid ENUM('yes', 'no') DEFAULT 'no',
     milestone_bonus DECIMAL(15,0) DEFAULT 0,
     milestone_bonus_points INT DEFAULT 0,
     confirmed_at TIMESTAMP NULL,
+    payment_confirmed_at TIMESTAMP NULL,
+    payment_completed_at TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (referrer_id) REFERENCES affiliate_members(member_id) ON DELETE CASCADE,
     FOREIGN KEY (admission_form_id) REFERENCES admission_forms(id) ON DELETE SET NULL
@@ -250,6 +255,19 @@ CREATE TABLE wallet_transactions (
     description TEXT,
     referral_id INT,
     status ENUM('pending', 'completed', 'failed') DEFAULT 'completed',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (member_id) REFERENCES affiliate_members(member_id) ON DELETE CASCADE,
+    FOREIGN KEY (referral_id) REFERENCES referrals(id) ON DELETE SET NULL
+);
+
+-- Affiliate transactions for payment tracking
+CREATE TABLE affiliate_transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    member_id VARCHAR(20) NOT NULL,
+    type ENUM('credit', 'debit') NOT NULL,
+    amount DECIMAL(15,0) DEFAULT 0,
+    description TEXT,
+    referral_id INT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (member_id) REFERENCES affiliate_members(member_id) ON DELETE CASCADE,
     FOREIGN KEY (referral_id) REFERENCES referrals(id) ON DELETE SET NULL

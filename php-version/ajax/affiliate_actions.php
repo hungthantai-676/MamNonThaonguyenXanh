@@ -22,6 +22,18 @@ switch ($action) {
     case 'export_referrals':
         handleExportReferrals();
         break;
+    case 'confirm_payment':
+        handleConfirmPayment();
+        break;
+    case 'mark_as_paid':
+        handleMarkAsPaid();
+        break;
+    case 'confirm_all_payments':
+        handleConfirmAllPayments();
+        break;
+    case 'get_payment_details':
+        handleGetPaymentDetails();
+        break;
     default:
         echo json_encode(['success' => false, 'message' => 'Invalid action']);
 }
@@ -318,5 +330,261 @@ function handleExportReferrals() {
     
     fclose($output);
     exit;
+}
+
+function handleConfirmPayment() {
+    $referralId = $_POST['referral_id'] ?? '';
+    
+    if (!$referralId) {
+        echo json_encode(['success' => false, 'message' => 'Thiếu ID giới thiệu']);
+        return;
+    }
+    
+    $db = getDB();
+    
+    // Get referral details
+    $referral = $db->fetch("
+        SELECT r.*, am.role, am.wallet_balance, am.points_balance
+        FROM referrals r 
+        JOIN affiliate_members am ON r.referrer_id = am.member_id 
+        WHERE r.id = ?
+    ", [$referralId]);
+    
+    if (!$referral) {
+        echo json_encode(['success' => false, 'message' => 'Không tìm thấy giới thiệu']);
+        return;
+    }
+    
+    // Update payment status to confirmed
+    $updated = $db->execute("
+        UPDATE referrals 
+        SET payment_status = 'confirmed', payment_confirmed_at = NOW() 
+        WHERE id = ?
+    ", [$referralId]);
+    
+    if ($updated) {
+        // Add money to member account
+        $amount = ($referral['role'] === 'teacher') ? 2000000 : 2000;
+        
+        if ($referral['role'] === 'teacher') {
+            $db->execute("
+                UPDATE affiliate_members 
+                SET wallet_balance = wallet_balance + ? 
+                WHERE member_id = ?
+            ", [$amount, $referral['referrer_id']]);
+        } else {
+            $db->execute("
+                UPDATE affiliate_members 
+                SET points_balance = points_balance + ? 
+                WHERE member_id = ?
+            ", [$amount, $referral['referrer_id']]);
+        }
+        
+        // Log transaction
+        $db->execute("
+            INSERT INTO affiliate_transactions (member_id, type, amount, description, created_at) 
+            VALUES (?, 'credit', ?, ?, NOW())
+        ", [
+            $referral['referrer_id'], 
+            $amount, 
+            "Hoa hồng giới thiệu học sinh: " . $referral['student_name']
+        ]);
+        
+        echo json_encode(['success' => true, 'message' => 'Xác nhận thành công']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Không thể cập nhật']);
+    }
+}
+
+function handleMarkAsPaid() {
+    $referralId = $_POST['referral_id'] ?? '';
+    
+    if (!$referralId) {
+        echo json_encode(['success' => false, 'message' => 'Thiếu ID giới thiệu']);
+        return;
+    }
+    
+    $db = getDB();
+    
+    // Get referral details
+    $referral = $db->fetch("
+        SELECT r.*, am.role, am.wallet_balance, am.points_balance
+        FROM referrals r 
+        JOIN affiliate_members am ON r.referrer_id = am.member_id 
+        WHERE r.id = ?
+    ", [$referralId]);
+    
+    if (!$referral) {
+        echo json_encode(['success' => false, 'message' => 'Không tìm thấy giới thiệu']);
+        return;
+    }
+    
+    // Update payment status to paid
+    $updated = $db->execute("
+        UPDATE referrals 
+        SET payment_status = 'paid', payment_completed_at = NOW() 
+        WHERE id = ?
+    ", [$referralId]);
+    
+    if ($updated) {
+        // Deduct money from member account
+        $amount = ($referral['role'] === 'teacher') ? 2000000 : 2000;
+        
+        if ($referral['role'] === 'teacher') {
+            $db->execute("
+                UPDATE affiliate_members 
+                SET wallet_balance = wallet_balance - ? 
+                WHERE member_id = ?
+            ", [$amount, $referral['referrer_id']]);
+        } else {
+            $db->execute("
+                UPDATE affiliate_members 
+                SET points_balance = points_balance - ? 
+                WHERE member_id = ?
+            ", [$amount, $referral['referrer_id']]);
+        }
+        
+        // Log transaction
+        $db->execute("
+            INSERT INTO affiliate_transactions (member_id, type, amount, description, created_at) 
+            VALUES (?, 'debit', ?, ?, NOW())
+        ", [
+            $referral['referrer_id'], 
+            $amount, 
+            "Thanh toán hoa hồng học sinh: " . $referral['student_name']
+        ]);
+        
+        echo json_encode(['success' => true, 'message' => 'Đã thanh toán thành công']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Không thể cập nhật']);
+    }
+}
+
+function handleConfirmAllPayments() {
+    $db = getDB();
+    
+    $pendingReferrals = $db->fetchAll("
+        SELECT r.*, am.role 
+        FROM referrals r 
+        JOIN affiliate_members am ON r.referrer_id = am.member_id 
+        WHERE r.payment_status = 'pending' AND r.status IN ('confirmed', 'enrolled')
+    ");
+    
+    $count = 0;
+    foreach ($pendingReferrals as $referral) {
+        // Update payment status
+        $db->execute("
+            UPDATE referrals 
+            SET payment_status = 'confirmed', payment_confirmed_at = NOW() 
+            WHERE id = ?
+        ", [$referral['id']]);
+        
+        // Add money to member account
+        $amount = ($referral['role'] === 'teacher') ? 2000000 : 2000;
+        
+        if ($referral['role'] === 'teacher') {
+            $db->execute("
+                UPDATE affiliate_members 
+                SET wallet_balance = wallet_balance + ? 
+                WHERE member_id = ?
+            ", [$amount, $referral['referrer_id']]);
+        } else {
+            $db->execute("
+                UPDATE affiliate_members 
+                SET points_balance = points_balance + ? 
+                WHERE member_id = ?
+            ", [$amount, $referral['referrer_id']]);
+        }
+        
+        // Log transaction
+        $db->execute("
+            INSERT INTO affiliate_transactions (member_id, type, amount, description, created_at) 
+            VALUES (?, 'credit', ?, ?, NOW())
+        ", [
+            $referral['referrer_id'], 
+            $amount, 
+            "Hoa hồng giới thiệu học sinh: " . $referral['student_name']
+        ]);
+        
+        $count++;
+    }
+    
+    echo json_encode(['success' => true, 'message' => "Đã xác nhận $count thanh toán", 'count' => $count]);
+}
+
+function handleGetPaymentDetails() {
+    $referralId = $_GET['referral_id'] ?? '';
+    
+    if (!$referralId) {
+        echo json_encode(['success' => false, 'message' => 'Thiếu ID giới thiệu']);
+        return;
+    }
+    
+    $db = getDB();
+    
+    $referral = $db->fetch("
+        SELECT r.*, 
+               am.name as referrer_name, 
+               am.role as referrer_role,
+               am.phone as referrer_phone,
+               am.email as referrer_email,
+               am.wallet_balance,
+               am.points_balance
+        FROM referrals r 
+        JOIN affiliate_members am ON r.referrer_id = am.member_id 
+        WHERE r.id = ?
+    ", [$referralId]);
+    
+    if ($referral) {
+        $amount = ($referral['referrer_role'] === 'teacher') ? 2000000 : 2000;
+        $currency = ($referral['referrer_role'] === 'teacher') ? 'VNĐ' : 'điểm';
+        
+        $html = "
+            <div class='row'>
+                <div class='col-md-6'>
+                    <h6>Thông tin Thành viên</h6>
+                    <p><strong>Tên:</strong> {$referral['referrer_name']}</p>
+                    <p><strong>SĐT:</strong> {$referral['referrer_phone']}</p>
+                    <p><strong>Email:</strong> {$referral['referrer_email']}</p>
+                    <p><strong>Vai trò:</strong> " . ($referral['referrer_role'] === 'teacher' ? 'Giáo viên' : 'Phụ huynh') . "</p>
+                    <p><strong>Số dư hiện tại:</strong> " . 
+                    ($referral['referrer_role'] === 'teacher' ? 
+                        formatCurrency($referral['wallet_balance']) : 
+                        formatPoints($referral['points_balance']) . ' điểm') . "</p>
+                </div>
+                <div class='col-md-6'>
+                    <h6>Thông tin Học sinh</h6>
+                    <p><strong>Tên:</strong> {$referral['student_name']}</p>
+                    <p><strong>Tuổi:</strong> {$referral['student_age']}</p>
+                    <p><strong>SĐT phụ huynh:</strong> {$referral['parent_phone']}</p>
+                    <p><strong>Ghi chú:</strong> {$referral['notes']}</p>
+                </div>
+            </div>
+            <hr>
+            <div class='row'>
+                <div class='col-12'>
+                    <h6>Thông tin Thanh toán</h6>
+                    <p><strong>Số tiền:</strong> " . formatCurrency($amount) . " $currency</p>
+                    <p><strong>Trạng thái:</strong> 
+                        <span class='badge bg-" . 
+                        ($referral['payment_status'] === 'pending' ? 'warning' : 
+                         ($referral['payment_status'] === 'confirmed' ? 'info' : 'success')) . "'>
+                            " . ($referral['payment_status'] === 'pending' ? 'Chờ xác nhận' : 
+                                 ($referral['payment_status'] === 'confirmed' ? 'Đã xác nhận' : 'Đã thanh toán')) . "
+                        </span>
+                    </p>
+                    <p><strong>Ngày tạo:</strong> " . date('d/m/Y H:i', strtotime($referral['created_at'])) . "</p>
+                    " . ($referral['payment_confirmed_at'] ? 
+                        "<p><strong>Ngày xác nhận:</strong> " . date('d/m/Y H:i', strtotime($referral['payment_confirmed_at'])) . "</p>" : "") . "
+                    " . ($referral['payment_completed_at'] ? 
+                        "<p><strong>Ngày thanh toán:</strong> " . date('d/m/Y H:i', strtotime($referral['payment_completed_at'])) . "</p>" : "") . "
+                </div>
+            </div>
+        ";
+        
+        echo json_encode(['success' => true, 'html' => $html]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Không tìm thấy dữ liệu']);
+    }
 }
 ?>
