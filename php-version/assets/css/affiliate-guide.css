@@ -1,0 +1,446 @@
+/* Affiliate Guide Tooltip System */
+.guide-tooltip {
+    position: absolute;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    z-index: 9999;
+    max-width: 320px;
+    font-size: 14px;
+    line-height: 1.5;
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: none;
+    border: 2px solid rgba(255,255,255,0.2);
+}
+
+.guide-tooltip.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.guide-tooltip::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 20px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid #667eea;
+}
+
+.guide-tooltip.bottom::before {
+    top: auto;
+    bottom: -8px;
+    border-bottom: none;
+    border-top: 8px solid #667eea;
+}
+
+.guide-tooltip.left::before {
+    top: 50%;
+    left: auto;
+    right: -8px;
+    transform: translateY(-50%);
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 8px solid #667eea;
+    border-right: none;
+}
+
+.guide-tooltip.right::before {
+    top: 50%;
+    left: -8px;
+    transform: translateY(-50%);
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid #667eea;
+    border-left: none;
+}
+
+.guide-tooltip-title {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.guide-tooltip-content {
+    margin-bottom: 12px;
+    color: rgba(255,255,255,0.9);
+}
+
+.guide-tooltip-step {
+    background: rgba(255,255,255,0.15);
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.guide-tooltip-next {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-top: 8px;
+    display: inline-block;
+}
+
+/* Highlighted elements during guide */
+.guide-highlight {
+    position: relative;
+    z-index: 1000;
+}
+
+.guide-highlight::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    background: rgba(102, 126, 234, 0.1);
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    z-index: -1;
+    animation: guide-pulse 2s infinite;
+}
+
+@keyframes guide-pulse {
+    0% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.02); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.7; }
+}
+
+/* Guide elements marking */
+.guide-element {
+    position: relative;
+    cursor: help;
+}
+
+.guide-element::after {
+    content: '?';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 18px;
+    height: 18px;
+    background: #667eea;
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.guide-element:hover::after {
+    opacity: 1;
+    transform: scale(1.1);
+    background: #764ba2;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .guide-tooltip {
+        max-width: 280px;
+        font-size: 13px;
+        padding: 12px 16px;
+    }
+    
+    .guide-tooltip-title {
+        font-size: 14px;
+    }
+}
+
+/* Animation for tooltip appearance */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.guide-tooltip.animate-in {
+    animation: slideInUp 0.4s ease-out forwards;
+}
+
+/* Special styles for different guide types */
+.guide-tooltip.info {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.guide-tooltip.warning {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.guide-tooltip.success {
+    background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+}
+
+.guide-tooltip.step {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    color: #333;
+}
+
+.guide-tooltip.step::before {
+    border-bottom-color: #a8edea;
+}
+
+.guide-tooltip.step .guide-tooltip-title {
+    color: #333;
+}
+
+.guide-tooltip.step .guide-tooltip-content {
+    color: rgba(51,51,51,0.8);
+}
+
+/* Additional guide elements for comprehensive tooltip system */
+.guide-element[data-guide="qr-code"] {
+    position: relative;
+}
+
+.guide-element[data-guide="qr-code"]:hover::after {
+    content: 'QR Code cho chia sẻ nhanh';
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.guide-element[data-guide="download-qr"]:hover::after {
+    content: 'Tải QR về để chia sẻ offline';
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.guide-element[data-guide="social-share"]:hover::after {
+    content: 'Chia sẻ link lên mạng xã hội';
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.guide-element[data-guide="wallet-balance"]:hover::after {
+    content: 'Số dư ví hiện tại và lịch sử';
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.guide-element[data-guide="progress-tracker"]:hover::after {
+    content: 'Theo dõi tiến độ mốc thưởng';
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.guide-element[data-guide="referral-link"]:hover::after {
+    content: 'Link của bạn - chia sẻ để kiếm thưởng!';
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.guide-element[data-guide="commission-rates"]:hover::after {
+    content: 'Mức thưởng hiện tại và bonus mốc';
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.guide-element[data-guide="status-badges"]:hover::after {
+    content: 'Vàng: chờ xác nhận, Xanh: đã xác nhận, Xanh dương: đã thanh toán';
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    max-width: 300px;
+    white-space: normal;
+}
+
+.guide-element[data-guide="referral-history"]:hover::after {
+    content: 'Lịch sử học sinh đã giới thiệu';
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.guide-element[data-guide="submit-referral"]:hover::after {
+    content: 'Gửi form để nhận thưởng';
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.guide-element[data-guide="referral-form"]:hover::after {
+    content: 'Form đăng ký chương trình affiliate';
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.guide-element[data-guide="student-name"]:hover::after {
+    content: 'Họ tên đầy đủ của bạn';
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.guide-element[data-guide="parent-info"]:hover::after {
+    content: 'Thông tin liên lạc của bạn';
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.guide-element[data-guide="student-age"]:hover::after {
+    content: 'Chọn vai trò để nhận thưởng phù hợp';
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}

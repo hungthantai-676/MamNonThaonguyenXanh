@@ -95,7 +95,7 @@ if ($_POST) {
                         <!-- Program Overview -->
                         <div class="row mb-5">
                             <div class="col-md-6">
-                                <div class="card border-success h-100">
+                                <div class="card border-success h-100 guide-element" data-guide="commission-rates">
                                     <div class="card-header bg-success text-white text-center">
                                         <h5><i class="fas fa-chalkboard-teacher"></i> Giáo Viên</h5>
                                     </div>
@@ -136,12 +136,12 @@ if ($_POST) {
                         </div>
                         
                         <!-- Registration Form -->
-                        <form method="POST" class="needs-validation" novalidate>
+                        <form method="POST" class="needs-validation guide-element" data-guide="referral-form" id="referralForm" novalidate>
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="name" class="form-label">Họ và tên <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="name" name="name" required>
+                                        <input type="text" class="form-control guide-element" data-guide="student-name" id="name" name="name" required>
                                         <div class="invalid-feedback">Vui lòng nhập họ tên</div>
                                     </div>
                                 </div>
@@ -149,7 +149,7 @@ if ($_POST) {
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="phone" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
-                                        <input type="tel" class="form-control" id="phone" name="phone" required>
+                                        <input type="tel" class="form-control guide-element" data-guide="parent-info" id="phone" name="phone" required>
                                         <div class="invalid-feedback">Vui lòng nhập số điện thoại</div>
                                     </div>
                                 </div>
@@ -157,12 +157,12 @@ if ($_POST) {
                             
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" name="email">
+                                <input type="email" class="form-control guide-element" data-guide="parent-info" id="email" name="email">
                             </div>
                             
                             <div class="mb-4">
                                 <label class="form-label">Vai trò của bạn <span class="text-danger">*</span></label>
-                                <div class="row">
+                                <div class="row guide-element" data-guide="student-age">
                                     <div class="col-md-6">
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" name="role" id="teacher" value="teacher" required>
@@ -183,7 +183,7 @@ if ($_POST) {
                             </div>
                             
                             <div class="text-center">
-                                <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <button type="submit" class="btn btn-primary btn-lg px-5 guide-element" data-guide="submit-referral">
                                     <i class="fas fa-user-plus"></i> Đăng ký ngay
                                 </button>
                             </div>
@@ -244,6 +244,10 @@ if ($_POST) {
     </div>
 </section>
 
+<!-- Include Guide CSS and JS -->
+<link rel="stylesheet" href="assets/css/affiliate-guide.css">
+<script src="assets/js/affiliate-guide.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Format phone number
@@ -254,4 +258,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Copy to clipboard function
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Đã sao chép vào clipboard!');
+    });
+}
+
+// Format phone number
+function formatPhoneNumber(input) {
+    let value = input.value.replace(/\D/g, '');
+    if (value.length > 10) {
+        value = value.substring(0, 10);
+    }
+    if (value.length >= 7) {
+        value = value.replace(/(\d{3})(\d{3})(\d+)/, '$1 $2 $3');
+    } else if (value.length >= 4) {
+        value = value.replace(/(\d{3})(\d+)/, '$1 $2');
+    }
+    input.value = value;
+}
 </script>

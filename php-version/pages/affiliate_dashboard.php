@@ -27,7 +27,7 @@ if ($memberId) {
 <?php else: ?>
     
 <!-- Dashboard Header -->
-<section class="bg-primary text-white py-4">
+<section class="bg-primary text-white py-4 guide-element" data-guide="dashboard-header">
     <div class="container">
         <div class="row align-items-center">
             <div class="col-md-8">
@@ -46,10 +46,10 @@ if ($memberId) {
 <!-- Stats Overview -->
 <section class="py-4 bg-light">
     <div class="container">
-        <div class="row g-4">
+        <div class="row g-4 referral-stats">
             <!-- Total Referrals -->
             <div class="col-lg-3 col-md-6">
-                <div class="card border-0 shadow-sm h-100">
+                <div class="card border-0 shadow-sm h-100 guide-element" data-guide="total-referrals">
                     <div class="card-body text-center">
                         <div class="text-primary mb-2">
                             <i class="fas fa-users fa-3x"></i>
@@ -62,7 +62,7 @@ if ($memberId) {
             
             <!-- Wallet Balance -->
             <div class="col-lg-3 col-md-6">
-                <div class="card border-0 shadow-sm h-100">
+                <div class="card border-0 shadow-sm h-100 guide-element" data-guide="wallet-balance">
                     <div class="card-body text-center">
                         <div class="text-success mb-2">
                             <?php if ($dashboard['member']['role'] === 'teacher'): ?>
@@ -87,7 +87,7 @@ if ($memberId) {
             
             <!-- Current Milestone -->
             <div class="col-lg-3 col-md-6">
-                <div class="card border-0 shadow-sm h-100">
+                <div class="card border-0 shadow-sm h-100 guide-element" data-guide="monthly-earnings">
                     <div class="card-body text-center">
                         <div class="text-warning mb-2">
                             <i class="fas fa-trophy fa-3x"></i>
@@ -100,7 +100,7 @@ if ($memberId) {
             
             <!-- Next Milestone Progress -->
             <div class="col-lg-3 col-md-6">
-                <div class="card border-0 shadow-sm h-100">
+                <div class="card border-0 shadow-sm h-100 guide-element" data-guide="pending-commission">
                     <div class="card-body text-center">
                         <div class="text-info mb-2">
                             <i class="fas fa-target fa-3x"></i>
@@ -122,7 +122,7 @@ if ($memberId) {
     <div class="container">
         <div class="row">
             <div class="col-md-8">
-                <div class="card border-0 shadow-sm">
+                <div class="card border-0 shadow-sm guide-element" data-guide="share-link">
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0"><i class="fas fa-share-alt"></i> Link giới thiệu của bạn</h5>
                     </div>
@@ -149,7 +149,7 @@ if ($memberId) {
                                     </div>
                                 </div>
                                 
-                                <div class="d-flex gap-2">
+                                <div class="d-flex gap-2 guide-element" data-guide="social-share">
                                     <button class="btn btn-success" onclick="shareContent('Mầm Non Thảo Nguyên Xanh', document.getElementById('fullLink').value)">
                                         <i class="fas fa-share"></i> Chia sẻ
                                     </button>
@@ -162,12 +162,12 @@ if ($memberId) {
                                 </div>
                             </div>
                             
-                            <div class="col-md-4 text-center">
+                            <div class="col-md-4 text-center guide-element" data-guide="qr-code" id="qrCodeSection">
                                 <?php if ($dashboard['member']['qr_code_path']): ?>
                                     <h6>QR Code</h6>
                                     <img src="<?= $dashboard['member']['qr_code_path'] ?>" alt="QR Code" class="img-fluid mb-2" style="max-width: 150px;">
                                     <br>
-                                    <a href="<?= $dashboard['member']['qr_code_path'] ?>" download class="btn btn-outline-primary btn-sm">
+                                    <a href="<?= $dashboard['member']['qr_code_path'] ?>" download class="btn btn-outline-primary btn-sm guide-element" data-guide="download-qr">
                                         <i class="fas fa-download"></i> Tải về
                                     </a>
                                 <?php endif; ?>
@@ -178,7 +178,7 @@ if ($memberId) {
             </div>
             
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm">
+                <div class="card border-0 shadow-sm guide-element" data-guide="commission-rates">
                     <div class="card-header bg-success text-white">
                         <h5 class="mb-0"><i class="fas fa-gift"></i> Thưởng hiện tại</h5>
                     </div>
@@ -214,7 +214,7 @@ if ($memberId) {
     <div class="container">
         <div class="row">
             <div class="col-md-8">
-                <div class="card border-0 shadow-sm">
+                <div class="card border-0 shadow-sm guide-element referral-history" data-guide="referral-history">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="fas fa-list"></i> Học sinh đã giới thiệu</h5>
                         <span class="badge bg-primary"><?= count($dashboard['referrals']) ?> đơn</span>
@@ -261,7 +261,7 @@ if ($memberId) {
                                                     'enrolled' => 'Đã nhập học'
                                                 ];
                                                 ?>
-                                                <span class="badge bg-<?= $statusClass[$referral['status']] ?>">
+                                                <span class="badge bg-<?= $statusClass[$referral['status']] ?> guide-element" data-guide="status-badges">
                                                     <?= $statusText[$referral['status']] ?>
                                                 </span>
                                             </td>
@@ -292,7 +292,7 @@ if ($memberId) {
             </div>
             
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm">
+                <div class="card border-0 shadow-sm guide-element" data-guide="progress-tracker">
                     <div class="card-header bg-info text-white">
                         <h5 class="mb-0"><i class="fas fa-chart-line"></i> Thống kê</h5>
                     </div>
@@ -355,9 +355,37 @@ if ($memberId) {
 
 <?php endif; ?>
 
+<!-- Include Guide CSS and JS -->
+<link rel="stylesheet" href="assets/css/affiliate-guide.css">
+<script src="assets/js/affiliate-guide.js"></script>
+
 <script>
 // Auto refresh every 5 minutes
 setTimeout(() => {
     location.reload();
 }, 300000);
+
+// Copy to clipboard function
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Đã sao chép vào clipboard!');
+    });
+}
+
+// Share content function
+function shareContent(title, url) {
+    if (navigator.share) {
+        navigator.share({
+            title: title,
+            url: url
+        });
+    } else {
+        copyToClipboard(url);
+    }
+}
+
+// Print page function
+function printPage() {
+    window.print();
+}
 </script>
