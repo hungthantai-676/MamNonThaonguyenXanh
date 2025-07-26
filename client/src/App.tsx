@@ -23,6 +23,7 @@ import AffiliateDashboard from "@/pages/admin/affiliate-dashboard";
 import ContentManagement from "@/pages/admin/content-management";
 import FullContentManager from "@/pages/admin/full-content-manager";
 import HomepageStructureManager from "@/pages/admin/homepage-structure-manager";
+import MainMenuManager from "@/pages/admin/main-menu-manager";
 import AdminAccess from "@/pages/admin-access";
 import AdminQuick from "@/pages/admin-quick";
 import Header from "@/components/header";
@@ -54,6 +55,7 @@ function Router() {
           <Route path="/admin/content" component={ContentManagement} />
           <Route path="/admin/full-content" component={FullContentManager} />
           <Route path="/admin/homepage" component={HomepageStructureManager} />
+          <Route path="/admin/main-menu" component={MainMenuManager} />
           <Route path="/test" component={Test} />
           <Route component={NotFound} />
         </Switch>

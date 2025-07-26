@@ -188,6 +188,9 @@ export default function AdminDashboardFixed() {
             <p className="text-gray-600">Quản lý nội dung website Mầm Non Thảo Nguyên Xanh</p>
           </div>
           <div className="flex gap-2">
+            <Button variant="default" onClick={() => window.open("/admin/main-menu", "_blank")}>
+              🏠 Quản lý Menu Chính
+            </Button>
             <Button variant="outline" onClick={() => window.open("/", "_blank")}>
               🌐 Xem website
             </Button>
