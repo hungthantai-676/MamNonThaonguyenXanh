@@ -75,11 +75,39 @@ export default function AdminDashboardFixed() {
           }
           localStorage.removeItem('editArticleId');
         }
+
+        if (editProgramId && programs) {
+          const programToEdit = (programs as any[]).find(p => p.id.toString() === editProgramId);
+          if (programToEdit) {
+            setNewProgram({
+              name: programToEdit.name,
+              ageRange: programToEdit.ageRange,
+              description: programToEdit.description,
+              tuition: programToEdit.tuition,
+              features: programToEdit.features || ""
+            });
+            setEditingProgramId(parseInt(editProgramId));
+          }
+          localStorage.removeItem('editProgramId');
+        }
+
+        if (editActivityId && activities) {
+          const activityToEdit = (activities as any[]).find(a => a.id.toString() === editActivityId);
+          if (activityToEdit) {
+            setNewActivity({
+              name: activityToEdit.name,
+              date: activityToEdit.date,
+              description: activityToEdit.description,
+              location: activityToEdit.location,
+              frequency: activityToEdit.frequency
+            });
+            setEditingActivityId(parseInt(editActivityId));
+          }
+          localStorage.removeItem('editActivityId');
+        }
         
         // Clear the localStorage items after using them
         localStorage.removeItem('editSection');
-        localStorage.removeItem('editProgramId');
-        localStorage.removeItem('editActivityId');
         
         toast({
           title: "Đã chuyển đến tab tương ứng",
@@ -101,7 +129,7 @@ export default function AdminDashboardFixed() {
       window.removeEventListener("click", extendSession);
       window.removeEventListener("keypress", extendSession);
     };
-  }, [setLocation, toast]);
+  }, [setLocation, toast, articles, programs, activities]);
 
   // Homepage content state
   const [homepageContent, setHomepageContent] = useState({
@@ -144,8 +172,30 @@ export default function AdminDashboardFixed() {
   // Edit mode state
   const [editingArticleId, setEditingArticleId] = useState<number | null>(null);
 
+  // Program management states
+  const [newProgram, setNewProgram] = useState({
+    name: "",
+    ageRange: "",
+    description: "",
+    tuition: 4000000,
+    features: ""
+  });
+  const [editingProgramId, setEditingProgramId] = useState<number | null>(null);
+
+  // Activity management states
+  const [newActivity, setNewActivity] = useState({
+    name: "",
+    date: "",
+    description: "",
+    location: "",
+    frequency: ""
+  });
+  const [editingActivityId, setEditingActivityId] = useState<number | null>(null);
+
   // Load data
   const { data: articles } = useQuery({ queryKey: ["/api/articles"] });
+  const { data: programs } = useQuery({ queryKey: ["/api/programs"] });
+  const { data: activities } = useQuery({ queryKey: ["/api/activities"] });
 
   // Save homepage content mutation
   const saveHomepageMutation = useMutation({
@@ -732,34 +782,340 @@ export default function AdminDashboardFixed() {
 
           {/* Programs Tab */}
           <TabsContent value="programs">
-            <Card>
-              <CardHeader>
-                <CardTitle>📚 Quản lý Chương trình học</CardTitle>
-                <CardDescription>Cập nhật chương trình theo độ tuổi và nội dung giảng dạy</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <div className="text-4xl mb-2">🔧</div>
-                  <p>Tính năng đang được phát triển</p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              {/* Program Form */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>📚 {editingProgramId ? 'Sửa chương trình' : 'Tạo chương trình mới'}</CardTitle>
+                  <CardDescription>Cập nhật thông tin chương trình học theo độ tuổi</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="program-name">Tên chương trình</Label>
+                      <Input
+                        id="program-name"
+                        value={newProgram.name}
+                        onChange={(e) => setNewProgram({...newProgram, name: e.target.value})}
+                        placeholder="Ví dụ: Lớp Mầm non 3-4 tuổi"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="program-age">Độ tuổi</Label>
+                      <Input
+                        id="program-age"
+                        value={newProgram.ageRange}
+                        onChange={(e) => setNewProgram({...newProgram, ageRange: e.target.value})}
+                        placeholder="Ví dụ: 3-4 tuổi"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="program-description">Mô tả chương trình</Label>
+                    <Textarea
+                      id="program-description"
+                      value={newProgram.description}
+                      onChange={(e) => setNewProgram({...newProgram, description: e.target.value})}
+                      placeholder="Mô tả chi tiết về chương trình học..."
+                      rows={4}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="program-tuition">Học phí (VND/tháng)</Label>
+                      <Input
+                        id="program-tuition"
+                        type="number"
+                        value={newProgram.tuition}
+                        onChange={(e) => setNewProgram({...newProgram, tuition: parseInt(e.target.value) || 0})}
+                        placeholder="4000000"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="program-features">Đặc điểm nổi bật</Label>
+                      <Input
+                        id="program-features"
+                        value={newProgram.features}
+                        onChange={(e) => setNewProgram({...newProgram, features: e.target.value})}
+                        placeholder="Các tính năng đặc biệt..."
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => {
+                        console.log("Saving program:", newProgram);
+                        setNewProgram({
+                          name: "",
+                          ageRange: "",
+                          description: "",
+                          tuition: 4000000,
+                          features: ""
+                        });
+                        setEditingProgramId(null);
+                      }}
+                      className="flex-1"
+                    >
+                      {editingProgramId ? "💾 Lưu chương trình" : "📤 Tạo chương trình"}
+                    </Button>
+                    {editingProgramId && (
+                      <Button 
+                        variant="outline"
+                        onClick={() => {
+                          setNewProgram({
+                            name: "",
+                            ageRange: "",
+                            description: "",
+                            tuition: 4000000,
+                            features: ""
+                          });
+                          setEditingProgramId(null);
+                        }}
+                      >
+                        ❌ Hủy
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Programs List */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>📚 Danh sách chương trình</CardTitle>
+                  <CardDescription>Quản lý các chương trình học hiện có</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {Array.isArray(programs) && programs.length > 0 ? (
+                    <div className="space-y-4">
+                      {programs.map((program: any) => (
+                        <div key={program.id} className="border rounded-lg p-4">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-medium">{program.name}</h4>
+                              <p className="text-sm text-gray-600 mt-1">{program.ageRange}</p>
+                              <p className="text-sm mt-2">{program.description}</p>
+                              <div className="flex gap-2 mt-2">
+                                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                                  {program.tuition?.toLocaleString()} VND/tháng
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => {
+                                  setNewProgram({
+                                    name: program.name,
+                                    ageRange: program.ageRange,
+                                    description: program.description,
+                                    tuition: program.tuition,
+                                    features: program.features || ""
+                                  });
+                                  setEditingProgramId(program.id);
+                                }}
+                              >
+                                ✏️ Sửa
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="destructive"
+                                onClick={() => {
+                                  if (confirm("Bạn có chắc muốn xóa chương trình này?")) {
+                                    console.log("Deleting program:", program.id);
+                                  }
+                                }}
+                              >
+                                🗑️ Xóa
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <div className="text-4xl mb-2">📚</div>
+                      <p>Chưa có chương trình nào</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Activities Tab */}
           <TabsContent value="activities">
-            <Card>
-              <CardHeader>
-                <CardTitle>🎯 Quản lý Hoạt động</CardTitle>
-                <CardDescription>Cập nhật hoạt động ngoại khóa và sự kiện đặc biệt</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <div className="text-4xl mb-2">🔧</div>
-                  <p>Tính năng đang được phát triển</p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              {/* Activity Form */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>🎯 {editingActivityId ? 'Sửa hoạt động' : 'Tạo hoạt động mới'}</CardTitle>
+                  <CardDescription>Cập nhật hoạt động ngoại khóa và sự kiện đặc biệt</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="activity-name">Tên hoạt động</Label>
+                      <Input
+                        id="activity-name"
+                        value={newActivity.name}
+                        onChange={(e) => setNewActivity({...newActivity, name: e.target.value})}
+                        placeholder="Ví dụ: Ngày hội Trung Thu"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="activity-date">Ngày tổ chức</Label>
+                      <Input
+                        id="activity-date"
+                        value={newActivity.date}
+                        onChange={(e) => setNewActivity({...newActivity, date: e.target.value})}
+                        placeholder="Ví dụ: 15/09/2024"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="activity-description">Mô tả hoạt động</Label>
+                    <Textarea
+                      id="activity-description"
+                      value={newActivity.description}
+                      onChange={(e) => setNewActivity({...newActivity, description: e.target.value})}
+                      placeholder="Mô tả chi tiết về hoạt động..."
+                      rows={4}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="activity-location">Địa điểm</Label>
+                      <Input
+                        id="activity-location"
+                        value={newActivity.location}
+                        onChange={(e) => setNewActivity({...newActivity, location: e.target.value})}
+                        placeholder="Ví dụ: Sân trường"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="activity-frequency">Tần suất</Label>
+                      <Input
+                        id="activity-frequency"
+                        value={newActivity.frequency}
+                        onChange={(e) => setNewActivity({...newActivity, frequency: e.target.value})}
+                        placeholder="Ví dụ: Hàng tháng"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => {
+                        console.log("Saving activity:", newActivity);
+                        setNewActivity({
+                          name: "",
+                          date: "",
+                          description: "",
+                          location: "",
+                          frequency: ""
+                        });
+                        setEditingActivityId(null);
+                      }}
+                      className="flex-1"
+                    >
+                      {editingActivityId ? "💾 Lưu hoạt động" : "📤 Tạo hoạt động"}
+                    </Button>
+                    {editingActivityId && (
+                      <Button 
+                        variant="outline"
+                        onClick={() => {
+                          setNewActivity({
+                            name: "",
+                            date: "",
+                            description: "",
+                            location: "",
+                            frequency: ""
+                          });
+                          setEditingActivityId(null);
+                        }}
+                      >
+                        ❌ Hủy
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Activities List */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>🎯 Danh sách hoạt động</CardTitle>
+                  <CardDescription>Quản lý các hoạt động hiện có</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {Array.isArray(activities) && activities.length > 0 ? (
+                    <div className="space-y-4">
+                      {activities.map((activity: any) => (
+                        <div key={activity.id} className="border rounded-lg p-4">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-medium">{activity.name}</h4>
+                              <p className="text-sm text-gray-600 mt-1">{activity.date}</p>
+                              <p className="text-sm mt-2">{activity.description}</p>
+                              <div className="flex gap-2 mt-2">
+                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                  📍 {activity.location}
+                                </span>
+                                <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                                  🔄 {activity.frequency}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => {
+                                  setNewActivity({
+                                    name: activity.name,
+                                    date: activity.date,
+                                    description: activity.description,
+                                    location: activity.location,
+                                    frequency: activity.frequency
+                                  });
+                                  setEditingActivityId(activity.id);
+                                }}
+                              >
+                                ✏️ Sửa
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="destructive"
+                                onClick={() => {
+                                  if (confirm("Bạn có chắc muốn xóa hoạt động này?")) {
+                                    console.log("Deleting activity:", activity.id);
+                                  }
+                                }}
+                              >
+                                🗑️ Xóa
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <div className="text-4xl mb-2">🎯</div>
+                      <p>Chưa có hoạt động nào</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
           <TabsContent value="affiliate">
             <Card>
