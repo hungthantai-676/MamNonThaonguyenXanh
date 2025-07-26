@@ -96,6 +96,9 @@ $db = getDB();
                     case 'settings':
                         include 'admin/affiliate_settings.php';
                         break;
+                    case 'member_details':
+                        include 'admin/affiliate_member_details.php';
+                        break;
                     default:
                         include 'admin/affiliate_overview.php';
                 }

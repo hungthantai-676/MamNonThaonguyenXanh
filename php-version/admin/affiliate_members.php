@@ -27,6 +27,27 @@ if ($_POST && isset($_POST['action'])) {
             echo json_encode($response);
             exit();
             break;
+            
+        case 'toggle_visibility':
+            $memberId = (int)$_POST['member_id'];
+            $isHidden = $_POST['is_hidden'] === 'true';
+            
+            try {
+                $stmt = $db->prepare("UPDATE affiliate_members SET is_hidden = ?, updated_at = NOW() WHERE id = ?");
+                if ($stmt->execute([$isHidden ? 1 : 0, $memberId])) {
+                    $response['success'] = true;
+                    $response['message'] = $isHidden ? 'Đã ẩn thành viên!' : 'Đã hiện thành viên!';
+                } else {
+                    $response['message'] = 'Lỗi cập nhật database!';
+                }
+            } catch (Exception $e) {
+                $response['message'] = 'Lỗi: ' . $e->getMessage();
+            }
+            
+            header('Content-Type: application/json');
+            echo json_encode($response);
+            exit();
+            break;
     }
 }
 
@@ -39,9 +60,15 @@ $offset = ($page - 1) * $perPage;
 $statusFilter = $_GET['status'] ?? '';
 $roleFilter = $_GET['role'] ?? '';
 $searchTerm = $_GET['search'] ?? '';
+$showHidden = $_GET['show_hidden'] ?? '0'; // Only super admin can see hidden members
 
 $whereClause = "WHERE 1=1";
 $params = [];
+
+// Show hidden members only if super admin requests it
+if ($showHidden !== '1') {
+    $whereClause .= " AND (am.is_hidden = 0 OR am.is_hidden IS NULL)";
+}
 
 if ($statusFilter) {
     $whereClause .= " AND am.status = ?";
@@ -78,7 +105,8 @@ $stmt = $db->prepare("
         aw.total_earned,
         aw.total_withdrawn,
         COUNT(ar.id) as referral_count,
-        COUNT(CASE WHEN ac.manual_status = 'confirmed' THEN 1 END) as confirmed_count
+        COUNT(CASE WHEN ac.manual_status = 'confirmed' THEN 1 END) as confirmed_count,
+        COALESCE(am.is_hidden, 0) as is_hidden
     FROM affiliate_members am
     LEFT JOIN affiliate_wallets aw ON am.id = aw.member_id
     LEFT JOIN affiliate_referrals ar ON am.id = ar.referrer_id
@@ -98,6 +126,15 @@ $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="fas fa-users text-primary"></i> Quản lý Thành viên</h2>
     <div>
+        <?php if ($showHidden === '1'): ?>
+            <a href="?page=admin_affiliate&action=members" class="btn btn-outline-warning">
+                <i class="fas fa-eye"></i> Chỉ xem thành viên hoạt động
+            </a>
+        <?php else: ?>
+            <a href="?page=admin_affiliate&action=members&show_hidden=1" class="btn btn-outline-secondary">
+                <i class="fas fa-eye-slash"></i> Xem thành viên đã ẩn
+            </a>
+        <?php endif; ?>
         <button class="btn btn-outline-primary" onclick="location.reload()">
             <i class="fas fa-sync-alt"></i> Làm mới
         </button>
@@ -243,29 +280,40 @@ $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <?= date('d/m/Y', strtotime($member['created_at'])) ?>
                                 </td>
                                 <td>
-                                    <div class="btn-group" role="group">
+                                    <div class="btn-group-vertical btn-group-sm w-100" role="group">
                                         <button class="btn btn-outline-primary btn-sm" 
                                                 onclick="viewMemberDetails(<?= $member['id'] ?>)"
-                                                title="Xem chi tiết">
-                                            <i class="fas fa-eye"></i>
+                                                title="Xem chi tiết đầy đủ">
+                                            <i class="fas fa-info-circle"></i> Chi tiết
                                         </button>
+                                        
+                                        <?php if ($member['is_hidden']): ?>
+                                            <button class="btn btn-outline-success btn-sm"
+                                                    onclick="toggleMemberVisibility(<?= $member['id'] ?>, false)"
+                                                    title="Hiện thành viên">
+                                                <i class="fas fa-eye"></i> Hiện
+                                            </button>
+                                        <?php else: ?>
+                                            <button class="btn btn-outline-secondary btn-sm"
+                                                    onclick="toggleMemberVisibility(<?= $member['id'] ?>, true)"
+                                                    title="Ẩn thành viên">
+                                                <i class="fas fa-eye-slash"></i> Ẩn
+                                            </button>
+                                        <?php endif; ?>
                                         
                                         <?php if ($member['status'] === 'active'): ?>
                                             <button class="btn btn-outline-warning btn-sm"
                                                     onclick="updateMemberStatus(<?= $member['id'] ?>, 'inactive')"
                                                     title="Tạm ngưng">
-                                                <i class="fas fa-pause"></i>
+                                                <i class="fas fa-pause"></i> Ngưng
                                             </button>
                                         <?php else: ?>
                                             <button class="btn btn-outline-success btn-sm"
                                                     onclick="updateMemberStatus(<?= $member['id'] ?>, 'active')"
                                                     title="Kích hoạt">
-                                                <i class="fas fa-play"></i>
+                                                <i class="fas fa-play"></i> Hoạt động
                                             </button>
                                         <?php endif; ?>
-                                        
-                                        <button class="btn btn-outline-danger btn-sm"
-                                                onclick="updateMemberStatus(<?= $member['id'] ?>, 'banned')"
                                                 title="Cấm tài khoản">
                                             <i class="fas fa-ban"></i>
                                         </button>
@@ -366,13 +414,49 @@ function updateMemberStatus(memberId, status) {
     }
 }
 
+function toggleMemberVisibility(memberId, isHidden) {
+    const message = isHidden ? 'Bạn có chắc muốn ẩn thành viên này?' : 'Bạn có chắc muốn hiện thành viên này?';
+    
+    if (confirm(message)) {
+        const formData = new FormData();
+        formData.append('action', 'toggle_visibility');
+        formData.append('member_id', memberId);
+        formData.append('is_hidden', isHidden);
+        
+        fetch('?page=admin_affiliate&action=members', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('success', data.message);
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showAlert('danger', data.message);
+            }
+        })
+        .catch(error => {
+            showAlert('danger', 'Lỗi kết nối: ' + error.message);
+        });
+    }
+}
+
 function viewMemberDetails(memberId) {
-    // Load member details via AJAX
-    fetch(`ajax/get_member_details.php?id=${memberId}`)
+    // Show loading
+    document.getElementById('memberDetailsContent').innerHTML = `
+        <div class="text-center py-4">
+            <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3"></i>
+            <p>Đang tải thông tin...</p>
+        </div>
+    `;
+    new bootstrap.Modal(document.getElementById('memberDetailsModal')).show();
+    
+    // Load member details
+    fetch(`?page=admin_affiliate&action=member_details&id=${memberId}`)
         .then(response => response.text())
         .then(html => {
             document.getElementById('memberDetailsContent').innerHTML = html;
-            new bootstrap.Modal(document.getElementById('memberDetailsModal')).show();
         })
         .catch(error => {
             showAlert('danger', 'Lỗi tải thông tin: ' + error.message);

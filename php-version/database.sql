@@ -215,6 +215,7 @@ CREATE TABLE affiliate_members (
     current_milestone INT DEFAULT 0,
     next_milestone_target INT DEFAULT 5,
     status ENUM('active', 'inactive') DEFAULT 'active',
+    is_hidden TINYINT(1) DEFAULT 0,
     registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
