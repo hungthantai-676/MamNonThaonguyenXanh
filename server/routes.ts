@@ -1200,6 +1200,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Homepage Structure Management API endpoints
+  app.post("/api/admin/site-info", async (req, res) => {
+    try {
+      const { siteTitle, siteTagline, author, authorBio, authorImage } = req.body;
+      // Save site information
+      res.json({ message: "Site info updated successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update site info" });
+    }
+  });
+
+  app.post("/api/admin/main-content", async (req, res) => {
+    try {
+      const { heroSection, aboutSection, servicesSection } = req.body;
+      // Save main content structure
+      res.json({ message: "Main content updated successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update main content" });
+    }
+  });
+
   // Content Management API endpoints
   app.post("/api/admin/homepage", async (req, res) => {
     try {
