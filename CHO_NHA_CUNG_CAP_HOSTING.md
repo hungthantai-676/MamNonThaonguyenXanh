@@ -1,114 +1,140 @@
-# 📋 Thông tin gửi cho nhà cung cấp hosting
-
-## 🎯 Yêu cầu hệ thống
-
-### Phần mềm cần thiết:
-- ✅ **Node.js** version 18 trở lên
-- ✅ **PostgreSQL** database 
-- ✅ **SSL certificate** (HTTPS)
-- ✅ **SSH access** để cài đặt
-
-### Cấu hình server:
-- ✅ **RAM**: Tối thiểu 1GB, khuyến nghị 2GB
-- ✅ **Storage**: Tối thiểu 5GB SSD
-- ✅ **Port**: 3000 (hoặc port do hosting cung cấp)
-- ✅ **Bandwidth**: Không giới hạn
-
-## 📦 File website cần upload
-
-**File đính kèm:** `website-backup-20250721_060053.tar.gz`
-
-### Nội dung file backup:
-- Frontend đã build sẵn (static files)
-- Backend API server (Node.js)
-- Database schemas và migrations
-- Dependencies và configuration
-- Hướng dẫn cài đặt chi tiết
-
-## 🔧 Các bước cài đặt
-
-### 1. Giải nén file
-```bash
-tar -xzf website-backup-20250721_060053.tar.gz
-```
-
-### 2. Cài đặt dependencies
-```bash
-cd /path/to/website
-npm install
-```
-
-### 3. Thiết lập database
-- Tạo PostgreSQL database mới
-- Import schema từ file backup
-- Cập nhật connection string
-
-### 4. Thiết lập biến môi trường
-```bash
-# Tạo file .env
-DATABASE_URL=postgresql://user:pass@host:port/dbname
-NODE_ENV=production
-PORT=3000
-```
-
-### 5. Chạy website
-```bash
-# Cài đặt PM2 (process manager)
-npm install -g pm2
-
-# Chạy website
-pm2 start start.js --name "preschool-website"
-pm2 save
-pm2 startup
-```
-
-## 🌐 Cấu hình domain
-
-### DNS Records cần thiết:
-```
-Type: A
-Name: @ (hoặc www)
-Value: [IP address của hosting]
-TTL: 300
-```
-
-### SSL Certificate:
-- Tự động qua Let's Encrypt
-- Hoặc upload certificate riêng
-
-## 📱 Thông tin website
-
-- **Tên**: Mầm Non Thảo Nguyên Xanh
-- **Loại**: Website trường mầm non
-- **Framework**: React + Node.js + PostgreSQL
-- **Port**: 3000
-- **Protocol**: HTTPS (bắt buộc)
-
-## 🔐 Yêu cầu bảo mật
-
-- ✅ SSL/TLS certificate
-- ✅ Database password mạnh
-- ✅ Regular backups
-- ✅ Firewall protection
-
-## 💬 Hỗ trợ kỹ thuật
-
-Nếu gặp vấn đề trong quá trình cài đặt, vui lòng liên hệ:
-- File hướng dẫn chi tiết: `HUONG_DAN_TRIET_KHAI_HOSTING.md`
-- Hoặc liên hệ trực tiếp để được hỗ trợ
+# 📋 Hướng dẫn cho Nhà cung cấp Hosting
+## Website: mamnonthaonguyenxanh.com
 
 ---
 
-## ✅ Checklist hoàn thành
+## 📦 Thông tin Backup
 
-- [ ] Server đáp ứng yêu cầu hệ thống
-- [ ] File backup đã upload và giải nén
-- [ ] Dependencies đã cài đặt (npm install)
-- [ ] Database đã thiết lập và kết nối
-- [ ] Biến môi trường đã cấu hình
-- [ ] Website chạy thành công (pm2 status)
-- [ ] Domain đã trỏ về hosting
-- [ ] SSL certificate đã cài đặt
-- [ ] Tất cả trang web hoạt động bình thường
+**File backup**: `FINAL-mamnonthaonguyenxanh-com.tar.gz`
+**Kích thước**: ~46KB
+**Ngày tạo**: 26/07/2025
+**Loại**: Website PHP hoàn chỉnh
 
-**🎉 Website sẽ sẵn sàng hoạt động sau khi hoàn thành checklist!**
+---
+
+## 🔧 Yêu cầu Hosting
+
+### Hệ thống
+- **PHP**: 7.4 hoặc 8.0+ 
+- **MySQL**: 5.7+ hoặc MariaDB 10.3+
+- **Apache/Nginx**: Hỗ trợ .htaccess
+- **SSL**: Bắt buộc (HTTPS)
+
+### Resources
+- **Disk**: Tối thiểu 100MB
+- **RAM**: 128MB+
+- **Bandwidth**: 1GB/tháng
+
+### Modules PHP cần thiết
+- `pdo_mysql`
+- `curl`
+- `json`
+- `mbstring`
+
+---
+
+## 🚀 Hướng dẫn Triển khai
+
+### 1. Upload & Giải nén
+```bash
+# Upload file FINAL-mamnonthaonguyenxanh-com.tar.gz
+# Giải nén vào thư mục gốc domain:
+tar -xzf FINAL-mamnonthaonguyenxanh-com.tar.gz
+```
+
+### 2. Tạo Database
+- Tạo database MySQL mới
+- Character set: `utf8mb4_unicode_ci`
+- Ghi nhớ: DB name, username, password
+
+### 3. Cài đặt Website
+- Truy cập: `https://mamnonthaonguyenxanh.com/setup-hosting.php`
+- Nhập thông tin database
+- Nhấn "Cài đặt Website"
+- Website tự động import database và cấu hình
+
+### 4. Kiểm tra
+- Website: `https://mamnonthaonguyenxanh.com`
+- Admin: `https://mamnonthaonguyenxanh.com/admin.php`
+  - Username: `admin`
+  - Password: `admin123`
+
+---
+
+## 🌐 Cấu hình Tên miền
+
+### DNS Records cần thiết:
+```
+A Record: @ → IP hosting
+A Record: www → IP hosting
+CNAME: www → mamnonthaonguyenxanh.com
+```
+
+### SSL Certificate:
+- Kích hoạt Let's Encrypt hoặc SSL miễn phí
+- Force HTTPS redirect
+
+---
+
+## 🔄 Tính năng Đặc biệt: Auto-Update
+
+Website này có tính năng tự động cập nhật từ Replit.
+
+### Webhook Endpoint:
+```
+https://mamnonthaonguyenxanh.com/webhook-update.php?secret=mamnon2025update
+```
+
+### Cách hoạt động:
+1. Developer cập nhật code trên Replit
+2. Hệ thống tự động gửi updates đến hosting
+3. Website tự động cập nhật không cần can thiệp
+
+### File logs:
+- `update-log.txt` - Lịch sử cập nhật
+- Có thể theo dõi qua cPanel
+
+---
+
+## ⚠️ Lưu ý Bảo mật
+
+### Files nhạy cảm:
+- `database.sql` - Đã được ẩn qua .htaccess
+- `config.hosting.php` - Chỉ đọc được từ PHP
+- `*.log` - Files log được bảo vệ
+
+### Permissions đề xuất:
+```bash
+chmod 755 assets/uploads/
+chmod 644 *.php
+chmod 600 database.sql
+```
+
+---
+
+## 📞 Thông tin Liên hệ
+
+**Khách hàng**: Mầm Non Thảo Nguyên Xanh
+**Website**: mamnonthaonguyenxanh.com
+**Email**: contact@mamnonthaonguyenxanh.com
+
+**Developer Support**: Available via Replit platform
+
+---
+
+## ✅ Checklist Triển khai
+
+- [ ] Upload và giải nén backup
+- [ ] Tạo database MySQL
+- [ ] Chạy setup-hosting.php
+- [ ] Kiểm tra website hoạt động
+- [ ] Kiểm tra admin panel
+- [ ] Cấu hình DNS records
+- [ ] Kích hoạt SSL certificate
+- [ ] Test auto-update webhook
+- [ ] Backup database ban đầu
+- [ ] Gửi thông tin truy cập cho khách hàng
+
+---
+
+**🎯 Kết quả**: Website hoàn chỉnh với tính năng tự động cập nhật, sẵn sàng phục vụ khách hàng!

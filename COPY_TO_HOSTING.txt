@@ -1,96 +1,20 @@
-============================================================
-    HƯỚNG DẪN TRIỂN KHAI WEBSITE mamnonthaonguyenxanh.com
-============================================================
+📋 CHO TEAM KỸ THUẬT HOSTING
 
-📧 GỬI CHO NHÀ CUNG CẤP HOSTING:
+File cần copy: FINAL-mamnonthaonguyenxanh-com.tar.gz
 
-Domain cần triển khai: mamnonthaonguyenxanh.com
-Loại website: Trường mầm non với hệ thống quản lý
+Yêu cầu:
+1. Upload file backup lên hosting
+2. Giải nén vào thư mục gốc domain mamnonthaonguyenxanh.com  
+3. Tạo database MySQL
+4. Truy cập setup-hosting.php để cài đặt
+5. Trỏ DNS A record và CNAME
+6. Kích hoạt SSL certificate
 
-============================================================
-YÊU CẦU HỆ THỐNG:
-============================================================
+Chi tiết trong file: CHO_NHA_CUNG_CAP_HOSTING.md
 
-- Hệ điều hành: Ubuntu 20.04+ hoặc CentOS 7+
-- Node.js: Version 18.0.0 trở lên
-- Database: PostgreSQL 13+
-- Memory: Tối thiểu 2GB RAM
-- Storage: Tối thiểu 10GB SSD
-- Port: 80, 443, 3000
+Sau khi hoàn tất sẽ có:
+- Website: https://mamnonthaonguyenxanh.com
+- Admin: https://mamnonthaonguyenxanh.com/admin.php (admin/admin123)
+- Tự động cập nhật từ Replit
 
-============================================================
-BƯỚC CÀI ĐẶT:
-============================================================
-
-1. UPLOAD VÀ GIẢI NÉN
-cd /var/www/html
-tar -xzf FINAL-mamnonthaonguyenxanh-com.tar.gz
-chown -R www-data:www-data .
-
-2. CÀI NODE.JS
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
-sudo npm install -g pm2
-
-3. CÀI POSTGRESQL
-sudo apt install postgresql postgresql-contrib
-sudo -u postgres createdb mamnonthaonguyenxanh
-sudo -u postgres createuser webapp
-sudo -u postgres psql
-ALTER USER webapp PASSWORD 'password123';
-GRANT ALL PRIVILEGES ON DATABASE mamnonthaonguyenxanh TO webapp;
-\q
-
-4. CẤU HÌNH ENVIRONMENT
-cp .env.production .env
-nano .env
-
-Nội dung file .env:
-DATABASE_URL=postgresql://webapp:password123@localhost:5432/mamnonthaonguyenxanh
-NODE_ENV=production
-PORT=3000
-DOMAIN=mamnonthaonguyenxanh.com
-
-5. CHẠY WEBSITE
-npm install --production
-chmod +x deploy.sh
-./deploy.sh
-
-6. CẤU HÌNH NGINX
-sudo apt install nginx
-sudo cp nginx-mamnonthaonguyenxanh.conf /etc/nginx/sites-available/
-sudo ln -s /etc/nginx/sites-available/nginx-mamnonthaonguyenxanh.conf /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl reload nginx
-
-7. SSL CERTIFICATE
-sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d mamnonthaonguyenxanh.com -d www.mamnonthaonguyenxanh.com
-
-============================================================
-DNS RECORDS:
-============================================================
-
-Type: A, Name: @, Value: [IP_SERVER]
-Type: A, Name: www, Value: [IP_SERVER]
-
-============================================================
-KIỂM TRA KẾT QUẢ:
-============================================================
-
-✅ Website: https://mamnonthaonguyenxanh.com
-✅ Admin: https://mamnonthaonguyenxanh.com/admin/login
-✅ Username: admin, Password: admin123
-
-============================================================
-COMMANDS HỮU ÍCH:
-============================================================
-
-pm2 status
-pm2 logs mamnonthaonguyenxanh
-pm2 restart mamnonthaonguyenxanh
-pm2 monit
-
-============================================================
-            HOÀN THÀNH TRIỂN KHAI!
-============================================================
+Cảm ơn team hỗ trợ!
