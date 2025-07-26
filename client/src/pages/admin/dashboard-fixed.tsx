@@ -129,7 +129,12 @@ export default function AdminDashboardFixed() {
       window.removeEventListener("click", extendSession);
       window.removeEventListener("keypress", extendSession);
     };
-  }, [setLocation, toast, articles, programs, activities]);
+  }, [setLocation, toast]);
+
+  // Load data
+  const { data: articles } = useQuery({ queryKey: ["/api/articles"] });
+  const { data: programs } = useQuery({ queryKey: ["/api/programs"] });
+  const { data: activities } = useQuery({ queryKey: ["/api/activities"] });
 
   // Homepage content state
   const [homepageContent, setHomepageContent] = useState({
@@ -191,11 +196,6 @@ export default function AdminDashboardFixed() {
     frequency: ""
   });
   const [editingActivityId, setEditingActivityId] = useState<number | null>(null);
-
-  // Load data
-  const { data: articles } = useQuery({ queryKey: ["/api/articles"] });
-  const { data: programs } = useQuery({ queryKey: ["/api/programs"] });
-  const { data: activities } = useQuery({ queryKey: ["/api/activities"] });
 
   // Save homepage content mutation
   const saveHomepageMutation = useMutation({
