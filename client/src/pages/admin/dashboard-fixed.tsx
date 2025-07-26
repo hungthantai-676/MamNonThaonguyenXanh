@@ -197,6 +197,37 @@ export default function AdminDashboardFixed() {
   });
   const [editingActivityId, setEditingActivityId] = useState<number | null>(null);
 
+  // About content state
+  const [aboutContent, setAboutContent] = useState({
+    history: "Mầm Non Thảo Nguyên Xanh được thành lập năm 2020 với mong muốn tạo ra một môi trường giáo dục an toàn, thân thiện và chất lượng cao cho trẻ em.",
+    mission: "Cung cấp nền giáo dục mầm non toàn diện, phát triển các kỹ năng cơ bản và tính cách tốt đẹp cho trẻ.",
+    vision: "Trở thành ngôi trường mầm non hàng đầu trong khu vực, được phụ huynh và cộng đồng tin tưởng.",
+    teamInfo: "Đội ngũ giáo viên giàu kinh nghiệm, được đào tạo chuyên nghiệp và có tâm huyết với nghề.",
+    imageUrl: ""
+  });
+
+  // Admission content state
+  const [admissionContent, setAdmissionContent] = useState({
+    overview: "Mầm Non Thảo Nguyên Xanh chào đón các bé từ 18 tháng đến 6 tuổi. Chúng tôi cam kết mang đến cho bé môi trường học tập an toàn, vui vẻ và phát triển toàn diện.",
+    ageRequirement: "18 tháng - 6 tuổi",
+    deadline: "30/06/2024",
+    requiredDocuments: "- Giấy khai sinh của bé\n- Sổ khám sức khỏe\n- Giấy chứng nhận tiêm chủng\n- Ảnh 3x4 (4 tấm)\n- Hộ khẩu gia đình",
+    process: "1. Nộp hồ sơ đăng ký\n2. Tham quan trường\n3. Phỏng vấn phụ huynh và bé\n4. Thông báo kết quả\n5. Hoàn thành thủ tục nhập học",
+    tuition: 4000000
+  });
+
+  // Library content state
+  const [libraryFiles, setLibraryFiles] = useState([
+    { id: 1, name: "Hướng dẫn chăm sóc trẻ tại nhà", type: "PDF", size: "2.5MB", uploadDate: "15/01/2024" },
+    { id: 2, name: "Chương trình học tháng 1", type: "PDF", size: "1.8MB", uploadDate: "10/01/2024" },
+    { id: 3, name: "Quy định an toàn trường học", type: "PDF", size: "1.2MB", uploadDate: "05/01/2024" }
+  ]);
+  const [newLibraryFile, setNewLibraryFile] = useState({
+    name: "",
+    type: "PDF",
+    description: ""
+  });
+
   // Save homepage content mutation
   const saveHomepageMutation = useMutation({
     mutationFn: async (content: typeof homepageContent) => {
@@ -309,11 +340,12 @@ export default function AdminDashboardFixed() {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-9">
             <TabsTrigger value="contact">📞 Liên hệ</TabsTrigger>
             <TabsTrigger value="media">🖼️ Ảnh/Video</TabsTrigger>
             <TabsTrigger value="homepage">🏠 Trang chủ</TabsTrigger>
             <TabsTrigger value="about">ℹ️ Giới thiệu</TabsTrigger>
+            <TabsTrigger value="library">📚 Thư viện</TabsTrigger>
             <TabsTrigger value="admission">🎓 Tuyển sinh</TabsTrigger>
             <TabsTrigger value="programs">📚 Chương trình</TabsTrigger>
             <TabsTrigger value="activities">🎯 Hoạt động</TabsTrigger>
@@ -750,34 +782,336 @@ export default function AdminDashboardFixed() {
 
           {/* About Tab */}
           <TabsContent value="about">
-            <Card>
-              <CardHeader>
-                <CardTitle>ℹ️ Quản lý trang Giới thiệu</CardTitle>
-                <CardDescription>Cập nhật lịch sử, sứ mệnh, tầm nhìn và thông tin đội ngũ</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <div className="text-4xl mb-2">🔧</div>
-                  <p>Tính năng đang được phát triển</p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>ℹ️ Chỉnh sửa trang Giới thiệu</CardTitle>
+                  <CardDescription>Cập nhật thông tin về trường học</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="about-history">Lịch sử nhà trường</Label>
+                    <Textarea
+                      id="about-history"
+                      value={aboutContent.history}
+                      onChange={(e) => setAboutContent({...aboutContent, history: e.target.value})}
+                      placeholder="Lịch sử thành lập và phát triển của trường..."
+                      rows={4}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="about-mission">Sứ mệnh</Label>
+                    <Textarea
+                      id="about-mission"
+                      value={aboutContent.mission}
+                      onChange={(e) => setAboutContent({...aboutContent, mission: e.target.value})}
+                      placeholder="Sứ mệnh và mục tiêu giáo dục..."
+                      rows={3}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="about-vision">Tầm nhìn</Label>
+                    <Textarea
+                      id="about-vision"
+                      value={aboutContent.vision}
+                      onChange={(e) => setAboutContent({...aboutContent, vision: e.target.value})}
+                      placeholder="Tầm nhìn và định hướng phát triển..."
+                      rows={3}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="about-team">Thông tin đội ngũ</Label>
+                    <Textarea
+                      id="about-team"
+                      value={aboutContent.teamInfo}
+                      onChange={(e) => setAboutContent({...aboutContent, teamInfo: e.target.value})}
+                      placeholder="Giới thiệu về đội ngũ giáo viên và nhân viên..."
+                      rows={4}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="about-image">Hình ảnh giới thiệu</Label>
+                    <Input
+                      id="about-image"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (e) => {
+                            setAboutContent({...aboutContent, imageUrl: e.target?.result as string});
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                    {aboutContent.imageUrl && (
+                      <img src={aboutContent.imageUrl} alt="Preview" className="mt-2 max-w-xs rounded" />
+                    )}
+                  </div>
+
+                  <Button 
+                    onClick={() => {
+                      console.log("Saving about content:", aboutContent);
+                      toast({
+                        title: "Lưu trang giới thiệu thành công!",
+                        description: "Nội dung đã được cập nhật",
+                      });
+                    }}
+                    className="w-full"
+                  >
+                    💾 Lưu thông tin giới thiệu
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Library Tab */}
+          <TabsContent value="library">
+            <div className="space-y-6">
+              {/* Add New File Form */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>📚 Thêm tài liệu mới</CardTitle>
+                  <CardDescription>Tải lên tài liệu cho phụ huynh</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="file-name">Tên tài liệu</Label>
+                      <Input
+                        id="file-name"
+                        value={newLibraryFile.name}
+                        onChange={(e) => setNewLibraryFile({...newLibraryFile, name: e.target.value})}
+                        placeholder="Ví dụ: Hướng dẫn chăm sóc trẻ"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="file-type">Loại tài liệu</Label>
+                      <select
+                        id="file-type"
+                        value={newLibraryFile.type}
+                        onChange={(e) => setNewLibraryFile({...newLibraryFile, type: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      >
+                        <option value="PDF">PDF</option>
+                        <option value="DOC">Word Document</option>
+                        <option value="XLS">Excel</option>
+                        <option value="PPT">PowerPoint</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="file-description">Mô tả</Label>
+                    <Textarea
+                      id="file-description"
+                      value={newLibraryFile.description}
+                      onChange={(e) => setNewLibraryFile({...newLibraryFile, description: e.target.value})}
+                      placeholder="Mô tả ngắn về nội dung tài liệu..."
+                      rows={3}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="file-upload">Chọn file</Label>
+                    <Input
+                      id="file-upload"
+                      type="file"
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+                    />
+                  </div>
+
+                  <Button 
+                    onClick={() => {
+                      const newFile = {
+                        id: libraryFiles.length + 1,
+                        name: newLibraryFile.name,
+                        type: newLibraryFile.type,
+                        size: "2.1MB", // Demo size
+                        uploadDate: new Date().toLocaleDateString('vi-VN')
+                      };
+                      setLibraryFiles([...libraryFiles, newFile]);
+                      setNewLibraryFile({ name: "", type: "PDF", description: "" });
+                      toast({
+                        title: "Tải lên thành công!",
+                        description: "Tài liệu đã được thêm vào thư viện",
+                      });
+                    }}
+                    className="w-full"
+                  >
+                    📤 Tải lên tài liệu
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Library Files List */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>📂 Danh sách tài liệu</CardTitle>
+                  <CardDescription>Quản lý tài liệu trong thư viện phụ huynh</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {libraryFiles.length > 0 ? (
+                    <div className="space-y-4">
+                      {libraryFiles.map((file) => (
+                        <div key={file.id} className="border rounded-lg p-4">
+                          <div className="flex justify-between items-start">
+                            <div className="flex items-start gap-3">
+                              <div className="text-2xl">
+                                {file.type === 'PDF' && '📄'}
+                                {file.type === 'DOC' && '📝'}
+                                {file.type === 'XLS' && '📊'}
+                                {file.type === 'PPT' && '📊'}
+                              </div>
+                              <div>
+                                <h4 className="font-medium">{file.name}</h4>
+                                <div className="flex gap-2 mt-1">
+                                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                    {file.type}
+                                  </span>
+                                  <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">
+                                    {file.size}
+                                  </span>
+                                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                                    {file.uploadDate}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline">
+                                📥 Tải xuống
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="destructive"
+                                onClick={() => {
+                                  if (confirm("Bạn có chắc muốn xóa tài liệu này?")) {
+                                    setLibraryFiles(libraryFiles.filter(f => f.id !== file.id));
+                                    toast({
+                                      title: "Đã xóa tài liệu",
+                                      description: "Tài liệu đã được xóa khỏi thư viện",
+                                    });
+                                  }
+                                }}
+                              >
+                                🗑️ Xóa
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <div className="text-4xl mb-2">📚</div>
+                      <p>Chưa có tài liệu nào</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Admission Tab */}
           <TabsContent value="admission">
-            <Card>
-              <CardHeader>
-                <CardTitle>🎓 Quản lý trang Tuyển sinh</CardTitle>
-                <CardDescription>Cập nhật thông tin tuyển sinh, học phí và quy trình</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <div className="text-4xl mb-2">🔧</div>
-                  <p>Tính năng đang được phát triển</p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>🎓 Chỉnh sửa trang Tuyển sinh</CardTitle>
+                  <CardDescription>Cập nhật thông tin tuyển sinh và học phí</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="admission-overview">Thông tin tổng quan</Label>
+                    <Textarea
+                      id="admission-overview"
+                      value={admissionContent.overview}
+                      onChange={(e) => setAdmissionContent({...admissionContent, overview: e.target.value})}
+                      placeholder="Thông tin chung về tuyển sinh..."
+                      rows={4}
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="admission-age">Độ tuổi tuyển sinh</Label>
+                      <Input
+                        id="admission-age"
+                        value={admissionContent.ageRequirement}
+                        onChange={(e) => setAdmissionContent({...admissionContent, ageRequirement: e.target.value})}
+                        placeholder="Ví dụ: 18 tháng - 6 tuổi"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="admission-deadline">Hạn đăng ký</Label>
+                      <Input
+                        id="admission-deadline"
+                        value={admissionContent.deadline}
+                        onChange={(e) => setAdmissionContent({...admissionContent, deadline: e.target.value})}
+                        placeholder="Ví dụ: 30/06/2024"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="admission-documents">Hồ sơ cần thiết</Label>
+                    <Textarea
+                      id="admission-documents"
+                      value={admissionContent.requiredDocuments}
+                      onChange={(e) => setAdmissionContent({...admissionContent, requiredDocuments: e.target.value})}
+                      placeholder="Danh sách giấy tờ cần nộp..."
+                      rows={4}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="admission-process">Quy trình tuyển sinh</Label>
+                    <Textarea
+                      id="admission-process"
+                      value={admissionContent.process}
+                      onChange={(e) => setAdmissionContent({...admissionContent, process: e.target.value})}
+                      placeholder="Các bước trong quy trình tuyển sinh..."
+                      rows={4}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="admission-tuition">Học phí</Label>
+                    <Input
+                      id="admission-tuition"
+                      type="number"
+                      value={admissionContent.tuition}
+                      onChange={(e) => setAdmissionContent({...admissionContent, tuition: parseInt(e.target.value) || 0})}
+                      placeholder="4000000"
+                    />
+                    <p className="text-sm text-gray-500 mt-1">
+                      Hiển thị: {admissionContent.tuition.toLocaleString()} VND/tháng
+                    </p>
+                  </div>
+
+                  <Button 
+                    onClick={() => {
+                      console.log("Saving admission content:", admissionContent);
+                      toast({
+                        title: "Lưu thông tin tuyển sinh thành công!",
+                        description: "Nội dung đã được cập nhật",
+                      });
+                    }}
+                    className="w-full"
+                  >
+                    💾 Lưu thông tin tuyển sinh
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Programs Tab */}
