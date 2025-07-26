@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
   Users, 
   DollarSign, 
@@ -51,6 +52,9 @@ export default function AffiliateDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedMember, setSelectedMember] = useState<AffiliateMember | null>(null);
+  const [hiddenMembers, setHiddenMembers] = useState<Set<string>>(new Set());
+  const [showHidden, setShowHidden] = useState(false);
+  const [memberDetailOpen, setMemberDetailOpen] = useState(false);
 
   // Fetch affiliate data
   const { data: members = [], isLoading: membersLoading } = useQuery({
@@ -126,6 +130,31 @@ export default function AffiliateDashboard() {
       case 'inactive': return 'bg-gray-500';
       default: return 'bg-gray-500';
     }
+  };
+
+  const toggleMemberVisibility = (memberId: string) => {
+    const newHiddenMembers = new Set(hiddenMembers);
+    if (hiddenMembers.has(memberId)) {
+      newHiddenMembers.delete(memberId);
+      toast({
+        title: "Hiển thị thành viên",
+        description: "Thành viên đã được hiển thị lại",
+      });
+    } else {
+      newHiddenMembers.add(memberId);
+      toast({
+        title: "Ẩn thành viên", 
+        description: "Thành viên đã được ẩn khỏi danh sách",
+      });
+    }
+    setHiddenMembers(newHiddenMembers);
+  };
+
+  const getVisibleMembers = () => {
+    if (showHidden) {
+      return mockMembers; // Hiển thị tất cả
+    }
+    return mockMembers.filter(member => !hiddenMembers.has(member.id));
   };
 
   return (
@@ -260,30 +289,115 @@ export default function AffiliateDashboard() {
           <TabsContent value="members">
             <Card>
               <CardHeader>
-                <CardTitle>Danh sách thành viên</CardTitle>
-                <CardDescription>Quản lý tất cả thành viên trong hệ thống affiliate</CardDescription>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>Danh sách thành viên</CardTitle>
+                    <CardDescription>Quản lý tất cả thành viên trong hệ thống affiliate</CardDescription>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant={showHidden ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setShowHidden(!showHidden)}
+                    >
+                      {showHidden ? (
+                        <>
+                          <Eye className="w-4 h-4 mr-2" />
+                          Hiển thị tất cả
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="w-4 h-4 mr-2" />
+                          Hiển thị bị ẩn ({hiddenMembers.size})
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {mockMembers.map((member) => (
-                    <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                  {getVisibleMembers().map((member) => (
+                    <div 
+                      key={member.id} 
+                      className={`flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-all ${
+                        hiddenMembers.has(member.id) ? 'opacity-50 bg-gray-100' : ''
+                      }`}
+                    >
                       <div className="flex items-center space-x-4">
                         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                           <Users className="w-5 h-5 text-blue-600" />
                         </div>
                         <div>
-                          <div className="font-medium">{member.username}</div>
+                          <div className="flex items-center space-x-2">
+                            <span className="font-medium">{member.username}</span>
+                            {hiddenMembers.has(member.id) && (
+                              <Badge variant="secondary" className="text-xs">Ẩn</Badge>
+                            )}
+                          </div>
                           <div className="text-sm text-gray-500">{member.email}</div>
                           <div className="text-xs text-gray-400">Tham gia: {member.joinDate}</div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="font-medium">Ví: {formatCurrency(member.walletBalance)}</div>
-                        <div className="text-sm text-gray-500">Giới thiệu: {member.totalReferrals}</div>
-                        <Badge className={getStatusColor(member.status)}>{member.status}</Badge>
+                      <div className="flex items-center space-x-4">
+                        <div className="text-right">
+                          <div className="font-medium">Ví: {formatCurrency(member.walletBalance)}</div>
+                          <div className="text-sm text-gray-500">Giới thiệu: {member.totalReferrals}</div>
+                          <Badge className={getStatusColor(member.status)}>{member.status}</Badge>
+                        </div>
+                        <div className="flex flex-col space-y-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => toggleMemberVisibility(member.id)}
+                            className={`text-xs ${hiddenMembers.has(member.id) ? 'border-green-500 text-green-600' : 'border-red-500 text-red-600'}`}
+                          >
+                            {hiddenMembers.has(member.id) ? (
+                              <>
+                                <Eye className="w-3 h-3 mr-1" />
+                                Hiện
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="w-3 h-3 mr-1" />
+                                Ẩn
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedMember(member);
+                              setMemberDetailOpen(true);
+                            }}
+                            className="text-xs border-blue-500 text-blue-600"
+                          >
+                            <Settings className="w-3 h-3 mr-1" />
+                            Chi tiết
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
+                </div>
+                
+                {/* Summary */}
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <div className="text-lg font-bold text-blue-600">{mockMembers.length}</div>
+                      <div className="text-sm text-gray-600">Tổng thành viên</div>
+                    </div>
+                    <div>
+                      <div className="text-lg font-bold text-green-600">{mockMembers.length - hiddenMembers.size}</div>
+                      <div className="text-sm text-gray-600">Đang hiển thị</div>
+                    </div>
+                    <div>
+                      <div className="text-lg font-bold text-red-600">{hiddenMembers.size}</div>
+                      <div className="text-sm text-gray-600">Đã ẩn</div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -395,6 +509,129 @@ export default function AffiliateDashboard() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Member Detail Modal */}
+        <Dialog open={memberDetailOpen} onOpenChange={setMemberDetailOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Chi tiết thành viên</DialogTitle>
+              <DialogDescription>
+                Thông tin chi tiết và quản lý thành viên {selectedMember?.username}
+              </DialogDescription>
+            </DialogHeader>
+            
+            {selectedMember && (
+              <div className="space-y-6">
+                {/* Basic Info */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Thông tin cơ bản</CardTitle>
+                  </CardHeader>
+                  <CardContent className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium">Tên đăng nhập</Label>
+                      <div className="text-sm text-gray-700">{selectedMember.username}</div>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Email</Label>
+                      <div className="text-sm text-gray-700">{selectedMember.email}</div>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Cấp độ</Label>
+                      <div className="text-sm text-gray-700">Cấp {selectedMember.level}</div>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Trạng thái</Label>
+                      <Badge className={getStatusColor(selectedMember.status)}>{selectedMember.status}</Badge>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Ngày tham gia</Label>
+                      <div className="text-sm text-gray-700">{selectedMember.joinDate}</div>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Trạng thái hiển thị</Label>
+                      <Badge variant={hiddenMembers.has(selectedMember.id) ? "destructive" : "default"}>
+                        {hiddenMembers.has(selectedMember.id) ? "Đã ẩn" : "Hiển thị"}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Wallet & Commissions */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Thông tin tài chính</CardTitle>
+                  </CardHeader>
+                  <CardContent className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium">Số dư ví</Label>
+                      <div className="text-lg font-bold text-green-600">{formatCurrency(selectedMember.walletBalance)}</div>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Tổng hoa hồng</Label>
+                      <div className="text-lg font-bold text-blue-600">{formatCurrency(selectedMember.totalCommissions)}</div>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Số lượng giới thiệu</Label>
+                      <div className="text-lg font-bold text-purple-600">{selectedMember.totalReferrals}</div>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Hoa hồng chờ</Label>
+                      <div className="text-lg font-bold text-orange-600">{formatCurrency(1000000)}</div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Actions */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Hành động quản lý</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Button
+                        variant="outline"
+                        onClick={() => toggleMemberVisibility(selectedMember.id)}
+                        className={hiddenMembers.has(selectedMember.id) ? 'border-green-500 text-green-600' : 'border-red-500 text-red-600'}
+                      >
+                        {hiddenMembers.has(selectedMember.id) ? (
+                          <>
+                            <Eye className="w-4 h-4 mr-2" />
+                            Hiển thị thành viên
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="w-4 h-4 mr-2" />
+                            Ẩn thành viên
+                          </>
+                        )}
+                      </Button>
+                      <Button variant="outline">
+                        <Wallet className="w-4 h-4 mr-2" />
+                        Xem lịch sử ví
+                      </Button>
+                      <Button variant="outline">
+                        <UserCheck className="w-4 h-4 mr-2" />
+                        Xem mạng lưới
+                      </Button>
+                      <Button variant="outline">
+                        <BarChart3 className="w-4 h-4 mr-2" />
+                        Thống kê chi tiết
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Close Button */}
+                <div className="flex justify-end">
+                  <Button onClick={() => setMemberDetailOpen(false)}>
+                    Đóng
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
