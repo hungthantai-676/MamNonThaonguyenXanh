@@ -317,7 +317,7 @@ export default function AdminDashboard() {
             <span className="text-sm text-gray-600">Xin chào Admin</span>
             <Button 
               variant="outline" 
-              onClick={() => window.open('/php-version/affiliate_access.html', '_blank')}
+              onClick={() => window.open('/admin/affiliate', '_blank')}
               className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
             >
               🔗 Quản trị Affiliate
