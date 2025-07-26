@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +25,7 @@ const DemoManagement = () => {
   const createDemoData = useMutation({
     mutationFn: async () => {
       const response = await apiRequest("POST", "/api/demo/create-affiliate-data", {});
-      return response;
+      return response.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/affiliate/members"] });
@@ -748,14 +748,14 @@ export default function AffiliatePage() {
         </div>
 
         <Tabs defaultValue="members" className="w-full">
-          <TabsList className="grid w-full grid-cols-7">
-            <TabsTrigger value="members">Thành viên</TabsTrigger>
-            <TabsTrigger value="teachers">Giáo viên</TabsTrigger>
-            <TabsTrigger value="parents">Phụ huynh</TabsTrigger>
-            <TabsTrigger value="customers">Khách hàng F1</TabsTrigger>
-            <TabsTrigger value="history">Lịch sử GD</TabsTrigger>
-            <TabsTrigger value="demo">Demo Test</TabsTrigger>
-            <TabsTrigger value="join">Tham gia</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 gap-1">
+            <TabsTrigger value="members" className="text-xs md:text-sm">Thành viên</TabsTrigger>
+            <TabsTrigger value="teachers" className="text-xs md:text-sm">Giáo viên</TabsTrigger>
+            <TabsTrigger value="parents" className="text-xs md:text-sm">Phụ huynh</TabsTrigger>
+            <TabsTrigger value="customers" className="text-xs md:text-sm">Khách hàng F1</TabsTrigger>
+            <TabsTrigger value="history" className="text-xs md:text-sm">Lịch sử GD</TabsTrigger>
+            <TabsTrigger value="demo" className="text-xs md:text-sm bg-yellow-100 text-yellow-800 font-medium">🧪 Demo Test</TabsTrigger>
+            <TabsTrigger value="join" className="text-xs md:text-sm">Tham gia</TabsTrigger>
           </TabsList>
 
           <TabsContent value="members" className="space-y-4">
