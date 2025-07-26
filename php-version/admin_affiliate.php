@@ -73,16 +73,16 @@ $db = getDB();
                         include 'admin/affiliate_members.php';
                         break;
                     case 'referrals':
-                        include 'admin/affiliate_referrals.php';
+                        echo '<div class="alert alert-info">Trang quản lý giới thiệu đang được phát triển...</div>';
                         break;
                     case 'conversions':
-                        include 'admin/affiliate_conversions.php';
+                        echo '<div class="alert alert-info">Trang quản lý conversion đang được phát triển...</div>';
                         break;
                     case 'transactions':
-                        include 'admin/affiliate_transactions.php';
+                        echo '<div class="alert alert-info">Trang quản lý giao dịch đang được phát triển...</div>';
                         break;
                     case 'settings':
-                        include 'admin/affiliate_settings.php';
+                        echo '<div class="alert alert-info">Trang cài đặt đang được phát triển...</div>';
                         break;
                     default:
                         include 'admin/affiliate_overview.php';

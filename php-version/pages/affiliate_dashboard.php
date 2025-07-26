@@ -75,7 +75,7 @@ if ($memberId) {
                             <?php if ($dashboard['member']['role'] === 'teacher'): ?>
                                 <?= formatCurrency($dashboard['member']['wallet_balance']) ?>
                             <?php else: ?>
-                                <?= number_format($dashboard['member']['points_balance']) ?> điểm
+                                <?= formatPoints($dashboard['member']['points_balance']) ?> điểm
                             <?php endif; ?>
                         </h3>
                         <p class="text-muted mb-0">
@@ -272,9 +272,9 @@ if ($memberId) {
                                                         <br><small class="text-warning">+<?= formatCurrency($referral['milestone_bonus']) ?> (mốc)</small>
                                                     <?php endif; ?>
                                                 <?php else: ?>
-                                                    <strong class="text-warning"><?= number_format($referral['reward_points']) ?> điểm</strong>
+                                                    <strong class="text-warning"><?= formatPoints($referral['reward_points']) ?> điểm</strong>
                                                     <?php if ($referral['milestone_bonus_points'] > 0): ?>
-                                                        <br><small class="text-success">+<?= number_format($referral['milestone_bonus_points']) ?> (mốc)</small>
+                                                        <br><small class="text-success">+<?= formatPoints($referral['milestone_bonus_points']) ?> (mốc)</small>
                                                     <?php endif; ?>
                                                 <?php endif; ?>
                                             </td>

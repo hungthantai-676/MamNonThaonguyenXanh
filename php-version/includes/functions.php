@@ -93,6 +93,11 @@ function formatCurrency($amount) {
     return number_format($amount, 0, ',', '.') . ' VNĐ';
 }
 
+// Format points without decimals
+function formatPoints($points) {
+    return number_format($points, 0, ',', '.');
+}
+
 // Sanitize input
 function sanitize($input) {
     return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');

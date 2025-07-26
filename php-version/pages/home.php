@@ -197,8 +197,8 @@
                             <div class="card-body text-center">
                                 <i class="fas fa-chalkboard-teacher fa-3x text-success mb-3"></i>
                                 <h5 class="fw-bold">Giáo viên</h5>
-                                <p class="mb-2"><strong>2.000.000 VNĐ</strong> mỗi học sinh</p>
-                                <p class="mb-3"><strong>+10.000.000 VNĐ</strong> thưởng mốc 5 HS</p>
+                                <p class="mb-2"><strong>2,000,000 VNĐ</strong> mỗi học sinh</p>
+                                <p class="mb-3"><strong>+10,000,000 VNĐ</strong> thưởng mốc 5 HS</p>
                                 <a href="?page=affiliate_register" class="btn btn-success">Đăng ký ngay</a>
                             </div>
                         </div>
@@ -209,8 +209,8 @@
                             <div class="card-body text-center">
                                 <i class="fas fa-users fa-3x text-warning mb-3"></i>
                                 <h5 class="fw-bold">Phụ huynh</h5>
-                                <p class="mb-2"><strong>2.000 điểm</strong> mỗi học sinh</p>
-                                <p class="mb-3"><strong>+10.000 điểm</strong> thưởng mốc 5 HS</p>
+                                <p class="mb-2"><strong>2,000 điểm</strong> mỗi học sinh</p>
+                                <p class="mb-3"><strong>+10,000 điểm</strong> thưởng mốc 5 HS</p>
                                 <a href="?page=affiliate_register" class="btn btn-warning">Đăng ký ngay</a>
                             </div>
                         </div>
