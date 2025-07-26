@@ -22,6 +22,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import AffiliateTree from "@/components/affiliate-tree";
 
 interface AffiliateMember {
   id: string;
@@ -325,18 +326,10 @@ export default function AffiliateDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Cây phả hệ Affiliate</CardTitle>
-                <CardDescription>Sơ đồ cấu trúc mạng lưới giới thiệu</CardDescription>
+                <CardDescription>Sơ đồ cấu trúc mạng lưới giới thiệu tương tác</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12">
-                  <TreePine className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Cây phả hệ</h3>
-                  <p className="text-gray-500 mb-6">Hiển thị sơ đồ mạng lưới affiliate theo cấu trúc cây</p>
-                  <Button>
-                    <Eye className="w-4 h-4 mr-2" />
-                    Xem sơ đồ chi tiết
-                  </Button>
-                </div>
+                <AffiliateTree />
               </CardContent>
             </Card>
           </TabsContent>
