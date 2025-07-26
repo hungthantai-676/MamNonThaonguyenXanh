@@ -13,7 +13,208 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { QrCode, Wallet, TreePine, Users, DollarSign, Gift, Star, Crown, Shield, UserCheck, Phone, Mail, Calendar, DollarSign as Money } from "lucide-react";
+import { QrCode, Wallet, TreePine, Users, DollarSign, Gift, Star, Crown, Shield, UserCheck, Phone, Mail, Calendar, DollarSign as Money, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle } from "lucide-react";
+
+// Transaction History Component
+const TransactionHistory = () => {
+  const [selectedMemberId, setSelectedMemberId] = useState<string>("");
+  
+  // Fetch member list for selection
+  const { data: members = [] } = useQuery({
+    queryKey: ['/api/affiliate/members'],
+  });
+
+  // Fetch transaction history for selected member
+  const { data: transactionHistory = [], isLoading } = useQuery({
+    queryKey: ['/api/member-transaction-history', selectedMemberId],
+    enabled: !!selectedMemberId,
+  });
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const getTransactionIcon = (type: string) => {
+    switch (type) {
+      case 'payment_received':
+        return <ArrowDownLeft className="w-5 h-5 text-green-600" />;
+      case 'commission_earned':
+        return <Gift className="w-5 h-5 text-blue-600" />;
+      case 'bonus_received':
+        return <Star className="w-5 h-5 text-yellow-600" />;
+      case 'withdrawal':
+        return <ArrowUpRight className="w-5 h-5 text-red-600" />;
+      default:
+        return <Money className="w-5 h-5 text-gray-600" />;
+    }
+  };
+
+  const getTransactionDescription = (type: string) => {
+    switch (type) {
+      case 'payment_received':
+        return 'Nhận thanh toán';
+      case 'commission_earned':
+        return 'Hoa hồng giới thiệu';
+      case 'bonus_received':
+        return 'Thưởng milestone';
+      case 'withdrawal':
+        return 'Rút tiền';
+      default:
+        return 'Giao dịch khác';
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold flex items-center gap-2">
+          <Wallet className="w-5 h-5" />
+          Lịch sử giao dịch (Sao kê ví)
+        </h2>
+      </div>
+
+      {/* Member Selection */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Chọn thành viên xem lịch sử</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4 flex-wrap">
+            {members.map((member: any) => (
+              <Button
+                key={member.id}
+                variant={selectedMemberId === member.memberId ? "default" : "outline"}
+                onClick={() => setSelectedMemberId(member.memberId)}
+                className="flex items-center gap-2"
+              >
+                <UserCheck className="w-4 h-4" />
+                {member.name}
+                <Badge variant="secondary" className="ml-2">
+                  {formatCurrency(parseFloat(member.tokenBalance || "0"))}
+                </Badge>
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Transaction History Display */}
+      {selectedMemberId && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Sao kê ví điện tử</span>
+              <div className="text-sm text-gray-500">
+                {members.find((m: any) => m.memberId === selectedMemberId)?.name}
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+              </div>
+            ) : transactionHistory.length === 0 ? (
+              <div className="text-center py-8">
+                <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Chưa có giao dịch</h3>
+                <p className="text-gray-500">Lịch sử giao dịch sẽ hiển thị tại đây khi có hoạt động</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="grid grid-cols-6 gap-4 text-sm font-medium text-gray-700 border-b pb-2">
+                  <div>Ngày</div>
+                  <div>Loại GD</div>
+                  <div>Mô tả</div>
+                  <div className="text-right">Số tiền</div>
+                  <div className="text-right">Số dư trước</div>
+                  <div className="text-right">Số dư sau</div>
+                </div>
+                {transactionHistory.map((transaction: any) => (
+                  <div 
+                    key={transaction.id} 
+                    className="grid grid-cols-6 gap-4 text-sm py-3 border-b border-gray-100 hover:bg-gray-50 rounded-lg px-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="text-xs">
+                        {new Date(transaction.createdAt).toLocaleDateString('vi-VN')}
+                        <br />
+                        <span className="text-gray-500">
+                          {new Date(transaction.createdAt).toLocaleTimeString('vi-VN', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {getTransactionIcon(transaction.transactionType)}
+                      <span className="text-xs">
+                        {getTransactionDescription(transaction.transactionType)}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-xs text-gray-600">
+                        {transaction.description}
+                      </span>
+                    </div>
+                    <div className="text-right flex items-center justify-end">
+                      <span className={`font-medium ${
+                        parseFloat(transaction.amount) > 0 ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {parseFloat(transaction.amount) > 0 ? '+' : ''}
+                        {formatCurrency(parseFloat(transaction.amount))}
+                      </span>
+                    </div>
+                    <div className="text-right flex items-center justify-end text-gray-500">
+                      {formatCurrency(parseFloat(transaction.balanceBefore))}
+                    </div>
+                    <div className="text-right flex items-center justify-end">
+                      <span className="font-semibold text-blue-600">
+                        {formatCurrency(parseFloat(transaction.balanceAfter))}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Current Balance Summary */}
+      {selectedMemberId && (
+        <Card className="bg-gradient-to-r from-green-50 to-blue-50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">Số dư hiện tại</h3>
+                <p className="text-sm text-gray-600">
+                  Tài khoản: {members.find((m: any) => m.memberId === selectedMemberId)?.name}
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="text-3xl font-bold text-green-600">
+                  {formatCurrency(parseFloat(
+                    members.find((m: any) => m.memberId === selectedMemberId)?.tokenBalance || "0"
+                  ))}
+                </div>
+                <div className="flex items-center gap-1 text-sm text-gray-500">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  Đã xác minh
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
 
 const affiliateSchema = z.object({
   name: z.string().min(1, "Tên không được để trống"),
@@ -363,11 +564,12 @@ export default function AffiliatePage() {
         </div>
 
         <Tabs defaultValue="members" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="members">Thành viên</TabsTrigger>
             <TabsTrigger value="teachers">Giáo viên</TabsTrigger>
             <TabsTrigger value="parents">Phụ huynh</TabsTrigger>
             <TabsTrigger value="customers">Khách hàng F1</TabsTrigger>
+            <TabsTrigger value="history">Lịch sử GD</TabsTrigger>
             <TabsTrigger value="join">Tham gia</TabsTrigger>
           </TabsList>
 
@@ -820,6 +1022,10 @@ export default function AffiliatePage() {
                 <p className="text-gray-500">Agent này chưa có khách hàng nào</p>
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="history" className="space-y-4">
+            <TransactionHistory />
           </TabsContent>
 
           <TabsContent value="join" className="space-y-4">

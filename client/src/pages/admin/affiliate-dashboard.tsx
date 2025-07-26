@@ -25,6 +25,418 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import AffiliateTree from "@/components/affiliate-tree";
 
+// Payment Management Component
+const PaymentManagement = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [memberDetailDialogOpen, setMemberDetailDialogOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<any>(null);
+
+  // Fetch pending payments with member details
+  const { data: pendingPayments = [], isLoading: paymentsLoading } = useQuery({
+    queryKey: ['/api/commission-transactions'],
+  });
+
+  // Fetch affiliate members for reference
+  const { data: members = [] } = useQuery({
+    queryKey: ['/api/affiliate/members'],
+  });
+
+  // Get member details by recipientId
+  const getMemberDetails = (recipientId: string) => {
+    return members.find((m: any) => m.memberId === recipientId) || { 
+      name: 'Không xác định', 
+      email: 'N/A', 
+      phone: 'N/A',
+      walletAddress: 'N/A'
+    };
+  };
+
+  // Process payment mutation
+  const processPaymentMutation = useMutation({
+    mutationFn: async (data: { transactionId: string; amount: number; memberId: string }) => {
+      const response = await apiRequest("POST", "/api/process-payment", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Thanh toán thành công",
+        description: "Đã xử lý thanh toán và cập nhật ví thành viên",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/commission-transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/affiliate/members'] });
+      setPaymentDialogOpen(false);
+      setSelectedTransaction(null);
+    },
+    onError: () => {
+      toast({
+        title: "Lỗi thanh toán",
+        description: "Không thể xử lý thanh toán. Vui lòng thử lại.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Verify transaction mutation  
+  const verifyTransactionMutation = useMutation({
+    mutationFn: async (data: { transactionId: string; verified: boolean }) => {
+      const response = await apiRequest("PUT", `/api/commission-transactions/${data.transactionId}/verify`, {
+        verified: data.verified
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Xác minh thành công",
+        description: "Đã cập nhật trạng thái xác minh giao dịch",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/commission-transactions'] });
+      setConfirmDialogOpen(false);
+    }
+  });
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'verified':
+        return 'bg-blue-100 text-blue-800';
+      case 'paid':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const handleProcessPayment = (transaction: any) => {
+    setSelectedTransaction(transaction);
+    setPaymentDialogOpen(true);
+  };
+
+  const handleVerifyTransaction = (transaction: any) => {
+    setSelectedTransaction(transaction);
+    setConfirmDialogOpen(true);
+  };
+
+  const handleViewMemberDetail = (memberId: string) => {
+    const member = getMemberDetails(memberId);
+    setSelectedMember({...member, memberId});
+    setMemberDetailDialogOpen(true);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Payment Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Eye className="w-4 h-4 text-yellow-500" />
+              Chờ xử lý
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-600">
+              {pendingPayments.filter((t: any) => t.status === 'pending').length}
+            </div>
+            <p className="text-xs text-gray-500">giao dịch</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <UserCheck className="w-4 h-4 text-blue-500" />
+              Đã xác minh
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">
+              {pendingPayments.filter((t: any) => t.status === 'verified').length}
+            </div>
+            <p className="text-xs text-gray-500">giao dịch</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Wallet className="w-4 h-4 text-green-500" />
+              Đã thanh toán
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {pendingPayments.filter((t: any) => t.status === 'paid').length}
+            </div>
+            <p className="text-xs text-gray-500">giao dịch</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Payments List */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Danh sách giao dịch thanh toán</CardTitle>
+          <CardDescription>
+            Quản lý và xử lý các khoản thanh toán hoa hồng cho thành viên
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {paymentsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+            </div>
+          ) : pendingPayments.length === 0 ? (
+            <div className="text-center py-8">
+              <CreditCard className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Chưa có giao dịch</h3>
+              <p className="text-gray-500">Chưa có giao dịch thanh toán nào cần xử lý</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {pendingPayments.map((transaction: any) => {
+                const member = getMemberDetails(transaction.recipientId);
+                return (
+                  <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-3 h-3 rounded-full ${
+                        transaction.status === 'pending' ? 'bg-yellow-500' :
+                        transaction.status === 'verified' ? 'bg-blue-500' : 'bg-green-500'
+                      }`} />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-4">
+                          <div>
+                            <div className="font-medium text-lg">{member.name}</div>
+                            <div className="text-sm text-gray-500">
+                              Email: {member.email} | SĐT: {member.phone}
+                            </div>
+                            <div className="text-xs text-gray-400 font-mono">
+                              ID: {transaction.recipientId} | Ví: {member.walletAddress?.slice(0, 10)}...
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xl font-bold text-green-600">
+                              {formatCurrency(parseFloat(transaction.commissionAmount))}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              Loại: {transaction.recipientType} | {new Date(transaction.createdAt).toLocaleDateString('vi-VN')}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge className={getStatusColor(transaction.status)}>
+                        {transaction.status === 'pending' ? 'Chờ xử lý' :
+                         transaction.status === 'verified' ? 'Đã xác minh' : 'Đã thanh toán'}
+                      </Badge>
+                      <div className="flex space-x-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewMemberDetail(transaction.recipientId)}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        {transaction.status === 'pending' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleVerifyTransaction(transaction)}
+                            className="text-blue-600 hover:text-blue-700"
+                          >
+                            Xác minh
+                          </Button>
+                        )}
+                        {transaction.status === 'verified' && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleProcessPayment(transaction)}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            Đã thanh toán
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Member Detail Dialog */}
+      <Dialog open={memberDetailDialogOpen} onOpenChange={setMemberDetailDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Chi tiết thành viên</DialogTitle>
+          </DialogHeader>
+          {selectedMember && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Tên thành viên</Label>
+                  <div className="text-lg font-semibold">{selectedMember.name}</div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Mã thành viên</Label>
+                  <div className="font-mono text-sm">{selectedMember.memberId}</div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Email</Label>
+                  <div className="text-sm">{selectedMember.email}</div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Số điện thoại</Label>
+                  <div className="text-sm">{selectedMember.phone}</div>
+                </div>
+                <div className="col-span-2">
+                  <Label className="text-sm font-medium">Địa chỉ ví</Label>
+                  <div className="font-mono text-xs bg-gray-100 p-2 rounded break-all">
+                    {selectedMember.walletAddress}
+                  </div>
+                </div>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Số dư ví hiện tại</Label>
+                <div className="text-2xl font-bold text-green-600">
+                  {formatCurrency(parseFloat(selectedMember.tokenBalance || "0"))}
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment Confirmation Dialog */}
+      <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Xác nhận thanh toán</DialogTitle>
+            <DialogDescription>
+              Xác nhận đã chuyển khoản cho thành viên và cập nhật số dư ví
+            </DialogDescription>
+          </DialogHeader>
+          {selectedTransaction && (
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <Label>Thành viên</Label>
+                    <div className="font-medium">{getMemberDetails(selectedTransaction.recipientId).name}</div>
+                  </div>
+                  <div>
+                    <Label>Số tiền</Label>
+                    <div className="font-bold text-green-600">
+                      {formatCurrency(parseFloat(selectedTransaction.commissionAmount))}
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Loại giao dịch</Label>
+                    <div>{selectedTransaction.recipientType}</div>
+                  </div>
+                  <div>
+                    <Label>Ngày tạo</Label>
+                    <div>{new Date(selectedTransaction.createdAt).toLocaleDateString('vi-VN')}</div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end space-x-3">
+                <Button variant="outline" onClick={() => setPaymentDialogOpen(false)}>
+                  Hủy
+                </Button>
+                <Button 
+                  onClick={() => {
+                    processPaymentMutation.mutate({
+                      transactionId: selectedTransaction.transactionId,
+                      amount: parseFloat(selectedTransaction.commissionAmount),
+                      memberId: selectedTransaction.recipientId
+                    });
+                  }}
+                  disabled={processPaymentMutation.isPending}
+                >
+                  {processPaymentMutation.isPending ? "Đang xử lý..." : "Xác nhận đã thanh toán"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Verification Dialog */}
+      <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Xác minh giao dịch</DialogTitle>
+            <DialogDescription>
+              Kiểm tra và xác minh thông tin giao dịch trước khi thanh toán
+            </DialogDescription>
+          </DialogHeader>
+          {selectedTransaction && (
+            <div className="space-y-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="grid grid-cols-1 gap-3 text-sm">
+                  <div className="flex justify-between">
+                    <Label>Thành viên:</Label>
+                    <span className="font-medium">{getMemberDetails(selectedTransaction.recipientId).name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <Label>Email:</Label>
+                    <span>{getMemberDetails(selectedTransaction.recipientId).email}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <Label>Số tiền:</Label>
+                    <span className="font-bold text-green-600">
+                      {formatCurrency(parseFloat(selectedTransaction.commissionAmount))}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <Label>Ví:</Label>
+                    <span className="font-mono text-xs">
+                      {getMemberDetails(selectedTransaction.recipientId).walletAddress}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end space-x-3">
+                <Button variant="outline" onClick={() => setConfirmDialogOpen(false)}>
+                  Hủy
+                </Button>
+                <Button 
+                  onClick={() => {
+                    verifyTransactionMutation.mutate({
+                      transactionId: selectedTransaction.transactionId,
+                      verified: true
+                    });
+                  }}
+                  disabled={verifyTransactionMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {verifyTransactionMutation.isPending ? "Đang xác minh..." : "Xác minh đúng"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
 interface AffiliateMember {
   id: string;
   username: string;
@@ -450,27 +862,7 @@ export default function AffiliateDashboard() {
 
           {/* Payments Tab */}
           <TabsContent value="payments">
-            <Card>
-              <CardHeader>
-                <CardTitle>Quản lý thanh toán</CardTitle>
-                <CardDescription>Xử lý và theo dõi các khoản thanh toán hoa hồng</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <CreditCard className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Hệ thống thanh toán</h3>
-                  <p className="text-gray-500 mb-6">Xử lý thanh toán hoa hồng và quản lý ví điện tử</p>
-                  <div className="flex justify-center space-x-4">
-                    <Button variant="outline">
-                      Xem giao dịch chờ
-                    </Button>
-                    <Button>
-                      Xử lý thanh toán
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <PaymentManagement />
           </TabsContent>
 
           {/* Settings Tab */}

@@ -258,6 +258,20 @@ export const dexTrades = pgTable("dex_trades", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Transaction history for wallet statements
+export const transactionHistory = pgTable("transaction_history", {
+  id: serial("id").primaryKey(),
+  memberId: varchar("member_id", { length: 50 }).notNull(),
+  transactionType: varchar("transaction_type", { length: 50 }).notNull(), // "payment_received", "commission_earned", "bonus_received", "withdrawal"
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
+  description: text("description").notNull(),
+  balanceBefore: decimal("balance_before", { precision: 15, scale: 2 }).notNull(),
+  balanceAfter: decimal("balance_after", { precision: 15, scale: 2 }).notNull(),
+  status: varchar("status", { length: 20 }).default("completed"), // "completed", "pending", "failed"
+  referenceId: varchar("reference_id", { length: 100 }), // Reference to commission transaction or other source
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -394,6 +408,11 @@ export const insertDexTradeSchema = createInsertSchema(dexTrades).omit({
   updatedAt: true,
 });
 
+export const insertTransactionHistorySchema = createInsertSchema(transactionHistory).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Article = typeof articles.$inferSelect;
@@ -432,3 +451,6 @@ export type InsertAffiliateReward = z.infer<typeof insertAffiliateRewardSchema>;
 
 export type DexTrade = typeof dexTrades.$inferSelect;
 export type InsertDexTrade = z.infer<typeof insertDexTradeSchema>;
+
+export type TransactionHistory = typeof transactionHistory.$inferSelect;
+export type InsertTransactionHistory = z.infer<typeof insertTransactionHistorySchema>;

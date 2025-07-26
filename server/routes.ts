@@ -904,6 +904,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Payment processing API
+  app.post("/api/process-payment", async (req, res) => {
+    try {
+      const { transactionId, amount, memberId } = req.body;
+
+      // Update transaction status to paid
+      const transaction = await storage.updateCommissionTransactionStatus(transactionId, "paid");
+
+      // Update member wallet balance
+      const member = await storage.getAffiliateMemberByMemberId(memberId);
+      if (member) {
+        const currentBalance = parseFloat(member.tokenBalance || "0");
+        const newBalance = currentBalance + amount;
+        await storage.updateAffiliateMember(member.id, {
+          tokenBalance: newBalance.toString()
+        });
+
+        // Create transaction history record
+        await storage.createTransactionHistory({
+          memberId,
+          transactionType: "payment_received",
+          amount: amount.toString(),
+          description: `Nhận thanh toán hoa hồng - ${transactionId}`,
+          balanceBefore: currentBalance.toString(),
+          balanceAfter: newBalance.toString(),
+          status: "completed"
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Payment processed successfully",
+        newBalance: member ? parseFloat(member.tokenBalance || "0") + amount : 0
+      });
+    } catch (error) {
+      console.error("Error processing payment:", error);
+      res.status(500).json({ message: "Failed to process payment" });
+    }
+  });
+
+  // Transaction verification API
+  app.put("/api/commission-transactions/:transactionId/verify", async (req, res) => {
+    try {
+      const { transactionId } = req.params;
+      const { verified } = req.body;
+
+      const status = verified ? "verified" : "pending";
+      const transaction = await storage.updateCommissionTransactionStatus(transactionId, status);
+
+      res.json({ 
+        success: true, 
+        message: verified ? "Transaction verified" : "Transaction marked as pending",
+        transaction 
+      });
+    } catch (error) {
+      console.error("Error verifying transaction:", error);
+      res.status(500).json({ message: "Failed to verify transaction" });
+    }
+  });
+
+  // Get member transaction history (wallet statement)
+  app.get("/api/member-transaction-history/:memberId", async (req, res) => {
+    try {
+      const { memberId } = req.params;
+      const history = await storage.getMemberTransactionHistory(memberId);
+      res.json(history);
+    } catch (error) {
+      console.error("Error getting transaction history:", error);
+      res.status(500).json({ message: "Failed to get transaction history" });
+    }
+  });
+
   // Initialize commission settings on startup
   commissionService.initializeDefaultSettings().catch(console.error);
 

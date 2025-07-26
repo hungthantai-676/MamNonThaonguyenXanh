@@ -1,6 +1,6 @@
-import { users, articles, testimonials, programs, activities, admissionForms, contactForms, chatMessages, notifications, admissionSteps, mediaCovers, socialMediaLinks, serviceRegistrations, affiliateMembers, affiliateTransactions, affiliateRewards, dexTrades, customerConversions, commissionSettings, commissionTransactions, type User, type InsertUser, type Article, type InsertArticle, type Testimonial, type InsertTestimonial, type Program, type InsertProgram, type Activity, type InsertActivity, type AdmissionForm, type InsertAdmissionForm, type ContactForm, type InsertContactForm, type ChatMessage, type InsertChatMessage, type Notification, type InsertNotification, type AdmissionStep, type InsertAdmissionStep, type MediaCover, type InsertMediaCover, type SocialMediaLink, type InsertSocialMediaLink, type ServiceRegistration, type InsertServiceRegistration, type AffiliateMember, type InsertAffiliateMember, type AffiliateTransaction, type InsertAffiliateTransaction, type AffiliateReward, type InsertAffiliateReward, type DexTrade, type InsertDexTrade, type CustomerConversion, type InsertCustomerConversion, type CommissionSetting, type InsertCommissionSetting, type CommissionTransaction, type InsertCommissionTransaction } from "@shared/schema";
+import { users, articles, testimonials, programs, activities, admissionForms, contactForms, chatMessages, notifications, admissionSteps, mediaCovers, socialMediaLinks, serviceRegistrations, affiliateMembers, affiliateTransactions, affiliateRewards, dexTrades, customerConversions, commissionSettings, commissionTransactions, transactionHistory, type User, type InsertUser, type Article, type InsertArticle, type Testimonial, type InsertTestimonial, type Program, type InsertProgram, type Activity, type InsertActivity, type AdmissionForm, type InsertAdmissionForm, type ContactForm, type InsertContactForm, type ChatMessage, type InsertChatMessage, type Notification, type InsertNotification, type AdmissionStep, type InsertAdmissionStep, type MediaCover, type InsertMediaCover, type SocialMediaLink, type InsertSocialMediaLink, type ServiceRegistration, type InsertServiceRegistration, type AffiliateMember, type InsertAffiliateMember, type AffiliateTransaction, type InsertAffiliateTransaction, type AffiliateReward, type InsertAffiliateReward, type DexTrade, type InsertDexTrade, type CustomerConversion, type InsertCustomerConversion, type CommissionSetting, type InsertCommissionSetting, type CommissionTransaction, type InsertCommissionTransaction, type TransactionHistory, type InsertTransactionHistory } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -688,6 +688,32 @@ export class DatabaseStorage implements IStorage {
 
   async getCommissionTransactionsByRecipient(recipientId: string): Promise<CommissionTransaction[]> {
     return await db.select().from(commissionTransactions).where(eq(commissionTransactions.recipientId, recipientId));
+  }
+
+  async updateCommissionTransactionStatus(transactionId: string, status: string): Promise<CommissionTransaction> {
+    const [transaction] = await db
+      .update(commissionTransactions)
+      .set({ status, processedAt: status === "paid" ? new Date() : null })
+      .where(eq(commissionTransactions.transactionId, transactionId))
+      .returning();
+    return transaction;
+  }
+
+  // Transaction history methods
+  async createTransactionHistory(historyData: InsertTransactionHistory): Promise<TransactionHistory> {
+    const [history] = await db
+      .insert(transactionHistory)
+      .values(historyData)
+      .returning();
+    return history;
+  }
+
+  async getMemberTransactionHistory(memberId: string): Promise<TransactionHistory[]> {
+    return await db
+      .select()
+      .from(transactionHistory)
+      .where(eq(transactionHistory.memberId, memberId))
+      .orderBy(desc(transactionHistory.createdAt));
   }
 
   async createCommissionTransaction(insertTransaction: InsertCommissionTransaction): Promise<CommissionTransaction> {
