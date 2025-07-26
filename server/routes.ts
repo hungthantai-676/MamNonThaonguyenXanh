@@ -7,7 +7,8 @@ import {
   insertActivitySchema, insertAdmissionFormSchema, insertContactFormSchema,
   insertAdmissionStepSchema, insertMediaCoverSchema, insertSocialMediaLinkSchema,
   insertServiceRegistrationSchema, insertAffiliateMemberSchema, updateAffiliateMemberSchema,
-  insertCustomerConversionSchema, insertCommissionSettingSchema, insertCommissionTransactionSchema
+  insertCustomerConversionSchema, insertCommissionSettingSchema, insertCommissionTransactionSchema,
+  insertWithdrawalRequestSchema, type WithdrawalRequest
 } from "@shared/schema";
 import { notificationService } from "./notifications";
 import { sendTestEmail } from "./email";
@@ -1098,6 +1099,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Initialize commission settings on startup
   commissionService.initializeDefaultSettings().catch(console.error);
+
+  // Withdrawal request endpoints
+  app.get("/api/withdrawal-requests", async (req, res) => {
+    try {
+      const requests = await storage.getWithdrawalRequests();
+      res.json(requests);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch withdrawal requests" });
+    }
+  });
+
+  app.get("/api/withdrawal-requests/member/:memberId", async (req, res) => {
+    try {
+      const { memberId } = req.params;
+      const requests = await storage.getWithdrawalRequestsByMember(memberId);
+      res.json(requests);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch member withdrawal requests" });
+    }
+  });
+
+  app.post("/api/withdrawal-requests", async (req, res) => {
+    try {
+      const validatedData = insertWithdrawalRequestSchema.parse(req.body);
+      
+      // Check if member has sufficient balance
+      const member = await storage.getAffiliateMemberById(validatedData.memberId);
+      if (!member) {
+        return res.status(404).json({ message: "Member not found" });
+      }
+
+      const currentBalance = parseFloat(member.tokenBalance || "0");
+      const requestAmount = parseFloat(validatedData.amount);
+
+      if (requestAmount > currentBalance) {
+        return res.status(400).json({ 
+          message: "Số dư không đủ để thực hiện giao dịch",
+          currentBalance,
+          requestAmount 
+        });
+      }
+
+      const request = await storage.createWithdrawalRequest(validatedData);
+      res.status(201).json(request);
+    } catch (error) {
+      console.error("Withdrawal request error:", error);
+      res.status(400).json({ message: "Invalid withdrawal request data" });
+    }
+  });
+
+  app.patch("/api/withdrawal-requests/:id/process", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { adminNote, status, processedBy } = req.body;
+
+      const request = await storage.processWithdrawalRequest(id, adminNote, status, processedBy);
+      
+      // If payment is completed, update member balance and create transaction history
+      if (status === 'paid') {
+        const member = await storage.getAffiliateMemberById(request.memberId);
+        if (member) {
+          const currentBalance = parseFloat(member.tokenBalance || "0");
+          const withdrawalAmount = parseFloat(request.amount);
+          const newBalance = currentBalance - withdrawalAmount;
+
+          // Update member balance
+          await storage.updateAffiliateMember(member.id, {
+            tokenBalance: newBalance.toString()
+          });
+
+          // Create transaction history record
+          await storage.createTransactionHistory({
+            memberId: request.memberId,
+            transactionType: 'withdrawal',
+            amount: (-withdrawalAmount).toString(),
+            description: `Rút tiền: ${adminNote || 'Đã thanh toán'}`,
+            balanceBefore: currentBalance.toString(),
+            balanceAfter: newBalance.toString(),
+            status: 'completed',
+            referenceId: `withdrawal_${request.id}`
+          });
+        }
+      }
+
+      res.json(request);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to process withdrawal request" });
+    }
+  });
+
+  // Transaction history endpoint
+  app.get("/api/transaction-history/:memberId", async (req, res) => {
+    try {
+      const { memberId } = req.params;
+      const transactions = await storage.getTransactionHistory(memberId);
+      res.json(transactions);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch transaction history" });
+    }
+  });
 
   // Chatbot API endpoint
   app.post("/api/chatbot", async (req, res) => {

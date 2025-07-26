@@ -1,4 +1,4 @@
-import { users, articles, testimonials, programs, activities, admissionForms, contactForms, chatMessages, notifications, admissionSteps, mediaCovers, socialMediaLinks, serviceRegistrations, affiliateMembers, affiliateTransactions, affiliateRewards, dexTrades, customerConversions, commissionSettings, commissionTransactions, transactionHistory, type User, type InsertUser, type Article, type InsertArticle, type Testimonial, type InsertTestimonial, type Program, type InsertProgram, type Activity, type InsertActivity, type AdmissionForm, type InsertAdmissionForm, type ContactForm, type InsertContactForm, type ChatMessage, type InsertChatMessage, type Notification, type InsertNotification, type AdmissionStep, type InsertAdmissionStep, type MediaCover, type InsertMediaCover, type SocialMediaLink, type InsertSocialMediaLink, type ServiceRegistration, type InsertServiceRegistration, type AffiliateMember, type InsertAffiliateMember, type AffiliateTransaction, type InsertAffiliateTransaction, type AffiliateReward, type InsertAffiliateReward, type DexTrade, type InsertDexTrade, type CustomerConversion, type InsertCustomerConversion, type CommissionSetting, type InsertCommissionSetting, type CommissionTransaction, type InsertCommissionTransaction, type TransactionHistory, type InsertTransactionHistory } from "@shared/schema";
+import { users, articles, testimonials, programs, activities, admissionForms, contactForms, chatMessages, notifications, admissionSteps, mediaCovers, socialMediaLinks, serviceRegistrations, affiliateMembers, affiliateTransactions, affiliateRewards, dexTrades, customerConversions, commissionSettings, commissionTransactions, transactionHistory, withdrawalRequests, type User, type InsertUser, type Article, type InsertArticle, type Testimonial, type InsertTestimonial, type Program, type InsertProgram, type Activity, type InsertActivity, type AdmissionForm, type InsertAdmissionForm, type ContactForm, type InsertContactForm, type ChatMessage, type InsertChatMessage, type Notification, type InsertNotification, type AdmissionStep, type InsertAdmissionStep, type MediaCover, type InsertMediaCover, type SocialMediaLink, type InsertSocialMediaLink, type ServiceRegistration, type InsertServiceRegistration, type AffiliateMember, type InsertAffiliateMember, type AffiliateTransaction, type InsertAffiliateTransaction, type AffiliateReward, type InsertAffiliateReward, type DexTrade, type InsertDexTrade, type CustomerConversion, type InsertCustomerConversion, type CommissionSetting, type InsertCommissionSetting, type CommissionTransaction, type InsertCommissionTransaction, type TransactionHistory, type InsertTransactionHistory, type WithdrawalRequest, type InsertWithdrawalRequest } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 
@@ -133,6 +133,18 @@ export interface IStorage {
   getCommissionTransactionsByRecipient(recipientId: string): Promise<CommissionTransaction[]>;
   createCommissionTransaction(transaction: InsertCommissionTransaction): Promise<CommissionTransaction>;
   updateCommissionTransaction(id: number, transaction: Partial<InsertCommissionTransaction>): Promise<CommissionTransaction>;
+
+  // Withdrawal request methods
+  getWithdrawalRequests(): Promise<WithdrawalRequest[]>;
+  getWithdrawalRequest(id: number): Promise<WithdrawalRequest | undefined>;
+  getWithdrawalRequestsByMember(memberId: string): Promise<WithdrawalRequest[]>;
+  createWithdrawalRequest(request: InsertWithdrawalRequest): Promise<WithdrawalRequest>;
+  updateWithdrawalRequest(id: number, request: Partial<InsertWithdrawalRequest>): Promise<WithdrawalRequest>;
+  processWithdrawalRequest(id: number, adminNote: string, status: string, processedBy: string): Promise<WithdrawalRequest>;
+
+  // Transaction history methods
+  getTransactionHistory(memberId: string): Promise<TransactionHistory[]>;
+  createTransactionHistory(transaction: InsertTransactionHistory): Promise<TransactionHistory>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -729,6 +741,72 @@ export class DatabaseStorage implements IStorage {
       .update(commissionTransactions)
       .set({ ...transactionData })
       .where(eq(commissionTransactions.id, id))
+      .returning();
+    return transaction;
+  }
+
+  // Withdrawal request methods
+  async getWithdrawalRequests(): Promise<WithdrawalRequest[]> {
+    return await db.select().from(withdrawalRequests).orderBy(desc(withdrawalRequests.requestedAt));
+  }
+
+  async getWithdrawalRequest(id: number): Promise<WithdrawalRequest | undefined> {
+    const [request] = await db.select().from(withdrawalRequests).where(eq(withdrawalRequests.id, id));
+    return request || undefined;
+  }
+
+  async getWithdrawalRequestsByMember(memberId: string): Promise<WithdrawalRequest[]> {
+    return await db.select().from(withdrawalRequests)
+      .where(eq(withdrawalRequests.memberId, memberId))
+      .orderBy(desc(withdrawalRequests.requestedAt));
+  }
+
+  async createWithdrawalRequest(requestData: InsertWithdrawalRequest): Promise<WithdrawalRequest> {
+    const [request] = await db
+      .insert(withdrawalRequests)
+      .values(requestData)
+      .returning();
+    return request;
+  }
+
+  async updateWithdrawalRequest(id: number, requestData: Partial<InsertWithdrawalRequest>): Promise<WithdrawalRequest> {
+    const [request] = await db
+      .update(withdrawalRequests)
+      .set(requestData)
+      .where(eq(withdrawalRequests.id, id))
+      .returning();
+    return request;
+  }
+
+  async processWithdrawalRequest(id: number, adminNote: string, status: string, processedBy: string): Promise<WithdrawalRequest> {
+    const processedAt = new Date();
+    const paidAt = status === 'paid' ? processedAt : null;
+    
+    const [request] = await db
+      .update(withdrawalRequests)
+      .set({ 
+        adminNote, 
+        status, 
+        processedBy, 
+        processedAt,
+        paidAt 
+      })
+      .where(eq(withdrawalRequests.id, id))
+      .returning();
+    return request;
+  }
+
+  // Transaction history methods
+  async getTransactionHistory(memberId: string): Promise<TransactionHistory[]> {
+    return await db.select().from(transactionHistory)
+      .where(eq(transactionHistory.memberId, memberId))
+      .orderBy(desc(transactionHistory.createdAt));
+  }
+
+  async createTransactionHistory(transactionData: InsertTransactionHistory): Promise<TransactionHistory> {
+    const [transaction] = await db
+      .insert(transactionHistory)
+      .values(transactionData)
       .returning();
     return transaction;
   }

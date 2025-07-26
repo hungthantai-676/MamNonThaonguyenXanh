@@ -1,10 +1,16 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { QrCode, UserCheck, Clock, Users, TrendingUp, Wallet, Star, Gift, ArrowDownLeft, ArrowUpRight, Phone, Mail, Eye, EyeOff } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { QrCode, UserCheck, Clock, Users, TrendingUp, Wallet, Star, Gift, ArrowDownLeft, ArrowUpRight, Phone, Mail, Eye, EyeOff, Banknote, History } from "lucide-react";
 import AffiliateTree from "@/components/affiliate-tree";
 
 // Member list component with enhanced features
@@ -434,6 +440,346 @@ const StatsOverview = () => {
   );
 };
 
+// Withdrawal Form Component
+const WithdrawalForm = ({ currentBalance, memberId }: { currentBalance: number, memberId: string }) => {
+  const [amount, setAmount] = useState("");
+  const [bankInfo, setBankInfo] = useState("");
+  const [requestNote, setRequestNote] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const createWithdrawalMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest("POST", "/api/withdrawal-requests", data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Yêu cầu rút tiền thành công",
+        description: "Yêu cầu của bạn đã được gửi và đang chờ xử lý",
+      });
+      setIsDialogOpen(false);
+      setAmount("");
+      setBankInfo("");
+      setRequestNote("");
+      queryClient.invalidateQueries({ queryKey: ["/api/withdrawal-requests"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Lỗi",
+        description: error.message || "Không thể gửi yêu cầu rút tiền",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const requestAmount = parseFloat(amount);
+    
+    if (requestAmount <= 0) {
+      toast({
+        title: "Lỗi",
+        description: "Số tiền rút phải lớn hơn 0",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (requestAmount > currentBalance) {
+      toast({
+        title: "Lỗi",
+        description: "Số dư không đủ để thực hiện giao dịch",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    createWithdrawalMutation.mutate({
+      memberId,
+      amount: requestAmount.toString(),
+      bankInfo,
+      requestNote,
+    });
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  return (
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <DialogTrigger asChild>
+        <Button className="w-full">
+          <Banknote className="w-4 h-4 mr-2" />
+          Yêu cầu rút tiền
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Yêu cầu rút tiền</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label>Số dư hiện tại</Label>
+            <div className="text-2xl font-bold text-green-600">
+              {formatCurrency(currentBalance)}
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="amount">Số tiền muốn rút *</Label>
+            <Input
+              id="amount"
+              type="number"
+              min="0"
+              max={currentBalance}
+              step="1000"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="Nhập số tiền"
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="bankInfo">Thông tin ngân hàng *</Label>
+            <Textarea
+              id="bankInfo"
+              value={bankInfo}
+              onChange={(e) => setBankInfo(e.target.value)}
+              placeholder="Ví dụ: Vietcombank - 1234567890 - Nguyễn Văn A"
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="requestNote">Ghi chú</Label>
+            <Textarea
+              id="requestNote"
+              value={requestNote}
+              onChange={(e) => setRequestNote(e.target.value)}
+              placeholder="Ghi chú thêm (tùy chọn)"
+            />
+          </div>
+
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={createWithdrawalMutation.isPending}
+          >
+            {createWithdrawalMutation.isPending ? "Đang gửi..." : "Gửi yêu cầu"}
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// Enhanced Transaction History Component with Withdrawal
+const EnhancedTransactionHistory = () => {
+  const [selectedMemberId, setSelectedMemberId] = useState<string>("");
+  
+  const { data: members = [] } = useQuery({
+    queryKey: ['/api/affiliate/members'],
+  });
+
+  const { data: transactionHistory = [], isLoading } = useQuery({
+    queryKey: ['/api/transaction-history', selectedMemberId],
+    enabled: !!selectedMemberId,
+  });
+
+  const { data: withdrawalRequests = [] } = useQuery({
+    queryKey: ['/api/withdrawal-requests/member', selectedMemberId],
+    enabled: !!selectedMemberId,
+  });
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const getStatusBadge = (status: string) => {
+    const statusMap = {
+      pending: { color: "bg-yellow-100 text-yellow-800", text: "Chờ xử lý" },
+      approved: { color: "bg-blue-100 text-blue-800", text: "Đã duyệt" },
+      paid: { color: "bg-green-100 text-green-800", text: "Đã thanh toán" },
+      rejected: { color: "bg-red-100 text-red-800", text: "Từ chối" },
+    };
+    const config = statusMap[status as keyof typeof statusMap] || statusMap.pending;
+    return (
+      <Badge className={config.color}>
+        {config.text}
+      </Badge>
+    );
+  };
+
+  const selectedMember = members.find((m: any) => m.memberId === selectedMemberId);
+  const currentBalance = selectedMember ? parseFloat(selectedMember.tokenBalance || "0") : 0;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold flex items-center gap-2">
+          <History className="w-5 h-5" />
+          Lịch sử giao dịch và rút tiền
+        </h2>
+      </div>
+
+      {/* Member Selection */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Chọn thành viên để xem lịch sử</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+            {members.map((member: any) => (
+              <Button
+                key={member.id}
+                variant={selectedMemberId === member.memberId ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedMemberId(member.memberId)}
+                className="justify-start"
+              >
+                {member.name}
+                <Badge variant="secondary" className="ml-2">
+                  {formatCurrency(parseFloat(member.tokenBalance || "0"))}
+                </Badge>
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Withdrawal Section */}
+      {selectedMemberId && currentBalance > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Rút tiền</span>
+              <div className="text-sm text-gray-500">
+                Số dư: {formatCurrency(currentBalance)}
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <WithdrawalForm currentBalance={currentBalance} memberId={selectedMemberId} />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Withdrawal Requests History */}
+      {selectedMemberId && withdrawalRequests.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Lịch sử yêu cầu rút tiền</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {withdrawalRequests.map((request: any) => (
+                <div key={request.id} className="border rounded-lg p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="font-medium">
+                      {formatCurrency(parseFloat(request.amount))}
+                    </div>
+                    {getStatusBadge(request.status)}
+                  </div>
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <div>Ngày yêu cầu: {new Date(request.requestedAt).toLocaleString('vi-VN')}</div>
+                    {request.bankInfo && <div>Ngân hàng: {request.bankInfo}</div>}
+                    {request.requestNote && <div>Ghi chú: {request.requestNote}</div>}
+                    {request.adminNote && <div>Phản hồi admin: {request.adminNote}</div>}
+                    {request.processedAt && (
+                      <div>Xử lý lúc: {new Date(request.processedAt).toLocaleString('vi-VN')}</div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Transaction History */}
+      {selectedMemberId && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Sao kê ví điện tử</span>
+              <div className="text-sm text-gray-500">
+                {selectedMember?.name}
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+              </div>
+            ) : transactionHistory.length === 0 ? (
+              <div className="text-center py-8">
+                <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Chưa có giao dịch</h3>
+                <p className="text-gray-500">Lịch sử giao dịch sẽ hiển thị tại đây khi có hoạt động</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="grid grid-cols-6 gap-4 text-sm font-medium text-gray-700 border-b pb-2">
+                  <div>Ngày</div>
+                  <div>Loại GD</div>
+                  <div>Mô tả</div>
+                  <div className="text-right">Số tiền</div>
+                  <div className="text-right">Số dư trước</div>
+                  <div className="text-right">Số dư sau</div>
+                </div>
+                {transactionHistory.map((transaction: any) => (
+                  <div 
+                    key={transaction.id} 
+                    className="grid grid-cols-6 gap-4 text-sm py-3 border-b border-gray-100 hover:bg-gray-50 rounded-lg px-2"
+                  >
+                    <div className="text-gray-600">
+                      {new Date(transaction.createdAt).toLocaleDateString('vi-VN')}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {transaction.transactionType === 'withdrawal' ? (
+                        <ArrowUpRight className="w-4 h-4 text-red-500" />
+                      ) : (
+                        <ArrowDownLeft className="w-4 h-4 text-green-500" />
+                      )}
+                      <span className="text-xs">
+                        {transaction.transactionType === 'withdrawal' ? 'Rút tiền' : 'Nhận thưởng'}
+                      </span>
+                    </div>
+                    <div className="text-gray-700">{transaction.description}</div>
+                    <div className={`text-right font-medium ${
+                      parseFloat(transaction.amount) > 0 ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {parseFloat(transaction.amount) > 0 ? '+' : ''}{formatCurrency(parseFloat(transaction.amount))}
+                    </div>
+                    <div className="text-right text-gray-600">
+                      {formatCurrency(parseFloat(transaction.balanceBefore))}
+                    </div>
+                    <div className="text-right font-medium">
+                      {formatCurrency(parseFloat(transaction.balanceAfter))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
 // Main component
 export default function AffiliateClean() {
   return (
@@ -492,7 +838,7 @@ export default function AffiliateClean() {
           </TabsContent>
 
           <TabsContent value="transactions" className="mt-6">
-            <TransactionHistory />
+            <EnhancedTransactionHistory />
           </TabsContent>
         </Tabs>
       </div>

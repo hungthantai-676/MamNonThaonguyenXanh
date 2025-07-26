@@ -244,6 +244,21 @@ export const commissionTransactions = pgTable("commission_transactions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Withdrawal Requests Table
+export const withdrawalRequests = pgTable("withdrawal_requests", {
+  id: serial("id").primaryKey(),
+  memberId: varchar("member_id", { length: 50 }).notNull(),
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
+  bankInfo: text("bank_info"), // JSON string for bank details
+  requestNote: text("request_note"),
+  adminNote: text("admin_note"),
+  status: varchar("status", { length: 20 }).default("pending"), // pending, approved, rejected, paid
+  requestedAt: timestamp("requested_at").defaultNow(),
+  processedAt: timestamp("processed_at"),
+  paidAt: timestamp("paid_at"),
+  processedBy: varchar("processed_by", { length: 50 }), // admin username
+});
+
 export const dexTrades = pgTable("dex_trades", {
   id: serial("id").primaryKey(),
   tradeId: varchar("trade_id", { length: 100 }).unique().notNull(),
@@ -353,6 +368,16 @@ export const insertCommissionTransactionSchema = createInsertSchema(commissionTr
   id: true,
   createdAt: true,
 });
+
+export const insertWithdrawalRequestSchema = createInsertSchema(withdrawalRequests).omit({
+  id: true,
+  requestedAt: true,
+  processedAt: true,
+  paidAt: true,
+});
+
+export type WithdrawalRequest = typeof withdrawalRequests.$inferSelect;
+export type InsertWithdrawalRequest = typeof withdrawalRequests.$inferInsert;
 
 // Type exports for customer conversion tracking
 export type CustomerConversion = typeof customerConversions.$inferSelect;
