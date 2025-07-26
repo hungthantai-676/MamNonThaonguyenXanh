@@ -42,6 +42,9 @@ $db = getDB();
                     <a class="nav-link text-white <?= $action == 'referrals' ? 'active bg-primary' : '' ?>" href="?action=referrals">
                         <i class="fas fa-handshake"></i> Giới thiệu
                     </a>
+                    <a class="nav-link text-white <?= $action == 'genealogy' ? 'active bg-primary' : '' ?>" href="?action=genealogy">
+                        <i class="fas fa-sitemap"></i> Cây Phả Hệ
+                    </a>
                     <a class="nav-link text-white <?= $action == 'conversions' ? 'active bg-primary' : '' ?>" href="?action=conversions">
                         <i class="fas fa-user-check"></i> Conversion
                     </a>
@@ -74,6 +77,9 @@ $db = getDB();
                         break;
                     case 'referrals':
                         include 'admin/affiliate_referrals.php';
+                        break;
+                    case 'genealogy':
+                        include 'admin/affiliate_genealogy.php';
                         break;
                     case 'conversions':
                         echo '<div class="alert alert-info">Trang quản lý conversion đang được phát triển...</div>';
