@@ -1,0 +1,563 @@
+/* Custom CSS for Mầm Non Thảo Nguyên Xanh */
+
+:root {
+    --primary-color: #4a90e2;
+    --secondary-color: #f39c12;
+    --success-color: #27ae60;
+    --danger-color: #e74c3c;
+    --warning-color: #f1c40f;
+    --info-color: #3498db;
+    --light-color: #f8f9fa;
+    --dark-color: #2c3e50;
+}
+
+/* Global Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+.hero {
+    background: linear-gradient(135deg, var(--primary-color), #2980b9);
+    min-height: 60vh;
+    position: relative;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.1);
+    z-index: 1;
+}
+
+.hero .container {
+    position: relative;
+    z-index: 2;
+}
+
+/* Feature Icons */
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+
+/* Cards */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+/* Buttons */
+.btn {
+    border-radius: 25px;
+    padding: 12px 30px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, var(--primary-color), #3498db);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(45deg, #3498db, var(--primary-color));
+    transform: translateY(-2px);
+}
+
+.btn-warning {
+    background: linear-gradient(45deg, var(--secondary-color), #e67e22);
+    border: none;
+    color: white;
+}
+
+.btn-warning:hover {
+    background: linear-gradient(45deg, #e67e22, var(--secondary-color));
+    transform: translateY(-2px);
+    color: white;
+}
+
+/* Navigation */
+.navbar-brand {
+    font-size: 1.3rem;
+}
+
+.nav-link {
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--secondary-color) !important;
+}
+
+/* Footer */
+footer {
+    background: linear-gradient(135deg, var(--dark-color), #34495e);
+}
+
+footer a {
+    transition: color 0.3s ease;
+}
+
+footer a:hover {
+    color: var(--secondary-color) !important;
+}
+
+/* Chatbot Styles */
+.chatbot-container {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    width: 350px;
+    height: 500px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chatbot-header {
+    background: linear-gradient(45deg, var(--primary-color), #3498db);
+    color: white;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+}
+
+.chatbot-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+}
+
+#chatbot-messages {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    min-height: 300px;
+}
+
+.chatbot-input {
+    display: flex;
+    gap: 10px;
+}
+
+#chatbot-input {
+    flex: 1;
+    border: 2px solid #e9ecef;
+    border-radius: 25px;
+    padding: 10px 15px;
+    outline: none;
+}
+
+#chatbot-input:focus {
+    border-color: var(--primary-color);
+}
+
+#chatbot-send {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+#chatbot-send:hover {
+    background: #3498db;
+    transform: scale(1.05);
+}
+
+.chatbot-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(45deg, var(--primary-color), #3498db);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 999;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.chatbot-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+/* Chat messages */
+.message {
+    margin-bottom: 10px;
+    padding: 10px 15px;
+    border-radius: 20px;
+    max-width: 80%;
+    animation: fadeIn 0.3s ease;
+}
+
+.message.user {
+    background: var(--primary-color);
+    color: white;
+    margin-left: auto;
+    text-align: right;
+}
+
+.message.bot {
+    background: #e9ecef;
+    color: #333;
+    margin-right: auto;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Admin Styles */
+.admin-header {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    color: white;
+    padding: 2rem 0;
+}
+
+.admin-sidebar {
+    background: #f8f9fa;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+}
+
+.admin-nav .nav-link {
+    color: #495057;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.admin-nav .nav-link:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.admin-nav .nav-link.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Form Styles */
+.form-control {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    padding: 12px 15px;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+}
+
+.form-select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    padding: 12px 15px;
+}
+
+/* Tables */
+.table {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.table thead th {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Affiliate specific styles */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress {
+    height: 8px;
+}
+
+.affiliate-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.affiliate-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.wallet-balance {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.referral-link {
+    font-family: 'Courier New', monospace;
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+}
+
+.qr-code-container {
+    max-width: 200px;
+    margin: 0 auto;
+}
+
+.status-badge {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+}
+
+.milestone-progress {
+    position: relative;
+}
+
+.milestone-progress::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #e9ecef;
+    z-index: 1;
+}
+
+.milestone-progress .progress-bar {
+    z-index: 2;
+    position: relative;
+}
+
+.conversion-status {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.conversion-status:hover {
+    transform: scale(1.05);
+}
+
+.affiliate-stats .card {
+    border-left: 4px solid transparent;
+}
+
+.affiliate-stats .card.border-success {
+    border-left-color: #28a745;
+}
+
+.affiliate-stats .card.border-warning {
+    border-left-color: #ffc107;
+}
+
+.affiliate-stats .card.border-info {
+    border-left-color: #17a2b8;
+}
+
+.affiliate-stats .card.border-primary {
+    border-left-color: #007bff;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .wallet-balance {
+        font-size: 1.5rem;
+    }
+    
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .affiliate-card {
+        margin-bottom: 1rem;
+    }
+    
+    .hero {
+        min-height: 50vh;
+        text-align: center;
+    }
+    
+    .hero h1 {
+        font-size: 2rem;
+    }
+    
+    .chatbot-container {
+        width: 90%;
+        right: 5%;
+        height: 400px;
+    }
+    
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero h1 {
+        font-size: 1.5rem;
+    }
+    
+    .hero .lead {
+        font-size: 1rem;
+    }
+    
+    .chatbot-container {
+        bottom: 80px;
+        height: 350px;
+    }
+}
+
+/* Loading Animation */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Success/Error Messages */
+.alert {
+    border-radius: 10px;
+    border: none;
+    padding: 15px 20px;
+    font-weight: 500;
+}
+
+.alert-success {
+    background: linear-gradient(45deg, #d4edda, #c3e6cb);
+    color: #155724;
+}
+
+.alert-danger {
+    background: linear-gradient(45deg, #f8d7da, #f5c6cb);
+    color: #721c24;
+}
+
+.alert-warning {
+    background: linear-gradient(45deg, #fff3cd, #ffeaa7);
+    color: #856404;
+}
+
+/* Badge Styles */
+.badge {
+    border-radius: 15px;
+    padding: 8px 12px;
+    font-weight: 500;
+}
+
+/* Image Styles */
+.img-thumbnail {
+    border-radius: 15px;
+    border: 3px solid #e9ecef;
+}
+
+/* Section Dividers */
+.section-divider {
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border: none;
+    margin: 3rem 0;
+}
+
+/* Hover Effects */
+.hover-lift {
+    transition: transform 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+}
+
+/* Background Patterns */
+.bg-pattern {
+    background-image: radial-gradient(circle, rgba(74, 144, 226, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #3498db;
+}
