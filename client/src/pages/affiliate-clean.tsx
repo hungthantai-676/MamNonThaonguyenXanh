@@ -10,8 +10,129 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { QrCode, UserCheck, Clock, Users, TrendingUp, Wallet, Star, Gift, ArrowDownLeft, ArrowUpRight, Phone, Mail, Eye, EyeOff, Banknote, History } from "lucide-react";
+import { QrCode, UserCheck, Clock, Users, TrendingUp, Wallet, Star, Gift, ArrowDownLeft, ArrowUpRight, Phone, Mail, Eye, EyeOff, Banknote, History, Scan } from "lucide-react";
 import AffiliateTree from "@/components/affiliate-tree";
+
+// QR Code Scanner Component
+const QRScanner = ({ member }: { member: any }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [qrValue, setQrValue] = useState("");
+  const { toast } = useToast();
+  
+  const generateQRCode = () => {
+    const qrData = {
+      memberId: member.memberId,
+      name: member.name,
+      phone: member.phone,
+      role: member.role,
+      referralCode: member.referralCode || `REF${member.memberId.slice(-6).toUpperCase()}`,
+      timestamp: Date.now()
+    };
+    return JSON.stringify(qrData);
+  };
+
+  const handleShowQR = () => {
+    const qrData = generateQRCode();
+    setQrValue(qrData);
+    setIsOpen(true);
+  };
+
+  const copyToClipboard = async () => {
+    const referralLink = `${window.location.origin}/affiliate-member?ref=${member.referralCode || `REF${member.memberId.slice(-6).toUpperCase()}`}`;
+    try {
+      await navigator.clipboard.writeText(referralLink);
+      toast({
+        title: "Đã sao chép",
+        description: "Link giới thiệu đã được sao chép vào clipboard",
+      });
+    } catch (err) {
+      toast({
+        title: "Lỗi",
+        description: "Không thể sao chép link",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={handleShowQR}
+        className="bg-green-50 hover:bg-green-100 border-green-200"
+      >
+        <QrCode className="w-4 h-4 mr-1" />
+        QR
+      </Button>
+      
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <QrCode className="w-5 h-5" />
+              QR Code - {member.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* QR Code Display Area */}
+            <div className="bg-white p-6 rounded-lg border-2 border-gray-200 flex flex-col items-center">
+              <div className="bg-gray-100 w-48 h-48 flex items-center justify-center rounded-lg mb-4">
+                <div className="text-center text-gray-600">
+                  <QrCode className="w-16 h-16 mx-auto mb-2" />
+                  <p className="text-sm font-medium">QR Code</p>
+                  <p className="text-xs">ID: {member.memberId}</p>
+                </div>
+              </div>
+              
+              <div className="text-center space-y-2">
+                <p className="font-semibold text-gray-800">{member.name}</p>
+                <p className="text-sm text-gray-600">{member.phone}</p>
+                <Badge variant={member.role === 'teacher' ? 'default' : 'secondary'}>
+                  {member.role === 'teacher' ? 'Giáo viên' : 'Phụ huynh'}
+                </Badge>
+              </div>
+            </div>
+
+            {/* Referral Info */}
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h4 className="font-medium text-blue-900 mb-2">Thông tin giới thiệu</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-blue-700">Mã giới thiệu:</span>
+                  <span className="font-mono bg-white px-2 py-1 rounded">
+                    {member.referralCode || `REF${member.memberId.slice(-6).toUpperCase()}`}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-blue-700">Số dư ví:</span>
+                  <span className="font-semibold text-green-600">
+                    {new Intl.NumberFormat('vi-VN', {
+                      style: 'currency',
+                      currency: 'VND',
+                      minimumFractionDigits: 0,
+                    }).format(parseFloat(member.tokenBalance || "0"))}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 gap-3">
+              <Button onClick={copyToClipboard} variant="outline">
+                <Phone className="w-4 h-4 mr-2" />
+                Sao chép link
+              </Button>
+              <Button onClick={() => setIsOpen(false)}>
+                Đóng
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
 
 // Member list component with enhanced features
 const MemberList = () => {
@@ -125,6 +246,11 @@ const MemberList = () => {
                   <span className="font-medium">
                     {formatCurrency(parseFloat(member.totalEarned || "0"))}
                   </span>
+                </div>
+                
+                {/* QR Code Button */}
+                <div className="mt-3 pt-2 border-t">
+                  <QRScanner member={member} />
                 </div>
               </div>
             </CardContent>
@@ -795,11 +921,14 @@ export default function AffiliateClean() {
               Tham gia mạng lưới giới thiệu học sinh và nhận thưởng hấp dẫn
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
+              <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 font-semibold">
                 <UserCheck className="w-5 h-5 mr-2" />
                 Đăng ký tham gia
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
+              <Button 
+                size="lg" 
+                className="bg-green-600 text-white hover:bg-green-700 border-2 border-green-500 font-semibold shadow-lg"
+              >
                 <QrCode className="w-5 h-5 mr-2" />
                 Xem QR Code
               </Button>
