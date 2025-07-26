@@ -732,6 +732,27 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return transaction;
   }
+
+  // Demo data management
+  async clearDemoData(): Promise<void> {
+    try {
+      // Delete demo transactions first (foreign key constraints)
+      await db.delete(transactionHistory).where(eq(transactionHistory.description, 'Demo transaction'));
+      await db.delete(commissionTransactions).where(eq(commissionTransactions.notes, 'Demo transaction'));
+      
+      // Delete demo customer conversions
+      await db.delete(customerConversions).where(eq(customerConversions.notes, 'Demo conversion'));
+      
+      // Delete demo affiliate members
+      await db.delete(affiliateMembers).where(eq(affiliateMembers.email, 'linh@demo.com'));
+      await db.delete(affiliateMembers).where(eq(affiliateMembers.email, 'minh@demo.com'));
+      await db.delete(affiliateMembers).where(eq(affiliateMembers.email, 'hoa@demo.com'));
+      
+    } catch (error) {
+      console.error('Error clearing demo data:', error);
+      throw error;
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();

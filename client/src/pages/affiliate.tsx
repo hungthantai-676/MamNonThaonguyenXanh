@@ -15,6 +15,190 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { QrCode, Wallet, TreePine, Users, DollarSign, Gift, Star, Crown, Shield, UserCheck, Phone, Mail, Calendar, DollarSign as Money, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle } from "lucide-react";
 
+// Demo Management Component
+const DemoManagement = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isCreating, setIsCreating] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
+
+  const createDemoData = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/demo/create-affiliate-data", {});
+      return response;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/affiliate/members"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/customer-conversions"] });
+      toast({
+        title: "Tạo dữ liệu demo thành công! 🎉",
+        description: `Đã tạo ${data.count} bản ghi demo để test các tính năng`,
+      });
+      setIsCreating(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Lỗi tạo dữ liệu demo",
+        description: error.message || "Không thể tạo dữ liệu demo",
+        variant: "destructive",
+      });
+      setIsCreating(false);
+    },
+  });
+
+  const clearDemoData = useMutation({
+    mutationFn: async () => {
+      await apiRequest("DELETE", "/api/demo/clear-affiliate-data", {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/affiliate/members"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/customer-conversions"] });
+      toast({
+        title: "Xóa dữ liệu demo thành công! 🗑️",
+        description: "Tất cả dữ liệu demo đã được xóa khỏi hệ thống",
+      });
+      setIsClearing(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Lỗi xóa dữ liệu demo",
+        description: error.message || "Không thể xóa dữ liệu demo",
+        variant: "destructive",
+      });
+      setIsClearing(false);
+    },
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold flex items-center gap-2">
+          <Shield className="w-5 h-5" />
+          Quản lý dữ liệu Demo Test
+        </h2>
+      </div>
+
+      <Card className="border-yellow-200 bg-yellow-50">
+        <CardHeader>
+          <CardTitle className="text-yellow-800 flex items-center gap-2">
+            <Shield className="w-5 h-5" />
+            Khu vực Test Demo
+          </CardTitle>
+          <CardDescription className="text-yellow-700">
+            Tạo dữ liệu demo để test tất cả tính năng affiliate. Có thể xóa bất kỳ lúc nào.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Create Demo Data */}
+            <Card className="border-green-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg text-green-700 flex items-center gap-2">
+                  <UserCheck className="w-5 h-5" />
+                  Tạo dữ liệu Demo
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="text-sm text-gray-600">
+                    <p className="font-medium mb-2">Sẽ tạo:</p>
+                    <ul className="space-y-1 text-xs">
+                      <li>• 3 thành viên affiliate (teacher + parent)</li>
+                      <li>• 2 khách hàng conversion demo</li>
+                      <li>• Dữ liệu ví và giao dịch mẫu</li>
+                      <li>• QR codes và wallet addresses</li>
+                    </ul>
+                  </div>
+                  <Button 
+                    onClick={() => {
+                      setIsCreating(true);
+                      createDemoData.mutate();
+                    }}
+                    disabled={isCreating || createDemoData.isPending}
+                    className="w-full bg-green-600 hover:bg-green-700"
+                  >
+                    {isCreating || createDemoData.isPending ? (
+                      <>
+                        <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                        Đang tạo...
+                      </>
+                    ) : (
+                      <>
+                        <UserCheck className="w-4 h-4 mr-2" />
+                        Tạo dữ liệu Demo
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Clear Demo Data */}
+            <Card className="border-red-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg text-red-700 flex items-center gap-2">
+                  <Shield className="w-5 h-5" />
+                  Xóa dữ liệu Demo
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="text-sm text-gray-600">
+                    <p className="font-medium mb-2">Sẽ xóa:</p>
+                    <ul className="space-y-1 text-xs">
+                      <li>• Tất cả thành viên demo</li>
+                      <li>• Khách hàng conversion demo</li>
+                      <li>• Giao dịch và lịch sử demo</li>
+                      <li>• Không ảnh hưởng dữ liệu thật</li>
+                    </ul>
+                  </div>
+                  <Button 
+                    onClick={() => {
+                      if (confirm('Bạn có chắc muốn xóa tất cả dữ liệu demo?')) {
+                        setIsClearing(true);
+                        clearDemoData.mutate();
+                      }
+                    }}
+                    disabled={isClearing || clearDemoData.isPending}
+                    variant="destructive"
+                    className="w-full"
+                  >
+                    {isClearing || clearDemoData.isPending ? (
+                      <>
+                        <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                        Đang xóa...
+                      </>
+                    ) : (
+                      <>
+                        <Shield className="w-4 h-4 mr-2" />
+                        Xóa tất cả Demo
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Demo Status Info */}
+          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <h4 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              Hướng dẫn test demo
+            </h4>
+            <div className="text-sm text-blue-700 space-y-1">
+              <p>1. Nhấn "Tạo dữ liệu Demo" để có dữ liệu test</p>
+              <p>2. Chuyển qua các tab để xem thành viên, giao dịch, thanh toán</p>
+              <p>3. Test tất cả tính năng với dữ liệu demo</p>
+              <p>4. Nhấn "Xóa tất cả Demo" khi hoàn tất test</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 // Transaction History Component
 const TransactionHistory = () => {
   const [selectedMemberId, setSelectedMemberId] = useState<string>("");
@@ -564,12 +748,13 @@ export default function AffiliatePage() {
         </div>
 
         <Tabs defaultValue="members" className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="members">Thành viên</TabsTrigger>
             <TabsTrigger value="teachers">Giáo viên</TabsTrigger>
             <TabsTrigger value="parents">Phụ huynh</TabsTrigger>
             <TabsTrigger value="customers">Khách hàng F1</TabsTrigger>
             <TabsTrigger value="history">Lịch sử GD</TabsTrigger>
+            <TabsTrigger value="demo">Demo Test</TabsTrigger>
             <TabsTrigger value="join">Tham gia</TabsTrigger>
           </TabsList>
 
@@ -1026,6 +1211,10 @@ export default function AffiliatePage() {
 
           <TabsContent value="history" className="space-y-4">
             <TransactionHistory />
+          </TabsContent>
+
+          <TabsContent value="demo" className="space-y-4">
+            <DemoManagement />
           </TabsContent>
 
           <TabsContent value="join" className="space-y-4">

@@ -976,6 +976,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Demo data management routes
+  app.post("/api/demo/create-affiliate-data", async (req, res) => {
+    try {
+      // Create demo members
+      const demoMembers = [
+        {
+          name: "Nguyễn Thị Linh",
+          email: "linh@demo.com",
+          phone: "0987654321",
+          memberType: "teacher",
+          tokenBalance: "5000000",
+          totalCommissions: "2000000",
+          level: 1,
+          qrCode: "DEMO_QR_001",
+          walletAddress: "0xDemo001",
+          categoryName: "Giáo viên chăm sóc",
+          isDemo: true
+        },
+        {
+          name: "Trần Văn Minh",
+          email: "minh@demo.com", 
+          phone: "0912345678",
+          memberType: "parent",
+          tokenBalance: "3000000",
+          totalCommissions: "1500000",
+          level: 1,
+          qrCode: "DEMO_QR_002",
+          walletAddress: "0xDemo002",
+          categoryName: "Đại sứ thương hiệu",
+          isDemo: true
+        },
+        {
+          name: "Lê Thị Hoa",
+          email: "hoa@demo.com",
+          phone: "0965432198",
+          memberType: "teacher", 
+          tokenBalance: "7500000",
+          totalCommissions: "4000000",
+          level: 2,
+          qrCode: "DEMO_QR_003",
+          walletAddress: "0xDemo003",
+          categoryName: "Giáo viên chăm sóc",
+          isDemo: true
+        }
+      ];
+
+      for (const member of demoMembers) {
+        await storage.createAffiliateMember(member);
+      }
+
+      // Create demo customer conversions
+      const demoConversions = [
+        {
+          agentId: "DEMO_QR_001",
+          customerName: "Phạm Thị Mai",
+          customerPhone: "0934567890",
+          customerEmail: "mai@customer.com",
+          registrationDate: new Date(),
+          tuitionAmount: "4000000",
+          status: "confirmed",
+          notes: "Khách hàng demo - đã xác nhận đăng ký",
+          isDemo: true
+        },
+        {
+          agentId: "DEMO_QR_002", 
+          customerName: "Hoàng Văn Đức",
+          customerPhone: "0945678901",
+          customerEmail: "duc@customer.com",
+          registrationDate: new Date(),
+          tuitionAmount: "4000000",
+          status: "pending",
+          notes: "Khách hàng demo - đang chờ xác nhận",
+          isDemo: true
+        }
+      ];
+
+      for (const conversion of demoConversions) {
+        await storage.createCustomerConversion(conversion);
+      }
+
+      res.json({ message: "Demo data created successfully", count: demoMembers.length + demoConversions.length });
+    } catch (error) {
+      console.error("Error creating demo data:", error);
+      res.status(500).json({ message: "Failed to create demo data" });
+    }
+  });
+
+  app.delete("/api/demo/clear-affiliate-data", async (req, res) => {
+    try {
+      await storage.clearDemoData();
+      res.json({ message: "Demo data cleared successfully" });
+    } catch (error) {
+      console.error("Error clearing demo data:", error);
+      res.status(500).json({ message: "Failed to clear demo data" });
+    }
+  });
+
   // Initialize commission settings on startup
   commissionService.initializeDefaultSettings().catch(console.error);
 
