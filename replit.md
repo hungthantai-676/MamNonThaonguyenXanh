@@ -250,6 +250,11 @@ Changelog:
 - July 26, 2025. IMPLEMENTED: Advanced tooltip guide system for admin affiliate management with interactive tour, contextual help, and comprehensive member hide/show functionality
 - July 26, 2025. CLEANED: Removed Demo Test tab from member affiliate page, kept genealogy tree system and all original functionality intact
 - July 26, 2025. FIXED: Admin dashboard authentication persistence (8-hour sessions), homepage save functionality, clear upload destinations with previews
+- July 26, 2025. RESOLVED: Fixed critical routing issues - Activities and Contact pages now display separate content correctly
+- July 26, 2025. ENHANCED: Main Menu Manager completely redesigned with simplified grid layout replacing complex nested tabs
+- July 26, 2025. IMPROVED: All admin panels now include "Quay lại Dashboard" navigation buttons for better user experience
+- July 26, 2025. IMPLEMENTED: Functional Edit buttons in Main Menu Manager that navigate to Dashboard with localStorage tracking for specific items
+- July 26, 2025. OPTIMIZED: Main Menu Manager now shows preview of all content (articles, programs, activities) with working edit/delete functionality
 ```
 
 ## User Preferences

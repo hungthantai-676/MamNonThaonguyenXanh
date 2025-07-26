@@ -14,9 +14,37 @@ export default function MainMenuSimple() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  // Quay lại dashboard
+  // Navigation functions
   const handleBackToDashboard = () => {
     setLocation('/admin/dashboard');
+  };
+
+  const handleEditArticle = (articleId: number) => {
+    // Navigate to dashboard and store the article to edit
+    localStorage.setItem('editArticleId', articleId.toString());
+    setLocation('/admin/dashboard');
+    toast({
+      title: "Chuyển đến Dashboard",
+      description: "Scroll xuống phần Bài viết để chỉnh sửa",
+    });
+  };
+
+  const handleEditProgram = (programId: number) => {
+    localStorage.setItem('editProgramId', programId.toString());
+    setLocation('/admin/dashboard'); 
+    toast({
+      title: "Chuyển đến Dashboard",
+      description: "Scroll xuống phần Chương trình để chỉnh sửa",
+    });
+  };
+
+  const handleEditActivity = (activityId: number) => {
+    localStorage.setItem('editActivityId', activityId.toString());
+    setLocation('/admin/dashboard');
+    toast({
+      title: "Chuyển đến Dashboard", 
+      description: "Scroll xuống phần Hoạt động để chỉnh sửa",
+    });
   };
 
   // Fetch data
@@ -52,11 +80,11 @@ export default function MainMenuSimple() {
             Quản lý Menu Chính Website
           </h1>
           <p className="text-gray-600">
-            Quản lý nội dung các trang chính của website
+            Quản lý nội dung các trang chính của website. Bấm Sửa để chỉnh sửa từng item.
           </p>
         </div>
 
-        {/* Grid layout thay vì tabs phức tạp */}
+        {/* Grid layout với chức năng sửa hoạt động */}
         <div className="grid gap-6">
           
           {/* Quản lý Bài viết */}
@@ -76,10 +104,15 @@ export default function MainMenuSimple() {
                     <h4 className="font-semibold text-sm">{article.title}</h4>
                     <p className="text-xs text-gray-600 mt-1">{article.category}</p>
                     <div className="flex gap-2 mt-3">
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleEditArticle(article.id)}
+                        title="Chỉnh sửa bài viết"
+                      >
                         <Edit className="w-3 h-3" />
                       </Button>
-                      <Button size="sm" variant="destructive">
+                      <Button size="sm" variant="destructive" title="Xóa bài viết">
                         <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
@@ -109,10 +142,15 @@ export default function MainMenuSimple() {
                       {program.tuition?.toLocaleString()} VND/tháng
                     </p>
                     <div className="flex gap-2 mt-3">
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleEditProgram(program.id)}
+                        title="Chỉnh sửa chương trình"
+                      >
                         <Edit className="w-3 h-3" />
                       </Button>
-                      <Button size="sm" variant="destructive">
+                      <Button size="sm" variant="destructive" title="Xóa chương trình">
                         <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
@@ -140,10 +178,15 @@ export default function MainMenuSimple() {
                     <p className="text-xs text-gray-600">{activity.date}</p>
                     <p className="text-xs text-blue-600 mt-1">📍 {activity.location}</p>
                     <div className="flex gap-2 mt-3">
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleEditActivity(activity.id)}
+                        title="Chỉnh sửa hoạt động"
+                      >
                         <Edit className="w-3 h-3" />
                       </Button>
-                      <Button size="sm" variant="destructive">
+                      <Button size="sm" variant="destructive" title="Xóa hoạt động">
                         <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
@@ -153,47 +196,93 @@ export default function MainMenuSimple() {
             </CardContent>
           </Card>
 
-          {/* Quick actions */}
+          {/* Menu Chính Website - Truy cập từng trang */}
           <Card>
             <CardHeader>
-              <CardTitle>⚡ Truy cập nhanh</CardTitle>
+              <CardTitle>🎛️ Quản lý từng trang Website</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Button 
                   variant="outline" 
                   className="h-24 flex flex-col items-center justify-center"
-                  onClick={() => setLocation('/admin/dashboard')}
+                  onClick={() => setLocation('/')}
+                  title="Xem trang chủ website"
                 >
                   <div className="text-2xl mb-2">🏠</div>
-                  <div className="text-sm">Trang chủ</div>
+                  <div className="text-sm">Xem Trang chủ</div>
                 </Button>
                 
                 <Button 
                   variant="outline" 
                   className="h-24 flex flex-col items-center justify-center"
-                  onClick={() => setLocation('/admin/dashboard')}
+                  onClick={() => setLocation('/about')}
+                  title="Xem trang giới thiệu"
                 >
                   <div className="text-2xl mb-2">ℹ️</div>
-                  <div className="text-sm">Giới thiệu</div>
+                  <div className="text-sm">Xem Giới thiệu</div>
                 </Button>
                 
                 <Button 
                   variant="outline" 
                   className="h-24 flex flex-col items-center justify-center"
-                  onClick={() => setLocation('/admin/dashboard')}
+                  onClick={() => setLocation('/admission')}
+                  title="Xem trang tuyển sinh"
                 >
                   <div className="text-2xl mb-2">🎓</div>
-                  <div className="text-sm">Tuyển sinh</div>
+                  <div className="text-sm">Xem Tuyển sinh</div>
                 </Button>
                 
                 <Button 
                   variant="outline" 
                   className="h-24 flex flex-col items-center justify-center"
-                  onClick={() => setLocation('/admin/dashboard')}
+                  onClick={() => setLocation('/contact')}
+                  title="Xem trang liên hệ"
                 >
                   <div className="text-2xl mb-2">📞</div>
-                  <div className="text-sm">Liên hệ</div>
+                  <div className="text-sm">Xem Liên hệ</div>
+                </Button>
+              </div>
+              
+              <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Button 
+                  variant="outline" 
+                  className="h-24 flex flex-col items-center justify-center"
+                  onClick={() => setLocation('/programs')}
+                  title="Xem trang chương trình"
+                >
+                  <div className="text-2xl mb-2">📚</div>
+                  <div className="text-sm">Xem Chương trình</div>
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="h-24 flex flex-col items-center justify-center"
+                  onClick={() => setLocation('/activities')}
+                  title="Xem trang hoạt động"
+                >
+                  <div className="text-2xl mb-2">🎯</div>
+                  <div className="text-sm">Xem Hoạt động</div>
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="h-24 flex flex-col items-center justify-center"
+                  onClick={() => setLocation('/news')}
+                  title="Xem trang tin tức"
+                >
+                  <div className="text-2xl mb-2">📰</div>
+                  <div className="text-sm">Xem Tin tức</div>
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="h-24 flex flex-col items-center justify-center"
+                  onClick={() => setLocation('/parents')}
+                  title="Xem thư viện phụ huynh"
+                >
+                  <div className="text-2xl mb-2">👨‍👩‍👧‍👦</div>
+                  <div className="text-sm">Thư viện PH</div>
                 </Button>
               </div>
             </CardContent>

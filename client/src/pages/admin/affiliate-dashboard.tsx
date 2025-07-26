@@ -18,11 +18,13 @@ import {
   Settings,
   TreePine,
   CreditCard,
-  UserPlus
+  UserPlus,
+  ArrowLeft
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 import AffiliateTree from "@/components/affiliate-tree";
 
 // Payment Management Component
