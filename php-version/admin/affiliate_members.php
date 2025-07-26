@@ -127,18 +127,34 @@ $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <h2><i class="fas fa-users text-primary"></i> Quản lý Thành viên</h2>
     <div>
         <?php if ($showHidden === '1'): ?>
-            <a href="?page=admin_affiliate&action=members" class="btn btn-outline-warning">
+            <a href="?page=admin_affiliate&action=members" 
+               class="btn btn-outline-warning"
+               data-bs-toggle="tooltip" 
+               data-bs-placement="bottom"
+               title="Chỉ hiển thị thành viên đang hoạt động. Ẩn các thành viên đã nghỉ việc hoặc không còn tham gia.">
                 <i class="fas fa-eye"></i> Chỉ xem thành viên hoạt động
             </a>
         <?php else: ?>
-            <a href="?page=admin_affiliate&action=members&show_hidden=1" class="btn btn-outline-secondary">
+            <a href="?page=admin_affiliate&action=members&show_hidden=1" 
+               class="btn btn-outline-secondary"
+               data-bs-toggle="tooltip" 
+               data-bs-placement="bottom"
+               title="Xem danh sách thành viên đã được ẩn (giáo viên cũ, phụ huynh không còn hoạt động). Chỉ admin có thể xem.">
                 <i class="fas fa-eye-slash"></i> Xem thành viên đã ẩn
             </a>
         <?php endif; ?>
-        <button class="btn btn-outline-primary" onclick="location.reload()">
+        <button class="btn btn-outline-primary" 
+                onclick="location.reload()"
+                data-bs-toggle="tooltip" 
+                data-bs-placement="bottom"
+                title="Tải lại trang để cập nhật dữ liệu mới nhất từ database">
             <i class="fas fa-sync-alt"></i> Làm mới
         </button>
-        <button class="btn btn-success" onclick="affiliateAdmin.exportData('members')">
+        <button class="btn btn-success" 
+                onclick="affiliateAdmin.exportData('members')"
+                data-bs-toggle="tooltip" 
+                data-bs-placement="bottom"
+                title="Xuất danh sách thành viên ra file Excel để lưu trữ hoặc in ấn">
             <i class="fas fa-download"></i> Xuất Excel
         </button>
     </div>
@@ -153,12 +169,20 @@ $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             <div class="col-md-3">
                 <label class="form-label">Tìm kiếm</label>
-                <input type="text" name="search" class="form-control" placeholder="Tên, SĐT, Email..." value="<?= htmlspecialchars($searchTerm) ?>">
+                <input type="text" name="search" class="form-control" 
+                       placeholder="Tên, SĐT, Email..." 
+                       value="<?= htmlspecialchars($searchTerm) ?>"
+                       data-bs-toggle="tooltip" 
+                       data-bs-placement="top"
+                       title="💡 Nhập tên, số điện thoại hoặc email để tìm kiếm nhanh thành viên">
             </div>
             
             <div class="col-md-2">
                 <label class="form-label">Trạng thái</label>
-                <select name="status" class="form-select">
+                <select name="status" class="form-select"
+                        data-bs-toggle="tooltip" 
+                        data-bs-placement="top"
+                        title="🔍 Lọc theo trạng thái: Hoạt động (có thể giới thiệu), Tạm ngưng (không hoạt động), Bị cấm (vi phạm)">
                     <option value="">Tất cả</option>
                     <option value="active" <?= $statusFilter === 'active' ? 'selected' : '' ?>>Hoạt động</option>
                     <option value="inactive" <?= $statusFilter === 'inactive' ? 'selected' : '' ?>>Tạm ngưng</option>
@@ -168,7 +192,10 @@ $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             <div class="col-md-2">
                 <label class="form-label">Vai trò</label>
-                <select name="role" class="form-select">
+                <select name="role" class="form-select"
+                        data-bs-toggle="tooltip" 
+                        data-bs-placement="top"
+                        title="👥 Lọc theo vai trò: Giáo viên (thưởng tiền mặt), Phụ huynh (thưởng điểm tích lũy)">
                     <option value="">Tất cả</option>
                     <option value="teacher" <?= $roleFilter === 'teacher' ? 'selected' : '' ?>>Giáo viên</option>
                     <option value="parent" <?= $roleFilter === 'parent' ? 'selected' : '' ?>>Phụ huynh</option>
@@ -178,10 +205,16 @@ $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="col-md-3">
                 <label class="form-label">&nbsp;</label>
                 <div>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary"
+                            data-bs-toggle="tooltip" 
+                            data-bs-placement="top"
+                            title="🔍 Áp dụng các bộ lọc đã chọn để tìm kiếm">
                         <i class="fas fa-search"></i> Tìm kiếm
                     </button>
-                    <a href="?page=admin_affiliate&action=members" class="btn btn-outline-secondary">
+                    <a href="?page=admin_affiliate&action=members" class="btn btn-outline-secondary"
+                       data-bs-toggle="tooltip" 
+                       data-bs-placement="top"
+                       title="🗑️ Xóa tất cả bộ lọc và hiển thị toàn bộ thành viên">
                         <i class="fas fa-times"></i> Xóa lọc
                     </a>
                 </div>
@@ -200,14 +233,46 @@ $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <table class="table table-hover mb-0">
                 <thead class="table-dark">
                     <tr>
-                        <th>ID</th>
-                        <th>Thông tin thành viên</th>
-                        <th>Vai trò</th>
-                        <th>Giới thiệu</th>
-                        <th>Ví tiền</th>
-                        <th>Trạng thái</th>
-                        <th>Ngày tham gia</th>
-                        <th>Hành động</th>
+                        <th data-bs-toggle="tooltip" 
+                            data-bs-placement="top" 
+                            title="📋 Mã định danh duy nhất của thành viên trong hệ thống">
+                            ID
+                        </th>
+                        <th data-bs-toggle="tooltip" 
+                            data-bs-placement="top" 
+                            title="👤 Tên, số điện thoại, email và thông tin ngân hàng (nếu có)">
+                            Thông tin thành viên
+                        </th>
+                        <th data-bs-toggle="tooltip" 
+                            data-bs-placement="top" 
+                            title="🎭 Giáo viên: nhận thưởng tiền mặt | Phụ huynh: nhận điểm tích lũy">
+                            Vai trò
+                        </th>
+                        <th data-bs-toggle="tooltip" 
+                            data-bs-placement="top" 
+                            title="📊 Tổng số lượt giới thiệu và số lượng thành công (đã xác nhận)">
+                            Giới thiệu
+                        </th>
+                        <th data-bs-toggle="tooltip" 
+                            data-bs-placement="top" 
+                            title="💰 Số dư hiện tại, tổng đã kiếm được và tổng đã rút">
+                            Ví tiền
+                        </th>
+                        <th data-bs-toggle="tooltip" 
+                            data-bs-placement="top" 
+                            title="🔴🟡🟢 Hoạt động: có thể giới thiệu | Tạm ngưng: không hoạt động | Bị cấm: vi phạm">
+                            Trạng thái
+                        </th>
+                        <th data-bs-toggle="tooltip" 
+                            data-bs-placement="top" 
+                            title="📅 Ngày tham gia chương trình affiliate">
+                            Ngày tham gia
+                        </th>
+                        <th data-bs-toggle="tooltip" 
+                            data-bs-placement="top" 
+                            title="⚙️ Các hành động quản lý: xem chi tiết, ẩn/hiện, thay đổi trạng thái">
+                            Hành động
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -283,20 +348,26 @@ $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <div class="btn-group-vertical btn-group-sm w-100" role="group">
                                         <button class="btn btn-outline-primary btn-sm" 
                                                 onclick="viewMemberDetails(<?= $member['id'] ?>)"
-                                                title="Xem chi tiết đầy đủ">
+                                                data-bs-toggle="tooltip" 
+                                                data-bs-placement="left"
+                                                title="Xem toàn bộ thông tin chi tiết: ví tiền, lịch sử giao dịch, danh sách giới thiệu, thống kê hiệu suất">
                                             <i class="fas fa-info-circle"></i> Chi tiết
                                         </button>
                                         
                                         <?php if ($member['is_hidden']): ?>
                                             <button class="btn btn-outline-success btn-sm"
                                                     onclick="toggleMemberVisibility(<?= $member['id'] ?>, false)"
-                                                    title="Hiện thành viên">
+                                                    data-bs-toggle="tooltip" 
+                                                    data-bs-placement="left"
+                                                    title="Hiện thành viên này trở lại danh sách chính. Dùng khi họ quay lại hoạt động hoặc làm việc lại">
                                                 <i class="fas fa-eye"></i> Hiện
                                             </button>
                                         <?php else: ?>
                                             <button class="btn btn-outline-secondary btn-sm"
                                                     onclick="toggleMemberVisibility(<?= $member['id'] ?>, true)"
-                                                    title="Ẩn thành viên">
+                                                    data-bs-toggle="tooltip" 
+                                                    data-bs-placement="left"
+                                                    title="Ẩn thành viên khỏi danh sách chính. Dùng cho giáo viên đã nghỉ việc hoặc phụ huynh không còn hoạt động. Dữ liệu vẫn được lưu trữ.">
                                                 <i class="fas fa-eye-slash"></i> Ẩn
                                             </button>
                                         <?php endif; ?>
@@ -304,13 +375,17 @@ $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <?php if ($member['status'] === 'active'): ?>
                                             <button class="btn btn-outline-warning btn-sm"
                                                     onclick="updateMemberStatus(<?= $member['id'] ?>, 'inactive')"
-                                                    title="Tạm ngưng">
+                                                    data-bs-toggle="tooltip" 
+                                                    data-bs-placement="left"
+                                                    title="Tạm ngưng hoạt động affiliate của thành viên này. Họ sẽ không thể tham gia giới thiệu mới">
                                                 <i class="fas fa-pause"></i> Ngưng
                                             </button>
                                         <?php else: ?>
                                             <button class="btn btn-outline-success btn-sm"
                                                     onclick="updateMemberStatus(<?= $member['id'] ?>, 'active')"
-                                                    title="Kích hoạt">
+                                                    data-bs-toggle="tooltip" 
+                                                    data-bs-placement="left"
+                                                    title="Kích hoạt lại hoạt động affiliate. Thành viên có thể tiếp tục giới thiệu và nhận thưởng">
                                                 <i class="fas fa-play"></i> Hoạt động
                                             </button>
                                         <?php endif; ?>
@@ -475,4 +550,158 @@ function showAlert(type, message) {
     
     setTimeout(() => alertDiv.remove(), 5000);
 }
+
+// Initialize tooltips and help system
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize all Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl, {
+            html: true,
+            delay: { "show": 300, "hide": 100 }
+        });
+    });
+    
+    // Show welcome guide on first visit
+    if (!localStorage.getItem('affiliate_members_guide_seen')) {
+        setTimeout(showWelcomeGuide, 1500);
+    }
+});
+
+function showWelcomeGuide() {
+    const guideModal = `
+        <div class="modal fade" id="welcomeGuideModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-graduation-cap"></i> Hướng dẫn Quản lý Thành viên Affiliate
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-search text-primary"></i> Tìm kiếm & Lọc</h6>
+                                <ul class="small">
+                                    <li><strong>Tìm kiếm:</strong> Nhập tên, SĐT hoặc email</li>
+                                    <li><strong>Lọc trạng thái:</strong> Hoạt động/Tạm ngưng/Bị cấm</li>
+                                    <li><strong>Lọc vai trò:</strong> Giáo viên/Phụ huynh</li>
+                                </ul>
+                                
+                                <h6><i class="fas fa-eye text-info"></i> Ẩn/Hiện Thành viên</h6>
+                                <ul class="small">
+                                    <li><strong>Ẩn:</strong> Dành cho giáo viên đã nghỉ việc hoặc phụ huynh không còn hoạt động</li>
+                                    <li><strong>Hiện:</strong> Khôi phục thành viên về danh sách chính</li>
+                                    <li><strong>Dữ liệu được bảo toàn:</strong> Không mất lịch sử giao dịch</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-cogs text-warning"></i> Quản lý Trạng thái</h6>
+                                <ul class="small">
+                                    <li><strong>Hoạt động:</strong> Có thể giới thiệu và nhận thưởng</li>
+                                    <li><strong>Tạm ngưng:</strong> Không thể tham gia affiliate</li>
+                                    <li><strong>Bị cấm:</strong> Vi phạm quy định</li>
+                                </ul>
+                                
+                                <h6><i class="fas fa-info-circle text-success"></i> Chi tiết Thành viên</h6>
+                                <ul class="small">
+                                    <li><strong>Ví tiền:</strong> Số dư, tổng kiếm được, đã rút</li>
+                                    <li><strong>Lịch sử:</strong> Giao dịch và giới thiệu</li>
+                                    <li><strong>Thống kê:</strong> Hiệu suất và milestone</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-3">
+                            <strong><i class="fas fa-lightbulb"></i> Mẹo:</strong> 
+                            Di chuột vào bất kỳ nút hoặc biểu tượng nào để xem hướng dẫn chi tiết!
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đã hiểu</button>
+                        <button type="button" class="btn btn-primary" onclick="startTooltipTour()">Xem tour hướng dẫn</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', guideModal);
+    const modal = new bootstrap.Modal(document.getElementById('welcomeGuideModal'));
+    modal.show();
+    
+    document.getElementById('welcomeGuideModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+        localStorage.setItem('affiliate_members_guide_seen', 'true');
+    });
+}
+
+function startTooltipTour() {
+    bootstrap.Modal.getInstance(document.getElementById('welcomeGuideModal')).hide();
+    
+    showAlert('info', 'Tour hướng dẫn bắt đầu! Quan sát các phần tử được tô sáng...');
+    
+    const tourSteps = [
+        { selector: '[name="search"]', message: '💡 Nhập tên, SĐT hoặc email để tìm kiếm nhanh' },
+        { selector: '[name="status"]', message: '🔍 Lọc theo trạng thái hoạt động của thành viên' },
+        { selector: '[name="role"]', message: '👥 Lọc theo vai trò: Giáo viên hoặc Phụ huynh' },
+        { selector: '.btn-outline-secondary', message: '👁️ Xem danh sách thành viên đã được ẩn' },
+        { selector: '.table th:nth-child(5)', message: '💰 Thông tin tài chính của từng thành viên' },
+        { selector: '.btn-outline-primary', message: 'ℹ️ Xem chi tiết đầy đủ của thành viên' }
+    ];
+    
+    let currentStep = 0;
+    
+    function showTourStep() {
+        if (currentStep >= tourSteps.length) {
+            showAlert('success', 'Tour hướng dẫn hoàn thành! Bạn có thể click vào nút ? để xem lại.');
+            return;
+        }
+        
+        const step = tourSteps[currentStep];
+        const element = document.querySelector(step.selector);
+        
+        if (element) {
+            // Highlight element
+            element.style.transition = 'all 0.3s ease';
+            element.style.boxShadow = '0 0 0 3px rgba(0,123,255,0.5)';
+            element.style.backgroundColor = 'rgba(0,123,255,0.1)';
+            element.style.zIndex = '1050';
+            
+            // Show tooltip message
+            showAlert('info', step.message);
+            
+            setTimeout(() => {
+                element.style.boxShadow = '';
+                element.style.backgroundColor = '';
+                element.style.zIndex = '';
+                currentStep++;
+                showTourStep();
+            }, 2500);
+        } else {
+            currentStep++;
+            showTourStep();
+        }
+    }
+    
+    setTimeout(showTourStep, 1000);
+}
+
+// Add help button functionality
+function showQuickHelp() {
+    showWelcomeGuide();
+}
 </script>
+
+<!-- Quick Help Button -->
+<div class="position-fixed" style="bottom: 20px; right: 20px; z-index: 1040;">
+    <button class="btn btn-info btn-sm rounded-circle" 
+            onclick="showQuickHelp()"
+            data-bs-toggle="tooltip" 
+            data-bs-placement="left"
+            title="📚 Hiển thị hướng dẫn sử dụng trang này"
+            style="width: 50px; height: 50px;">
+        <i class="fas fa-question"></i>
+    </button>
+</div>

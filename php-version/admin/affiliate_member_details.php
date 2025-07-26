@@ -370,17 +370,26 @@ $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
                     <?php endif; ?>
                     
                     <a href="?page=admin_affiliate&action=genealogy&search=<?= urlencode($member['phone']) ?>" 
-                       class="btn btn-outline-info">
+                       class="btn btn-outline-info"
+                       data-bs-toggle="tooltip" 
+                       data-bs-placement="top"
+                       title="🌳 Xem cây phả hệ đầy đủ của thành viên này, bao gồm người giới thiệu và những người được giới thiệu">
                         <i class="fas fa-sitemap"></i> Xem cây phả hệ
                     </a>
                     
                     <a href="?page=admin_affiliate&action=payments&member=<?= urlencode($member['name']) ?>" 
-                       class="btn btn-outline-warning">
+                       class="btn btn-outline-warning"
+                       data-bs-toggle="tooltip" 
+                       data-bs-placement="top"
+                       title="💳 Quản lý tất cả giao dịch thanh toán của thành viên: rút tiền, thưởng, điều chỉnh số dư">
                         <i class="fas fa-money-bill-wave"></i> Quản lý thanh toán
                     </a>
                     
                     <a href="?page=admin_affiliate&action=conversions&referrer=<?= $member['id'] ?>" 
-                       class="btn btn-outline-primary">
+                       class="btn btn-outline-primary"
+                       data-bs-toggle="tooltip" 
+                       data-bs-placement="top"
+                       title="✅ Xem và quản lý tất cả conversion (đăng ký thành công) từ các giới thiệu của thành viên này">
                         <i class="fas fa-check-circle"></i> Xem conversion
                     </a>
                 </div>

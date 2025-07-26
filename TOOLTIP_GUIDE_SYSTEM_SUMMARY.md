@@ -1,136 +1,159 @@
-# Hệ Thống Tooltip Guide - Tóm Tắt Hoàn Thiện
+# 📖 Hệ thống Hướng dẫn Tooltip cho Admin Affiliate
 
-## 📋 Tổng Quan
+## 🎯 Tổng quan tính năng
 
-Đã hoàn thiện hệ thống tooltip hướng dẫn tương tác cho chương trình affiliate của Mầm Non Thảo Nguyên Xanh. Hệ thống này giúp người dùng mới hiểu và sử dụng các tính năng một cách dễ dàng thông qua các gợi ý trực quan.
+Đã hoàn thành việc tích hợp hệ thống tooltip hướng dẫn toàn diện cho trang quản lý thành viên affiliate. Hệ thống này giúp admin dễ dàng sử dụng các tính năng phức tạp mà không cần đào tạo.
 
-## 🎯 Các Tính Năng Đã Triển Khai
+## 🔧 Các tính năng chính
 
-### 1. Hệ Thống CSS Tooltip
-- **File:** `php-version/assets/css/affiliate-guide.css`
-- **Tính năng:** 
-  - Tooltip xuất hiện khi hover
-  - Biến mất khi click
-  - Hiệu ứng animation mượt mà
-  - Responsive design cho mobile
-  - Gradient background đẹp mắt
+### 1. Tooltip tự động
+- **Kích hoạt**: Di chuột vào bất kỳ nút, input hoặc biểu tượng nào
+- **Hiển thị**: Hướng dẫn ngắn gọn với emoji và mô tả chi tiết
+- **Vị trí**: Tự động điều chỉnh (top, bottom, left, right)
 
-### 2. JavaScript Interactive System
-- **File:** `php-version/assets/js/affiliate-guide.js`
-- **Chức năng:**
-  - Quản lý tooltip dynamic
-  - Auto-hide khi click ra ngoài
-  - Positioning thông minh
-  - Event handling hiệu quả
+### 2. Modal hướng dẫn tổng quan
+- **Xuất hiện**: Tự động khi lần đầu truy cập trang
+- **Nội dung**: Giải thích đầy đủ về tất cả chức năng
+- **Chia nhóm**: Tìm kiếm & lọc, ẩn/hiện, quản lý trạng thái, chi tiết thành viên
 
-### 3. Guide Elements Implementation
+### 3. Tour hướng dẫn tương tác
+- **Kích hoạt**: Nhấn nút "Xem tour hướng dẫn" trong modal
+- **Hoạt động**: Tô sáng từng phần tử và hiển thị thông báo
+- **Thời gian**: 2.5 giây cho mỗi bước
 
-#### Trang Affiliate Dashboard (`affiliate_dashboard.php`):
-- ✅ **Link giới thiệu** - Hướng dẫn cách chia sẻ link
-- ✅ **QR Code** - Cách sử dụng QR để chia sẻ nhanh
-- ✅ **Download QR** - Tải về để chia sẻ offline
-- ✅ **Social Share** - Chia sẻ lên Facebook, Zalo
-- ✅ **Commission Rates** - Mức thưởng hiện tại
-- ✅ **Status Badges** - Ý nghĩa màu sắc trạng thái
-- ✅ **Referral History** - Lịch sử giới thiệu
-- ✅ **Progress Tracker** - Theo dõi tiến độ mốc thưởng
+### 4. Nút trợ giúp nhanh
+- **Vị trí**: Góc phải dưới màn hình (nút ? màu xanh)
+- **Chức năng**: Hiển thị lại modal hướng dẫn bất cứ lúc nào
+- **Tooltip**: Có hướng dẫn khi di chuột vào
 
-#### Trang Affiliate Register (`affiliate_register.php`):
-- ✅ **Commission Rates** - Giải thích mức thưởng
-- ✅ **Referral Form** - Hướng dẫn đăng ký
-- ✅ **Student Name** - Cách điền tên
-- ✅ **Parent Info** - Thông tin liên lạc
-- ✅ **Role Selection** - Chọn vai trò phù hợp
-- ✅ **Submit Button** - Gửi form đăng ký
+## 📍 Các tooltip đã tích hợp
 
-## 📝 Nội Dung Tooltip (Tiếng Việt)
+### Bộ lọc và tìm kiếm
+- **Tìm kiếm**: "💡 Nhập tên, số điện thoại hoặc email để tìm kiếm nhanh thành viên"
+- **Lọc trạng thái**: "🔍 Lọc theo trạng thái: Hoạt động (có thể giới thiệu), Tạm ngưng (không hoạt động), Bị cấm (vi phạm)"
+- **Lọc vai trò**: "👥 Lọc theo vai trò: Giáo viên (thưởng tiền mặt), Phụ huynh (thưởng điểm tích lũy)"
 
-### Dashboard Tooltips:
-1. **QR Code**: "QR Code cho chia sẻ nhanh"
-2. **Download QR**: "Tải QR về để chia sẻ offline"
-3. **Social Share**: "Chia sẻ link lên mạng xã hội"
-4. **Commission Rates**: "Mức thưởng hiện tại và bonus mốc"
-5. **Status Badges**: "Vàng: chờ xác nhận, Xanh: đã xác nhận, Xanh dương: đã thanh toán"
-6. **Referral History**: "Lịch sử học sinh đã giới thiệu"
-7. **Progress Tracker**: "Theo dõi tiến độ mốc thưởng"
+### Nút hành động chính
+- **Xem thành viên ẩn**: "Xem danh sách thành viên đã được ẩn (giáo viên cũ, phụ huynh không còn hoạt động)"
+- **Làm mới**: "Tải lại trang để cập nhật dữ liệu mới nhất từ database"
+- **Xuất Excel**: "Xuất danh sách thành viên ra file Excel để lưu trữ hoặc in ấn"
 
-### Registration Form Tooltips:
-1. **Referral Form**: "Form đăng ký chương trình affiliate"
-2. **Student Name**: "Họ tên đầy đủ của bạn"
-3. **Parent Info**: "Thông tin liên lạc của bạn"
-4. **Role Selection**: "Chọn vai trò để nhận thưởng phù hợp"
-5. **Submit**: "Gửi form để nhận thưởng"
+### Tiêu đề cột bảng
+- **ID**: "📋 Mã định danh duy nhất của thành viên trong hệ thống"
+- **Thông tin thành viên**: "👤 Tên, số điện thoại, email và thông tin ngân hàng (nếu có)"
+- **Vai trò**: "🎭 Giáo viên: nhận thưởng tiền mặt | Phụ huynh: nhận điểm tích lũy"
+- **Giới thiệu**: "📊 Tổng số lượt giới thiệu và số lượng thành công (đã xác nhận)"
+- **Ví tiền**: "💰 Số dư hiện tại, tổng đã kiếm được và tổng đã rút"
+- **Trạng thái**: "🔴🟡🟢 Hoạt động: có thể giới thiệu | Tạm ngưng: không hoạt động | Bị cấm: vi phạm"
 
-## 🎨 Thiết Kế Giao Diện
+### Nút hành động từng thành viên
+- **Chi tiết**: "Xem toàn bộ thông tin chi tiết: ví tiền, lịch sử giao dịch, danh sách giới thiệu, thống kê hiệu suất"
+- **Ẩn thành viên**: "Ẩn thành viên khỏi danh sách chính. Dùng cho giáo viên đã nghỉ việc hoặc phụ huynh không còn hoạt động. Dữ liệu vẫn được lưu trữ."
+- **Hiện thành viên**: "Hiện thành viên này trở lại danh sách chính. Dùng khi họ quay lại hoạt động hoặc làm việc lại"
+- **Tạm ngưng**: "Tạm ngưng hoạt động affiliate của thành viên này. Họ sẽ không thể tham gia giới thiệu mới"
+- **Kích hoạt**: "Kích hoạt lại hoạt động affiliate. Thành viên có thể tiếp tục giới thiệu và nhận thưởng"
 
-### Visual Elements:
-- **Màu chủ đạo:** Gradient xanh dương (#667eea → #764ba2)
-- **Icon:** Dấu chấm hỏi (?) nhỏ góc phải
-- **Animation:** Fade in/out mượt mà
-- **Position:** Dynamic positioning tránh bị che
-- **Mobile:** Responsive cho điện thoại
+### Trang chi tiết thành viên
+- **Xem cây phả hệ**: "🌳 Xem cây phả hệ đầy đủ của thành viên này, bao gồm người giới thiệu và những người được giới thiệu"
+- **Quản lý thanh toán**: "💳 Quản lý tất cả giao dịch thanh toán của thành viên: rút tiền, thưởng, điều chỉnh số dư"
+- **Xem conversion**: "✅ Xem và quản lý tất cả conversion (đăng ký thành công) từ các giới thiệu của thành viên này"
 
-### User Experience:
-- **Hover để hiện:** Tooltip xuất hiện khi đưa chuột vào
-- **Click để ẩn:** Tooltip biến mất khi click
-- **Auto-hide:** Tự động ẩn khi click ra ngoài
-- **Visual feedback:** Icon thay đổi khi hover
+## ⚙️ Cấu hình kỹ thuật
 
-## 🔧 Implementation Details
+### Bootstrap Tooltips
+- **Delay**: 300ms hiển thị, 100ms ẩn
+- **HTML**: Hỗ trợ emoji và format
+- **Trigger**: Hover (di chuột)
+- **Auto-placement**: Tự động điều chỉnh vị trí
 
-### Files Modified:
-1. `php-version/assets/css/affiliate-guide.css` - Enhanced với 15+ tooltip styles
-2. `php-version/pages/affiliate_dashboard.php` - Added 8 guide elements
-3. `php-version/pages/affiliate_register.php` - Added 5 guide elements
+### LocalStorage
+- **Key**: `affiliate_members_guide_seen`
+- **Mục đích**: Chỉ hiển thị modal hướng dẫn lần đầu
+- **Reset**: Xóa key để hiển thị lại modal
 
-### HTML Structure:
+### Tour Animation
+- **Highlight**: Box-shadow xanh và background nhạt
+- **Transition**: 0.3s ease
+- **Duration**: 2.5s mỗi bước
+- **Z-index**: 1050 để nổi bật
+
+## 🎨 Giao diện & UX
+
+### Màu sắc
+- **Info**: Xanh dương (#0dcaf0) cho tooltip thông tin
+- **Success**: Xanh lá (#198754) cho hành động tích cực
+- **Warning**: Vàng (#ffc107) cho cảnh báo
+- **Danger**: Đỏ (#dc3545) cho hành động nguy hiểm
+
+### Vị trí
+- **Modal**: Giữa màn hình
+- **Tooltip**: Tự động (ưu tiên top)
+- **Help button**: Góc phải dưới cố định
+- **Alert**: Góc phải trên
+
+## 🔄 Quy trình sử dụng
+
+### Lần đầu truy cập
+1. Trang tải → Modal hướng dẫn tự động hiện
+2. Admin đọc hướng dẫn tổng quan
+3. Chọn "Xem tour hướng dẫn" hoặc "Đã hiểu"
+4. Nếu chọn tour → Hệ thống tô sáng từng phần tử
+5. Modal đóng → Lưu trạng thái vào LocalStorage
+
+### Sử dụng hàng ngày
+1. Di chuột vào bất kỳ phần tử nào → Tooltip hiện
+2. Cần hỗ trợ → Click nút ? → Modal hiện lại
+3. Thao tác bình thường với hướng dẫn trực quan
+
+## 📱 Responsive Design
+
+### Desktop
+- Tooltips đầy đủ với text dài
+- Modal rộng với 2 cột
+- Help button kích thước lớn
+
+### Mobile
+- Tooltips rút gọn
+- Modal 1 cột
+- Help button nhỏ hơn nhưng vẫn dễ nhấn
+
+## 🛠️ Bảo trì & Mở rộng
+
+### Thêm tooltip mới
 ```html
-<element class="guide-element" data-guide="tooltip-key">
-  Content
-</element>
+<button data-bs-toggle="tooltip" 
+        data-bs-placement="top"
+        title="Mô tả hướng dẫn">
+    Nút mới
+</button>
 ```
 
-### CSS Pattern:
-```css
-.guide-element[data-guide="key"]:hover::after {
-    content: 'Tooltip text';
-    /* Styling */
-}
+### Cập nhật tour
+Thêm bước mới vào array `tourSteps` trong JavaScript:
+```javascript
+{ selector: '.new-element', message: '🆕 Hướng dẫn cho phần tử mới' }
 ```
 
-## 📊 Kết Quả Đạt Được
+### Reset hướng dẫn
+```javascript
+localStorage.removeItem('affiliate_members_guide_seen');
+```
 
-### User Experience Improvements:
-- ✅ **Onboarding tự động** cho người dùng mới
-- ✅ **Giảm confusion** về chức năng các nút
-- ✅ **Tăng engagement** với interface
-- ✅ **Hỗ trợ self-service** cho người dùng
+## ✅ Kết quả đạt được
 
-### Technical Achievements:
-- ✅ **Zero JavaScript dependency** - Pure CSS tooltips
-- ✅ **Lightweight implementation** - Minimal performance impact
-- ✅ **Mobile responsive** - Hoạt động trên mọi thiết bị
-- ✅ **Accessible design** - Tuân thủ accessibility standards
+1. **Giảm thời gian đào tạo**: Admin có thể tự học sử dụng
+2. **Tăng độ chính xác**: Ít sai sót khi thao tác
+3. **Cải thiện UX**: Giao diện thân thiện hơn
+4. **Tự phục vụ**: Không cần hỗ trợ liên tục
 
-## 📦 Backup Information
+## 🔮 Phát triển tiếp theo
 
-**File backup mới nhất:** `WEBSITE-BACKUP-TOOLTIP-SYSTEM-$(date).tar.gz`
-
-**Bao gồm:**
-- Toàn bộ hệ thống tooltip hoàn thiện
-- CSS animation và styling
-- JavaScript interaction handlers
-- Tất cả guide elements implemented
-- Mobile responsive design
-
-## 🚀 Next Steps (Optional)
-
-1. **Analytics tracking** - Theo dõi tooltip usage
-2. **A/B testing** - Test effectiveness của tooltips
-3. **Advanced tooltips** - Video tutorials nhúng
-4. **Multi-language** - Thêm ngôn ngữ khác
-5. **Admin customization** - Cho phép admin chỉnh sửa tooltips
+1. **Tooltip cho các trang khác**: Conversions, Payments, Genealogy
+2. **Video tutorials**: Nhúng video hướng dẫn trong modal
+3. **Contextual help**: Hướng dẫn theo ngữ cảnh cụ thể
+4. **Keyboard shortcuts**: Phím tắt với tooltip hướng dẫn
+5. **Multi-language**: Hỗ trợ tiếng Anh cho admin quốc tế
 
 ---
 
-**Ghi chú:** Hệ thống tooltip guide đã hoàn thiện và sẵn sàng đưa vào production. Người dùng mới sẽ có trải nghiệm onboarding tốt hơn và ít cần hỗ trợ hơn.
+*Hệ thống tooltip đã sẵn sàng và hoạt động ổn định. Admin có thể bắt đầu sử dụng ngay lập tức.*

@@ -247,6 +247,7 @@ Changelog:
 - July 26, 2025. CREATED: Comprehensive payment management admin panel with batch processing and detailed reporting features
 - July 26, 2025. FINALIZED: Complete admin affiliate system with 8 specialized modules (overview, conversions, members, payments, referrals, genealogy, transactions, settings)
 - July 26, 2025. PERFECTED: Admin dashboard now includes visual tree genealogy, detailed transaction history, configurable reward settings, and comprehensive filtering capabilities
+- July 26, 2025. IMPLEMENTED: Advanced tooltip guide system for admin affiliate management with interactive tour, contextual help, and comprehensive member hide/show functionality
 ```
 
 ## User Preferences
