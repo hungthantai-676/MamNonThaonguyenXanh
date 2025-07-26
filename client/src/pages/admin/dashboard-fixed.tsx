@@ -15,6 +15,9 @@ export default function AdminDashboardFixed() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // State for active tab - auto-switch based on localStorage
+  const [activeTab, setActiveTab] = useState("contact");
+
   // Check authentication with better session handling
   useEffect(() => {
     const checkAuth = () => {
@@ -34,6 +37,34 @@ export default function AdminDashboardFixed() {
 
     if (!checkAuth()) return;
 
+    // Check for edit section from Main Menu
+    const editSection = localStorage.getItem('editSection');
+    if (editSection) {
+      // Map sections to tabs
+      const sectionToTab: { [key: string]: string } = {
+        'homepage': 'homepage',
+        'about': 'about', 
+        'admission': 'admission',
+        'contact': 'contact',
+        'programs': 'programs',
+        'activities': 'activities',
+        'articles': 'articles',
+        'library': 'library'
+      };
+      
+      const targetTab = sectionToTab[editSection];
+      if (targetTab) {
+        setActiveTab(targetTab);
+        // Clear the localStorage item after using it
+        localStorage.removeItem('editSection');
+        
+        toast({
+          title: "Đã chuyển đến tab tương ứng",
+          description: `Tab '${editSection}' đã được mở để chỉnh sửa`,
+        });
+      }
+    }
+
     // Extend session on activity
     const extendSession = () => {
       localStorage.setItem("admin-login-time", Date.now().toString());
@@ -47,7 +78,7 @@ export default function AdminDashboardFixed() {
       window.removeEventListener("click", extendSession);
       window.removeEventListener("keypress", extendSession);
     };
-  }, [setLocation]);
+  }, [setLocation, toast]);
 
   // Homepage content state
   const [homepageContent, setHomepageContent] = useState({
@@ -204,7 +235,7 @@ export default function AdminDashboardFixed() {
         </div>
 
         {/* Main Tabs */}
-        <Tabs defaultValue="contact" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="contact">📞 Liên hệ</TabsTrigger>
             <TabsTrigger value="media">🖼️ Ảnh/Video</TabsTrigger>

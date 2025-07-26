@@ -196,94 +196,310 @@ export default function MainMenuSimple() {
             </CardContent>
           </Card>
 
-          {/* Menu Chính Website - Truy cập từng trang */}
+          {/* Admin Tools cho các trang chính */}
           <Card>
             <CardHeader>
-              <CardTitle>🎛️ Quản lý từng trang Website</CardTitle>
+              <CardTitle>🎛️ Admin Tools - Quản lý từng trang Website</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Button 
-                  variant="outline" 
-                  className="h-24 flex flex-col items-center justify-center"
-                  onClick={() => setLocation('/')}
-                  title="Xem trang chủ website"
-                >
-                  <div className="text-2xl mb-2">🏠</div>
-                  <div className="text-sm">Xem Trang chủ</div>
-                </Button>
+              <div className="space-y-6">
                 
-                <Button 
-                  variant="outline" 
-                  className="h-24 flex flex-col items-center justify-center"
-                  onClick={() => setLocation('/about')}
-                  title="Xem trang giới thiệu"
-                >
-                  <div className="text-2xl mb-2">ℹ️</div>
-                  <div className="text-sm">Xem Giới thiệu</div>
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="h-24 flex flex-col items-center justify-center"
-                  onClick={() => setLocation('/admission')}
-                  title="Xem trang tuyển sinh"
-                >
-                  <div className="text-2xl mb-2">🎓</div>
-                  <div className="text-sm">Xem Tuyển sinh</div>
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="h-24 flex flex-col items-center justify-center"
-                  onClick={() => setLocation('/contact')}
-                  title="Xem trang liên hệ"
-                >
-                  <div className="text-2xl mb-2">📞</div>
-                  <div className="text-sm">Xem Liên hệ</div>
-                </Button>
-              </div>
-              
-              <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Button 
-                  variant="outline" 
-                  className="h-24 flex flex-col items-center justify-center"
-                  onClick={() => setLocation('/programs')}
-                  title="Xem trang chương trình"
-                >
-                  <div className="text-2xl mb-2">📚</div>
-                  <div className="text-sm">Xem Chương trình</div>
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="h-24 flex flex-col items-center justify-center"
-                  onClick={() => setLocation('/activities')}
-                  title="Xem trang hoạt động"
-                >
-                  <div className="text-2xl mb-2">🎯</div>
-                  <div className="text-sm">Xem Hoạt động</div>
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="h-24 flex flex-col items-center justify-center"
-                  onClick={() => setLocation('/news')}
-                  title="Xem trang tin tức"
-                >
-                  <div className="text-2xl mb-2">📰</div>
-                  <div className="text-sm">Xem Tin tức</div>
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="h-24 flex flex-col items-center justify-center"
-                  onClick={() => setLocation('/parents')}
-                  title="Xem thư viện phụ huynh"
-                >
-                  <div className="text-2xl mb-2">👨‍👩‍👧‍👦</div>
-                  <div className="text-sm">Thư viện PH</div>
-                </Button>
+                {/* Trang chủ */}
+                <div className="border p-4 rounded-lg bg-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl">🏠</div>
+                      <div>
+                        <h4 className="font-semibold">Trang chủ</h4>
+                        <p className="text-sm text-gray-600">Hero section, features, testimonials</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          localStorage.setItem('editSection', 'homepage');
+                          setLocation('/admin/dashboard');
+                          toast({
+                            title: "Chuyển đến Dashboard",
+                            description: "Scroll xuống tab 'Trang chủ' để chỉnh sửa",
+                          });
+                        }}
+                      >
+                        <Edit className="w-3 h-3 mr-1" />
+                        Sửa
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="secondary"
+                        onClick={() => setLocation('/')}
+                      >
+                        Xem
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Giới thiệu */}
+                <div className="border p-4 rounded-lg bg-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl">ℹ️</div>
+                      <div>
+                        <h4 className="font-semibold">Giới thiệu</h4>
+                        <p className="text-sm text-gray-600">Lịch sử, sứ mệnh, tầm nhìn, đội ngũ</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          localStorage.setItem('editSection', 'about');
+                          setLocation('/admin/dashboard');
+                          toast({
+                            title: "Chuyển đến Dashboard",
+                            description: "Scroll xuống tab 'Giới thiệu' để chỉnh sửa",
+                          });
+                        }}
+                      >
+                        <Edit className="w-3 h-3 mr-1" />
+                        Sửa
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="secondary"
+                        onClick={() => setLocation('/about')}
+                      >
+                        Xem
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tuyển sinh */}
+                <div className="border p-4 rounded-lg bg-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl">🎓</div>
+                      <div>
+                        <h4 className="font-semibold">Tuyển sinh</h4>
+                        <p className="text-sm text-gray-600">Thông tin tuyển sinh, học phí, quy trình</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          localStorage.setItem('editSection', 'admission');
+                          setLocation('/admin/dashboard');
+                          toast({
+                            title: "Chuyển đến Dashboard",
+                            description: "Scroll xuống tab 'Tuyển sinh' để chỉnh sửa",
+                          });
+                        }}
+                      >
+                        <Edit className="w-3 h-3 mr-1" />
+                        Sửa
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="secondary"
+                        onClick={() => setLocation('/admission')}
+                      >
+                        Xem
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Liên hệ */}
+                <div className="border p-4 rounded-lg bg-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl">📞</div>
+                      <div>
+                        <h4 className="font-semibold">Liên hệ</h4>
+                        <p className="text-sm text-gray-600">Thông tin liên hệ, bản đồ, form liên hệ</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          localStorage.setItem('editSection', 'contact');
+                          setLocation('/admin/dashboard');
+                          toast({
+                            title: "Chuyển đến Dashboard",
+                            description: "Scroll xuống tab 'Liên hệ' để chỉnh sửa",
+                          });
+                        }}
+                      >
+                        <Edit className="w-3 h-3 mr-1" />
+                        Sửa
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="secondary"
+                        onClick={() => setLocation('/contact')}
+                      >
+                        Xem
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Chương trình */}
+                <div className="border p-4 rounded-lg bg-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl">📚</div>
+                      <div>
+                        <h4 className="font-semibold">Chương trình học</h4>
+                        <p className="text-sm text-gray-600">Chương trình theo độ tuổi, nội dung giảng dạy</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          localStorage.setItem('editSection', 'programs');
+                          setLocation('/admin/dashboard');
+                          toast({
+                            title: "Chuyển đến Dashboard",
+                            description: "Scroll xuống tab 'Chương trình' để chỉnh sửa",
+                          });
+                        }}
+                      >
+                        <Edit className="w-3 h-3 mr-1" />
+                        Sửa
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="secondary"
+                        onClick={() => setLocation('/programs')}
+                      >
+                        Xem
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Hoạt động */}
+                <div className="border p-4 rounded-lg bg-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl">🎯</div>
+                      <div>
+                        <h4 className="font-semibold">Hoạt động</h4>
+                        <p className="text-sm text-gray-600">Các hoạt động ngoại khóa, sự kiện đặc biệt</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          localStorage.setItem('editSection', 'activities');
+                          setLocation('/admin/dashboard');
+                          toast({
+                            title: "Chuyển đến Dashboard",
+                            description: "Scroll xuống tab 'Hoạt động' để chỉnh sửa",
+                          });
+                        }}
+                      >
+                        <Edit className="w-3 h-3 mr-1" />
+                        Sửa
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="secondary"
+                        onClick={() => setLocation('/activities')}
+                      >
+                        Xem
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tin tức */}
+                <div className="border p-4 rounded-lg bg-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl">📰</div>
+                      <div>
+                        <h4 className="font-semibold">Tin tức</h4>
+                        <p className="text-sm text-gray-600">Bài viết, thông báo, báo chí nói về trường</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          localStorage.setItem('editSection', 'articles');
+                          setLocation('/admin/dashboard');
+                          toast({
+                            title: "Chuyển đến Dashboard",
+                            description: "Scroll xuống tab 'Bài viết' để chỉnh sửa",
+                          });
+                        }}
+                      >
+                        <Edit className="w-3 h-3 mr-1" />
+                        Sửa
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="secondary"
+                        onClick={() => setLocation('/news')}
+                      >
+                        Xem
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Thư viện phụ huynh */}
+                <div className="border p-4 rounded-lg bg-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl">👨‍👩‍👧‍👦</div>
+                      <div>
+                        <h4 className="font-semibold">Thư viện phụ huynh</h4>
+                        <p className="text-sm text-gray-600">Tài liệu, hướng dẫn, tài nguyên cho phụ huynh</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          localStorage.setItem('editSection', 'library');
+                          setLocation('/admin/dashboard');
+                          toast({
+                            title: "Chuyển đến Dashboard",
+                            description: "Scroll xuống tab 'Thư viện' để chỉnh sửa",
+                          });
+                        }}
+                      >
+                        <Edit className="w-3 h-3 mr-1" />
+                        Sửa
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="secondary"
+                        onClick={() => setLocation('/parents')}
+                      >
+                        Xem
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </CardContent>
           </Card>
