@@ -1073,6 +1073,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Homepage content API endpoints
+  app.post("/api/homepage-content", async (req, res) => {
+    try {
+      // In a real app, save to database. For now, just return success
+      console.log("Homepage content saved:", req.body);
+      res.json({ message: "Homepage content saved successfully", data: req.body });
+    } catch (error) {
+      console.error("Error saving homepage content:", error);
+      res.status(500).json({ message: "Failed to save homepage content" });
+    }
+  });
+
+  app.post("/api/contact-info", async (req, res) => {
+    try {
+      // In a real app, save to database. For now, just return success
+      console.log("Contact info saved:", req.body);
+      res.json({ message: "Contact info saved successfully", data: req.body });
+    } catch (error) {
+      console.error("Error saving contact info:", error);
+      res.status(500).json({ message: "Failed to save contact info" });
+    }
+  });
+
   // Initialize commission settings on startup
   commissionService.initializeDefaultSettings().catch(console.error);
 

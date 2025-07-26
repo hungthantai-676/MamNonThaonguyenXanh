@@ -27,6 +27,7 @@ export default function AdminLogin() {
         description: "Chào mừng bạn đến với trang quản trị",
       });
       localStorage.setItem("admin-token", "authenticated");
+      localStorage.setItem("admin-login-time", Date.now().toString());
       setLocation("/admin/dashboard");
     } else {
       toast({
