@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { QrCode, Shield, UserCheck, Clock } from "lucide-react";
+import { QrCode, UserCheck, Clock, Users, TrendingUp, Wallet, Star, Gift, ArrowDownLeft, ArrowUpRight, Phone, Mail, Eye, EyeOff } from "lucide-react";
+import AffiliateTree from "@/components/affiliate-tree";
 
 // Demo Management Component
 const DemoManagement = () => {

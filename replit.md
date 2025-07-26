@@ -248,6 +248,8 @@ Changelog:
 - July 26, 2025. FINALIZED: Complete admin affiliate system with 8 specialized modules (overview, conversions, members, payments, referrals, genealogy, transactions, settings)
 - July 26, 2025. PERFECTED: Admin dashboard now includes visual tree genealogy, detailed transaction history, configurable reward settings, and comprehensive filtering capabilities
 - July 26, 2025. IMPLEMENTED: Advanced tooltip guide system for admin affiliate management with interactive tour, contextual help, and comprehensive member hide/show functionality
+- July 26, 2025. CLEANED: Removed Demo Test tab from member affiliate page, kept genealogy tree system and all original functionality intact
+- July 26, 2025. FIXED: Admin dashboard authentication persistence (8-hour sessions), homepage save functionality, clear upload destinations with previews
 ```
 
 ## User Preferences
