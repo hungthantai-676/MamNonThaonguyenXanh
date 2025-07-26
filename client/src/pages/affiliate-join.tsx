@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation, useRouter } from "wouter";
+import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,7 +29,7 @@ export default function AffiliateJoin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [location] = useLocation();
-  const [navigate] = useRouter();
+  // Navigation will be handled by redirect or back button
   const [referralId, setReferralId] = useState<string>("");
   const [sponsor, setSponsor] = useState<any>(null);
 
@@ -79,7 +79,7 @@ export default function AffiliateJoin() {
       });
       // Redirect to affiliate page after successful registration
       setTimeout(() => {
-        navigate("/affiliate");
+        window.location.href = "/affiliate";
       }, 2000);
     },
     onError: (error: any) => {
@@ -266,7 +266,7 @@ export default function AffiliateJoin() {
         </Card>
 
         <div className="mt-6 text-center">
-          <Button variant="outline" onClick={() => navigate("/affiliate")}>
+          <Button variant="outline" onClick={() => window.location.href = "/affiliate"}>
             Đã có tài khoản? Xem trang affiliate
           </Button>
         </div>
