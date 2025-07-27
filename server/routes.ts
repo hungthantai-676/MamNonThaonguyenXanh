@@ -1150,39 +1150,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Affiliate registration endpoint
-  app.post("/api/affiliate/register", (req, res) => {
+  app.post("/api/affiliate/register", async (req, res) => {
     try {
+      console.log("Registration request received:", req.body);
       const { name, email, phone, memberType } = req.body;
       
       if (!name || !email || !phone || !memberType) {
         return res.status(400).json({ message: "Thiếu thông tin bắt buộc" });
       }
 
-      // Generate member code
-      const prefix = memberType === "teacher" ? "TCH" : "PAR";
-      const number = String(Math.floor(Math.random() * 999) + 1).padStart(3, '0');
-      const memberCode = `${prefix}${number}`;
+      // Check if email already exists in database
+      try {
+        const existingMember = await storage.getAffiliateMemberByEmail(email);
+        if (existingMember) {
+          return res.status(400).json({ message: "Email đã được đăng ký. Vui lòng sử dụng email khác." });
+        }
+      } catch (dbError) {
+        console.log("Email check failed, proceeding with registration");
+      }
 
-      // Create new member (in real app, save to database)
-      const newMember = {
-        id: Date.now(),
+      // Generate unique member ID using UUID
+      const memberId = uuidv4();
+      
+      // Generate simple QR data (base64 encoded placeholder for now)
+      const qrData = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==`;
+      
+      // Generate simple wallet address
+      const walletAddress = `0x${Math.random().toString(16).substring(2, 42)}`;
+
+      // Create affiliate member data
+      const affiliateData = {
+        memberId,
         name,
         email,
         phone,
         memberType,
-        code: memberCode,
-        createdAt: new Date().toISOString(),
+        categoryName: memberType === "teacher" ? "Giáo viên" : "Đại sứ thương hiệu",
+        sponsorId: null,
+        qrCode: qrData,
+        referralLink: `http://localhost:5000/affiliate/join?ref=${memberId}`,
+        walletAddress,
+        privateKey: Buffer.from(`private-key-${memberId}`).toString('base64'),
+        tokenBalance: "1000.00000000",
         totalReferrals: 0,
-        totalCommission: 0
+        level: 1,
+        isActive: true
       };
 
-      res.json({
+      console.log("Creating affiliate member with data:", affiliateData);
+
+      // Save to database
+      const newMember = await storage.createAffiliateMember(affiliateData);
+      
+      console.log("Member created successfully:", newMember);
+
+      res.status(201).json({
         message: "Đăng ký thành công",
-        member: newMember,
-        token: memberCode
+        ...newMember,
+        token: memberId
       });
-    } catch (error) {
-      res.status(500).json({ message: "Lỗi đăng ký" });
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      res.status(500).json({ message: "Lỗi đăng ký: " + (error?.message || "Unknown error") });
     }
   });
 
