@@ -62,18 +62,35 @@ export default function AffiliateFixed() {
   // Registration mutation with proper error handling
   const registerMutation = useMutation({
     mutationFn: async (data: RegistrationFormData) => {
-      const response = await apiRequest("POST", "/api/affiliate/register", data);
-      return response.json();
+      try {
+        console.log("Sending registration data:", data);
+        const response = await apiRequest("POST", "/api/affiliate/register", data);
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log("Registration success:", result);
+        return result;
+      } catch (error: any) {
+        console.error("Registration error:", error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
-      // Store auth token
-      localStorage.setItem("affiliate-token", data.token || "authenticated");
+      console.log("Registration mutation success:", data);
+      
+      // Store auth token - use memberId from response
+      const token = data.memberId || data.token || "authenticated";
+      localStorage.setItem("affiliate-token", token);
       setIsAuthenticated(true);
       
       queryClient.invalidateQueries({ queryKey: ["/api/affiliate/members"] });
       toast({
-        title: "Đăng ký thành công! 🎉",
-        description: "Bạn đã trở thành thành viên affiliate. Chào mừng bạn!",
+        title: "Đăng ký thành công!",
+        description: `Chào mừng ${data.name}! Mã thành viên của bạn là: ${data.memberId || 'N/A'}`,
       });
       
       // Reset form
@@ -81,6 +98,7 @@ export default function AffiliateFixed() {
       setActiveTab("members");
     },
     onError: (error: any) => {
+      console.error("Registration mutation error:", error);
       toast({
         title: "Đăng ký thất bại",
         description: error.message || "Có lỗi xảy ra khi đăng ký. Vui lòng thử lại.",
@@ -92,20 +110,36 @@ export default function AffiliateFixed() {
   // Login with member code
   const loginMutation = useMutation({
     mutationFn: async (code: string) => {
-      const response = await apiRequest("POST", "/api/affiliate/login", { memberCode: code });
-      return response.json();
+      try {
+        console.log("Logging in with code:", code);
+        const response = await apiRequest("POST", "/api/affiliate/login", { memberCode: code });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log("Login success:", result);
+        return result;
+      } catch (error: any) {
+        console.error("Login error:", error);
+        throw error;
+      }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Login mutation success:", data);
       localStorage.setItem("affiliate-token", memberCode);
       setIsAuthenticated(true);
       queryClient.invalidateQueries({ queryKey: ["/api/affiliate/members"] });
       toast({
         title: "Đăng nhập thành công!",
-        description: "Chào mừng bạn quay lại hệ thống affiliate.",
+        description: `Chào mừng bạn quay lại hệ thống affiliate với mã ${memberCode}`,
       });
       setMemberCode("");
     },
     onError: (error: any) => {
+      console.error("Login mutation error:", error);
       toast({
         title: "Đăng nhập thất bại",
         description: error.message || "Mã thành viên không hợp lệ.",
@@ -115,6 +149,18 @@ export default function AffiliateFixed() {
   });
 
   const onSubmit = (data: RegistrationFormData) => {
+    console.log("Form submitted with data:", data);
+    
+    // Validate data before sending
+    if (!data.name || !data.email || !data.phone || !data.memberType) {
+      toast({
+        title: "Thiếu thông tin",
+        description: "Vui lòng điền đầy đủ thông tin bắt buộc.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     registerMutation.mutate(data);
   };
 
