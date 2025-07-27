@@ -1097,6 +1097,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Image upload endpoint
+  app.post("/api/upload-image", (req, res) => {
+    try {
+      const { type, url } = req.body;
+      
+      // In a real app, you would save to storage here
+      // For now, just return success
+      res.json({ 
+        message: "Image saved successfully",
+        type: type,
+        url: url
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to save image" });
+    }
+  });
+
+  // Affiliate registration endpoint
+  app.post("/api/affiliate/register", (req, res) => {
+    try {
+      const { name, email, phone, memberType } = req.body;
+      
+      if (!name || !email || !phone || !memberType) {
+        return res.status(400).json({ message: "Thiếu thông tin bắt buộc" });
+      }
+
+      // Generate member code
+      const prefix = memberType === "teacher" ? "TCH" : "PAR";
+      const number = String(Math.floor(Math.random() * 999) + 1).padStart(3, '0');
+      const memberCode = `${prefix}${number}`;
+
+      // Create new member (in real app, save to database)
+      const newMember = {
+        id: Date.now(),
+        name,
+        email,
+        phone,
+        memberType,
+        code: memberCode,
+        createdAt: new Date().toISOString(),
+        totalReferrals: 0,
+        totalCommission: 0
+      };
+
+      res.json({
+        message: "Đăng ký thành công",
+        member: newMember,
+        token: memberCode
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Lỗi đăng ký" });
+    }
+  });
+
+  // Affiliate login endpoint
+  app.post("/api/affiliate/login", (req, res) => {
+    try {
+      const { memberCode } = req.body;
+      
+      if (!memberCode) {
+        return res.status(400).json({ message: "Vui lòng nhập mã thành viên" });
+      }
+
+      // Check if member code is valid (in real app, check database)
+      if (memberCode.match(/^(TCH|PAR)\d{3}$/)) {
+        res.json({ 
+          message: "Đăng nhập thành công",
+          memberCode 
+        });
+      } else {
+        res.status(401).json({ message: "Mã thành viên không hợp lệ" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Lỗi đăng nhập" });
+    }
+  });
+
   // Initialize commission settings on startup
   commissionService.initializeDefaultSettings().catch(console.error);
 

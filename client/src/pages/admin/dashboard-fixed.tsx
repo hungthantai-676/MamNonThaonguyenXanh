@@ -263,6 +263,27 @@ export default function AdminDashboardFixed() {
     }
   });
 
+  // Save image mutation
+  const saveImageMutation = useMutation({
+    mutationFn: async (data: { type: string; url: string }) => {
+      const response = await apiRequest("POST", "/api/upload-image", data);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Lưu hình ảnh thành công!",
+        description: `${data.type} đã được cập nhật trên website`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Lỗi lưu hình ảnh",
+        description: "Không thể lưu hình ảnh. Vui lòng thử lại.",
+        variant: "destructive",
+      });
+    }
+  });
+
   // Create article mutation
   const createArticleMutation = useMutation({
     mutationFn: async (article: typeof newArticle) => {
@@ -441,7 +462,13 @@ export default function AdminDashboardFixed() {
                       if (file) handleFileUpload(file, 'logo');
                     }}
                   />
-                  <Button className="w-full">📤 Upload Logo</Button>
+                  <Button 
+                    onClick={() => saveImageMutation.mutate({ type: 'logo', url: logoPreview || '' })}
+                    disabled={saveImageMutation.isPending || !logoPreview}
+                    className="w-full"
+                  >
+                    {saveImageMutation.isPending ? "Đang lưu..." : "💾 Lưu Logo"}
+                  </Button>
                 </CardContent>
               </Card>
 
@@ -470,7 +497,13 @@ export default function AdminDashboardFixed() {
                       if (file) handleFileUpload(file, 'banner');
                     }}
                   />
-                  <Button className="w-full">📤 Upload Banner</Button>
+                  <Button 
+                    onClick={() => saveImageMutation.mutate({ type: 'banner', url: bannerPreview || '' })}
+                    disabled={saveImageMutation.isPending || !bannerPreview}
+                    className="w-full"
+                  >
+                    {saveImageMutation.isPending ? "Đang lưu..." : "💾 Lưu Banner"}
+                  </Button>
                 </CardContent>
               </Card>
 
@@ -499,7 +532,13 @@ export default function AdminDashboardFixed() {
                       if (file) handleFileUpload(file, 'video');
                     }}
                   />
-                  <Button className="w-full">📤 Upload Video</Button>
+                  <Button 
+                    onClick={() => saveImageMutation.mutate({ type: 'video', url: videoPreview || '' })}
+                    disabled={saveImageMutation.isPending || !videoPreview}
+                    className="w-full"
+                  >
+                    {saveImageMutation.isPending ? "Đang lưu..." : "💾 Lưu Video"}
+                  </Button>
                 </CardContent>
               </Card>
             </div>
