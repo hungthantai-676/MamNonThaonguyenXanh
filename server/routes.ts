@@ -1114,6 +1114,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get affiliate members
+  app.get("/api/affiliate/members", (req, res) => {
+    try {
+      // Mock data for demo - in real app, get from database
+      const mockMembers = [
+        {
+          id: 1,
+          name: "Nguyễn Thị Linh",
+          email: "linh@demo.com",
+          phone: "0987654321",
+          memberType: "teacher",
+          code: "TCH001",
+          createdAt: new Date().toISOString(),
+          totalReferrals: 3,
+          totalCommission: 6000000
+        },
+        {
+          id: 2,
+          name: "Trần Văn Minh", 
+          email: "minh@demo.com",
+          phone: "0912345678",
+          memberType: "parent",
+          code: "PAR001",
+          createdAt: new Date().toISOString(),
+          totalReferrals: 2,
+          totalCommission: 4000
+        }
+      ];
+      
+      res.json(mockMembers);
+    } catch (error) {
+      res.status(500).json({ message: "Lỗi lấy danh sách thành viên" });
+    }
+  });
+
   // Affiliate registration endpoint
   app.post("/api/affiliate/register", (req, res) => {
     try {

@@ -63,7 +63,7 @@ export default function AffiliateFixed() {
   const registerMutation = useMutation({
     mutationFn: async (data: RegistrationFormData) => {
       const response = await apiRequest("POST", "/api/affiliate/register", data);
-      return response;
+      return response.json();
     },
     onSuccess: (data) => {
       // Store auth token
@@ -93,7 +93,7 @@ export default function AffiliateFixed() {
   const loginMutation = useMutation({
     mutationFn: async (code: string) => {
       const response = await apiRequest("POST", "/api/affiliate/login", { memberCode: code });
-      return response;
+      return response.json();
     },
     onSuccess: () => {
       localStorage.setItem("affiliate-token", memberCode);
@@ -357,7 +357,7 @@ export default function AffiliateFixed() {
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{members?.length || 0}</div>
+                <div className="text-2xl font-bold">{Array.isArray(members) ? members.length : 0}</div>
                 <p className="text-xs text-muted-foreground">Trong hệ thống</p>
               </CardContent>
             </Card>
@@ -409,7 +409,7 @@ export default function AffiliateFixed() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {members?.map((member: any) => (
+                  {Array.isArray(members) && members.map((member: any) => (
                     <Card 
                       key={member.id} 
                       className={`transition-all duration-300 ${
@@ -474,7 +474,11 @@ export default function AffiliateFixed() {
                         </div>
                       </CardContent>
                     </Card>
-                  ))}
+                  )) || (
+                    <div className="col-span-full text-center py-8">
+                      <p className="text-gray-500">Chưa có thành viên nào</p>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
