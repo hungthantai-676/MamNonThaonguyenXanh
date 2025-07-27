@@ -755,9 +755,31 @@ export default function AdminDashboardFixed() {
 
               {/* Articles List */}
               <Card>
-                <CardHeader>
-                  <CardTitle>📰 Danh sách bài viết</CardTitle>
-                  <CardDescription>Quản lý các bài viết đã đăng</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <div>
+                    <CardTitle>📰 Danh sách bài viết</CardTitle>
+                    <CardDescription>Quản lý các bài viết đã đăng</CardDescription>
+                  </div>
+                  <Button 
+                    onClick={() => {
+                      setNewArticle({
+                        title: "",
+                        excerpt: "",
+                        content: "",
+                        category: "news",
+                        imageUrl: ""
+                      });
+                      setEditingArticleId(null);
+                      toast({
+                        title: "Sẵn sàng tạo bài viết mới",
+                        description: "Form tạo bài viết đã được làm mới",
+                      });
+                    }}
+                    variant="outline"
+                    size="sm"
+                  >
+                    ➕ Tạo bài viết mới
+                  </Button>
                 </CardHeader>
                 <CardContent>
                   {Array.isArray(articles) && articles.length > 0 ? (
@@ -992,9 +1014,24 @@ export default function AdminDashboardFixed() {
 
               {/* Library Files List */}
               <Card>
-                <CardHeader>
-                  <CardTitle>📂 Danh sách tài liệu</CardTitle>
-                  <CardDescription>Quản lý tài liệu trong thư viện phụ huynh</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <div>
+                    <CardTitle>📂 Danh sách tài liệu</CardTitle>
+                    <CardDescription>Quản lý tài liệu trong thư viện phụ huynh</CardDescription>
+                  </div>
+                  <Button 
+                    onClick={() => {
+                      setNewLibraryFile({ name: "", type: "PDF", description: "" });
+                      toast({
+                        title: "Sẵn sàng thêm tài liệu mới",
+                        description: "Form thêm tài liệu đã được làm mới",
+                      });
+                    }}
+                    variant="outline"
+                    size="sm"
+                  >
+                    ➕ Thêm tài liệu mới
+                  </Button>
                 </CardHeader>
                 <CardContent>
                   {libraryFiles.length > 0 ? (
@@ -1257,9 +1294,31 @@ export default function AdminDashboardFixed() {
 
               {/* Programs List */}
               <Card>
-                <CardHeader>
-                  <CardTitle>📚 Danh sách chương trình</CardTitle>
-                  <CardDescription>Quản lý các chương trình học hiện có</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <div>
+                    <CardTitle>📚 Danh sách chương trình</CardTitle>
+                    <CardDescription>Quản lý các chương trình học hiện có</CardDescription>
+                  </div>
+                  <Button 
+                    onClick={() => {
+                      setNewProgram({
+                        name: "",
+                        ageRange: "",
+                        description: "",
+                        tuition: 4000000,
+                        features: ""
+                      });
+                      setEditingProgramId(null);
+                      toast({
+                        title: "Sẵn sàng tạo chương trình mới",
+                        description: "Form tạo chương trình đã được làm mới",
+                      });
+                    }}
+                    variant="outline"
+                    size="sm"
+                  >
+                    ➕ Tạo chương trình mới
+                  </Button>
                 </CardHeader>
                 <CardContent>
                   {Array.isArray(programs) && programs.length > 0 ? (
@@ -1424,9 +1483,31 @@ export default function AdminDashboardFixed() {
 
               {/* Activities List */}
               <Card>
-                <CardHeader>
-                  <CardTitle>🎯 Danh sách hoạt động</CardTitle>
-                  <CardDescription>Quản lý các hoạt động hiện có</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <div>
+                    <CardTitle>🎯 Danh sách hoạt động</CardTitle>
+                    <CardDescription>Quản lý các hoạt động hiện có</CardDescription>
+                  </div>
+                  <Button 
+                    onClick={() => {
+                      setNewActivity({
+                        name: "",
+                        date: "",
+                        description: "",
+                        location: "",
+                        frequency: ""
+                      });
+                      setEditingActivityId(null);
+                      toast({
+                        title: "Sẵn sàng tạo hoạt động mới",
+                        description: "Form tạo hoạt động đã được làm mới",
+                      });
+                    }}
+                    variant="outline"
+                    size="sm"
+                  >
+                    ➕ Tạo hoạt động mới
+                  </Button>
                 </CardHeader>
                 <CardContent>
                   {Array.isArray(activities) && activities.length > 0 ? (

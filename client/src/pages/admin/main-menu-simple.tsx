@@ -92,9 +92,26 @@ export default function MainMenuSimple() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div>📰 Quản lý Tin tức & Bài viết</div>
-                <Button variant="outline" onClick={() => setLocation('/admin/dashboard')}>
-                  Chi tiết trong Dashboard
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      localStorage.setItem('editSection', 'articles');
+                      localStorage.removeItem('editArticleId'); // Clear any existing ID to create new
+                      setLocation('/admin/dashboard');
+                      toast({
+                        title: "Chuyển đến Dashboard",
+                        description: "Sẵn sàng tạo bài viết mới",
+                      });
+                    }}
+                  >
+                    ➕ Tạo bài viết mới
+                  </Button>
+                  <Button variant="outline" onClick={() => setLocation('/admin/dashboard')}>
+                    Chi tiết trong Dashboard
+                  </Button>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -148,9 +165,26 @@ export default function MainMenuSimple() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div>📚 Quản lý Chương trình học</div>
-                <Button variant="outline" onClick={() => setLocation('/admin/dashboard')}>
-                  Chi tiết trong Dashboard
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      localStorage.setItem('editSection', 'programs');
+                      localStorage.removeItem('editProgramId'); // Clear any existing ID to create new
+                      setLocation('/admin/dashboard');
+                      toast({
+                        title: "Chuyển đến Dashboard",
+                        description: "Sẵn sàng tạo chương trình mới",
+                      });
+                    }}
+                  >
+                    ➕ Tạo chương trình mới
+                  </Button>
+                  <Button variant="outline" onClick={() => setLocation('/admin/dashboard')}>
+                    Chi tiết trong Dashboard
+                  </Button>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -207,9 +241,26 @@ export default function MainMenuSimple() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div>🎯 Quản lý Hoạt động</div>
-                <Button variant="outline" onClick={() => setLocation('/admin/dashboard')}>
-                  Chi tiết trong Dashboard
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      localStorage.setItem('editSection', 'activities');
+                      localStorage.removeItem('editActivityId'); // Clear any existing ID to create new
+                      setLocation('/admin/dashboard');
+                      toast({
+                        title: "Chuyển đến Dashboard",
+                        description: "Sẵn sàng tạo hoạt động mới",
+                      });
+                    }}
+                  >
+                    ➕ Tạo hoạt động mới
+                  </Button>
+                  <Button variant="outline" onClick={() => setLocation('/admin/dashboard')}>
+                    Chi tiết trong Dashboard
+                  </Button>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
