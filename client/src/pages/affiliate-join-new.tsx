@@ -173,31 +173,31 @@ export default function AffiliateJoinNew() {
                   )}
                 />
 
-                {/* USERNAME FIELD - MOST VISIBLE */}
-                <FormField
-                  control={form.control}
-                  name="username"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-red-600 font-bold text-xl bg-red-100 p-2 rounded">
-                        🔴 TÊN ĐĂNG NHẬP (BẮT BUỘC)
-                      </FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Ví dụ: nguyenvana123" 
-                          className="border-4 border-red-500 focus:border-red-700 bg-red-50 h-12 text-lg"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                      <div className="bg-red-100 p-3 rounded border-l-4 border-red-500">
-                        <p className="text-sm text-red-700 font-bold">
-                          🚨 QUAN TRỌNG: Chỉ được dùng chữ cái, số và dấu gạch dưới (_). Tối thiểu 3 ký tự.
+                {/* USERNAME FIELD - SIMPLE BUT VISIBLE */}
+                <div className="bg-blue-50 border-2 border-blue-300 p-4 rounded-lg">
+                  <FormField
+                    control={form.control}
+                    name="username"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-blue-800 font-bold text-lg">
+                          Tên đăng nhập *
+                        </FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Nhập tên đăng nhập (ví dụ: nguyenvana123)" 
+                            className="border-2 border-blue-400 focus:border-blue-600 h-12 text-base font-medium"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                        <p className="text-sm text-blue-700 mt-1">
+                          Chỉ được dùng chữ cái, số và dấu gạch dưới (_)
                         </p>
-                      </div>
-                    </FormItem>
-                  )}
-                />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 {/* Email Field */}
                 <FormField
