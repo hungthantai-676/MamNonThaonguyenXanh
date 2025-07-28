@@ -17,6 +17,7 @@ import { Gift, Users, Star, Crown, Shield, UserPlus, QrCode } from "lucide-react
 
 const affiliateJoinSchema = z.object({
   name: z.string().min(1, "Tên không được để trống"),
+  username: z.string().min(3, "Tên đăng nhập phải có ít nhất 3 ký tự").regex(/^[a-zA-Z0-9_]+$/, "Tên đăng nhập chỉ được chứa chữ, số và dấu gạch dưới"),
   email: z.string().email("Email không hợp lệ"),
   phone: z.string().min(10, "Số điện thoại phải có ít nhất 10 số"),
   memberType: z.enum(["teacher", "parent"]),
@@ -39,6 +40,7 @@ export default function AffiliateJoin() {
     resolver: zodResolver(affiliateJoinSchema),
     defaultValues: {
       name: "",
+      username: "",
       email: "",
       phone: "",
       memberType: "parent",
@@ -116,10 +118,10 @@ export default function AffiliateJoin() {
                 </h3>
                 <div className="space-y-3">
                   <div>
-                    <Label className="text-sm font-medium text-gray-700">Mã thành viên (dùng để đăng nhập)</Label>
+                    <Label className="text-sm font-medium text-gray-700">Tên đăng nhập</Label>
                     <div className="flex gap-2">
                       <Input 
-                        value={registeredMember.memberId} 
+                        value={registeredMember.username} 
                         readOnly
                         className="font-mono text-sm bg-yellow-50 border-yellow-200"
                       />
@@ -127,14 +129,24 @@ export default function AffiliateJoin() {
                         variant="outline" 
                         size="sm"
                         onClick={() => {
-                          navigator.clipboard.writeText(registeredMember.memberId);
-                          toast({ title: "Đã sao chép mã thành viên!" });
+                          navigator.clipboard.writeText(registeredMember.username);
+                          toast({ title: "Đã sao chép tên đăng nhập!" });
                         }}
                       >
                         Sao chép
                       </Button>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">⚠️ Quan trọng: Lưu mã này để đăng nhập sau</p>
+                    <p className="text-xs text-gray-500 mt-1">⚠️ Quan trọng: Sử dụng tên này để đăng nhập</p>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Mã thành viên (ID hệ thống)</Label>
+                    <Input 
+                      value={registeredMember.memberId} 
+                      readOnly
+                      className="font-mono text-xs bg-gray-50 border-gray-200"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Mã định danh duy nhất trong hệ thống</p>
                   </div>
                   
                   <div>
@@ -170,7 +182,7 @@ export default function AffiliateJoin() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <Button 
                     onClick={() => {
-                      localStorage.setItem("affiliate-token", registeredMember.memberId);
+                      localStorage.setItem("affiliate-token", registeredMember.username);
                       window.location.href = "/affiliate/member";
                     }}
                     className="w-full"
@@ -190,8 +202,8 @@ export default function AffiliateJoin() {
               {/* Warning */}
               <div className="bg-red-50 p-4 rounded-lg border border-red-200">
                 <p className="text-sm text-red-700">
-                  ⚠️ <strong>Quan trọng</strong>: Hãy lưu lại mã thành viên ở trên. 
-                  Bạn sẽ cần mã này để đăng nhập và quản lý affiliate sau này!
+                  ⚠️ <strong>Quan trọng</strong>: Hãy lưu lại tên đăng nhập ở trên. 
+                  Bạn sẽ cần tên này để đăng nhập và quản lý affiliate sau này!
                 </p>
               </div>
             </CardContent>
@@ -258,6 +270,23 @@ export default function AffiliateJoin() {
                         <Input placeholder="Nhập họ và tên của bạn" {...field} />
                       </FormControl>
                       <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tên đăng nhập</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ví dụ: nguyenvana123" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                      <p className="text-xs text-gray-500">
+                        Chỉ được dùng chữ cái, số và dấu gạch dưới (_). Tối thiểu 3 ký tự.
+                      </p>
                     </FormItem>
                   )}
                 />

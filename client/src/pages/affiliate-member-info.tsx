@@ -32,7 +32,7 @@ export default function AffiliateMemberInfo() {
   useEffect(() => {
     if (members && memberCode) {
       const member = Array.isArray(members) 
-        ? members.find((m: any) => m.memberId === memberCode) 
+        ? members.find((m: any) => m.username === memberCode || m.memberId === memberCode) 
         : null;
       setCurrentMember(member);
     }
@@ -80,16 +80,16 @@ export default function AffiliateMemberInfo() {
           <Card>
             <CardHeader>
               <CardTitle>Đăng nhập thành viên</CardTitle>
-              <CardDescription>Nhập mã thành viên để xem thông tin QR Code và link giới thiệu</CardDescription>
+              <CardDescription>Nhập tên đăng nhập để xem thông tin QR Code và link giới thiệu</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="code">Mã thành viên</Label>
+                <Label htmlFor="code">Tên đăng nhập</Label>
                 <Input
                   id="code"
                   value={memberCode}
                   onChange={(e) => setMemberCode(e.target.value)}
-                  placeholder="Nhập mã thành viên (UUID)"
+                  placeholder="Nhập tên đăng nhập của bạn"
                 />
               </div>
               <Button 
@@ -126,7 +126,7 @@ export default function AffiliateMemberInfo() {
           <Card>
             <CardContent className="text-center py-8">
               <h2 className="text-xl font-semibold mb-2">Không tìm thấy thành viên</h2>
-              <p className="text-muted-foreground mb-4">Mã thành viên không hợp lệ hoặc không tồn tại</p>
+              <p className="text-muted-foreground mb-4">Tên đăng nhập không hợp lệ hoặc không tồn tại</p>
               <Button onClick={() => {
                 localStorage.removeItem("affiliate-token");
                 setMemberCode("");

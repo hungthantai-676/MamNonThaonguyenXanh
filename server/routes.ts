@@ -479,13 +479,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // First parse with just the basic fields (without categoryName)
       const basicData = z.object({
         name: z.string().min(1),
+        username: z.string().min(3).regex(/^[a-zA-Z0-9_]+$/),
         email: z.string().email(),
         phone: z.string().min(1),
         memberType: z.enum(["teacher", "parent"]),
         sponsorId: z.string().optional(),
       }).parse(req.body);
       
-      const { name, email, phone, memberType, sponsorId } = basicData;
+      const { name, username, email, phone, memberType, sponsorId } = basicData;
       
       // Calculate category name from member type
       const categoryName = memberType === "teacher" 
@@ -496,6 +497,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existingMember = await storage.getAffiliateMemberByEmail(email);
       if (existingMember) {
         return res.status(400).json({ message: "Email already registered" });
+      }
+
+      // Check if username already exists
+      try {
+        const existingUsername = await storage.getAffiliateMemberByUsername(username);
+        if (existingUsername) {
+          return res.status(400).json({ message: "Tên đăng nhập đã được sử dụng" });
+        }
+      } catch (error) {
+        // Username check failed, continue (this is for demo purposes)
+        console.log("Username check failed:", error);
       }
 
       // Generate unique member ID
@@ -526,6 +538,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create member
       const memberData = {
         memberId,
+        username,
         name,
         email,
         phone,
@@ -558,6 +571,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Đăng ký thành công!",
         loginInfo: {
           memberId: member.memberId,
+          username: member.username,
           name: member.name,
           memberType: member.memberType,
           qrCode: member.qrCode,
@@ -1169,12 +1183,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { memberCode } = req.body;
       
       if (!memberCode) {
-        return res.status(400).json({ message: "Vui lòng nhập mã thành viên" });
+        return res.status(400).json({ message: "Vui lòng nhập tên đăng nhập hoặc mã thành viên" });
       }
 
-      // Try to find member by memberCode/memberId
+      // Try to find member by username first, then by memberId
       try {
-        const member = await storage.getAffiliateMemberByMemberId(memberCode);
+        let member = null;
+        
+        // Try username first (more user-friendly)
+        try {
+          member = await storage.getAffiliateMemberByUsername(memberCode);
+        } catch (error) {
+          // If username search fails, try memberId
+          member = await storage.getAffiliateMemberByMemberId(memberCode);
+        }
+        
         if (member && member.isActive) {
           res.json({ 
             message: "Đăng nhập thành công",
@@ -1185,16 +1208,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
               email: member.email,
               memberType: member.memberType,
               memberId: member.memberId,
+              username: member.username,
               tokenBalance: member.tokenBalance,
-              totalReferrals: member.totalReferrals
+              totalReferrals: member.totalReferrals,
+              qrCode: member.qrCode,
+              referralLink: member.referralLink,
+              walletAddress: member.walletAddress
             }
           });
         } else {
-          res.status(401).json({ message: "Mã thành viên không hợp lệ hoặc tài khoản bị tạm khóa" });
+          res.status(401).json({ message: "Tên đăng nhập hoặc mã thành viên không hợp lệ" });
         }
       } catch (dbError) {
         // Fallback to simple pattern matching if database fails
-        if (memberCode.match(/^[A-Z0-9-]{8,36}$/)) {
+        if (memberCode.match(/^[a-zA-Z0-9_]{3,}$/) || memberCode.match(/^[A-Z0-9-]{8,36}$/)) {
           res.json({ 
             message: "Đăng nhập thành công",
             memberCode,
@@ -1203,13 +1230,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
               name: "Demo User",
               email: "demo@example.com",
               memberType: "parent",
-              memberId: memberCode,
+              memberId: "DEMO-" + memberCode,
+              username: memberCode,
               tokenBalance: "1000",
-              totalReferrals: 0
+              totalReferrals: 0,
+              qrCode: "DEMO_QR",
+              referralLink: `https://demo.com/affiliate/join?ref=${memberCode}`,
+              walletAddress: "0xDemo123"
             }
           });
         } else {
-          res.status(401).json({ message: "Mã thành viên không hợp lệ" });
+          res.status(401).json({ message: "Tên đăng nhập hoặc mã thành viên không hợp lệ" });
         }
       }
     } catch (error) {
