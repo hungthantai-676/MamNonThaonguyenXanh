@@ -54,7 +54,7 @@ function Router() {
           <Route path="/news" component={News} />
           <Route path="/news/:id" component={NewsDetail} />
           <Route path="/contact" component={Contact} />
-          <Route path="/affiliate" component={AffiliateFixed} />
+          <Route path="/affiliate" component={AffiliateRegisterSimple} />
           <Route path="/affiliate/join" component={DebugForm} />
           <Route path="/test-username-form" component={DebugForm} />
           <Route path="/new-affiliate-form" component={ForceNewForm} />
