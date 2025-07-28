@@ -16,6 +16,7 @@ export default function AffiliateRegisterSimple() {
     email: "",
     phone: "",
     password: "",
+    confirmPassword: "",
     memberType: "parent"
   });
   const [showSuccess, setShowSuccess] = useState(false);
@@ -33,18 +34,42 @@ export default function AffiliateRegisterSimple() {
       const response = await apiRequest("POST", "/api/affiliate/register", data);
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log('🟢 Registration success:', data);
-      setShowSuccess(true);
       toast({
         title: "Đăng ký thành công!",
-        description: "Đang chuyển vào trang thành viên...",
+        description: "Đang tự động đăng nhập...",
       });
       
-      // Auto redirect to member page after 2 seconds
-      setTimeout(() => {
-        setLocation("/affiliate/member");
-      }, 2000);
+      // Auto-login after successful registration
+      try {
+        const loginResponse = await apiRequest("POST", "/api/affiliate/login", {
+          username: formData.username,
+          password: formData.password
+        });
+        const loginData = await loginResponse.json();
+        
+        if (loginData.success) {
+          // Store user data in localStorage
+          localStorage.setItem('affiliate-token', loginData.token || "logged-in");
+          localStorage.setItem('affiliate-user', JSON.stringify(loginData.user));
+          
+          toast({
+            title: "Đăng nhập thành công!",
+            description: "Chuyển đến trang thành viên...",
+          });
+          
+          // Redirect to member page
+          setTimeout(() => {
+            setLocation("/affiliate/member");
+          }, 1000);
+        } else {
+          setShowSuccess(true);
+        }
+      } catch (loginError) {
+        console.error('Auto-login failed:', loginError);
+        setShowSuccess(true);
+      }
     },
     onError: (error) => {
       console.error('🔴 Registration error:', error);
@@ -94,10 +119,10 @@ export default function AffiliateRegisterSimple() {
     console.log('🟢 Form submitted with username:', formData.username);
     
     // Basic validation
-    if (!formData.name || !formData.username || !formData.email || !formData.phone || !formData.password) {
+    if (!formData.name || !formData.username || !formData.email || !formData.phone || !formData.password || !formData.confirmPassword) {
       toast({
         title: "Lỗi",
-        description: "Vui lòng điền đầy đủ thông tin bao gồm mật khẩu",
+        description: "Vui lòng điền đầy đủ thông tin",
         variant: "destructive",
       });
       return;
@@ -121,16 +146,36 @@ export default function AffiliateRegisterSimple() {
       return;
     }
 
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Lỗi",
+        description: "Mật khẩu xác nhận không khớp",
+        variant: "destructive",
+      });
+      return;
+    }
+
     registerMutation.mutate(formData);
   };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Only validate when form is submitted, not on each keystroke
     if (!loginData.username || !loginData.password) {
       toast({
         title: "Lỗi",
         description: "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Additional validation - only check if password is too short on submit
+    if (loginData.password.length < 6) {
+      toast({
+        title: "Lỗi",
+        description: "Mật khẩu phải có ít nhất 6 ký tự",
         variant: "destructive",
       });
       return;
@@ -252,6 +297,17 @@ export default function AffiliateRegisterSimple() {
                   value={formData.password}
                   onChange={(e) => handleChange("password", e.target.value)}
                   placeholder="Nhập mật khẩu (ít nhất 6 ký tự)"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Xác nhận mật khẩu *</label>
+                <Input
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={(e) => handleChange("confirmPassword", e.target.value)}
+                  placeholder="Nhập lại mật khẩu"
                   required
                 />
               </div>

@@ -29,6 +29,7 @@ import AffiliateDashboard from "@/pages/admin/affiliate-dashboard";
 import AffiliateAdmin from "@/pages/admin/affiliate-admin";
 import AffiliateTest from "@/pages/affiliate-test";
 import AffiliateMemberInfo from "@/pages/affiliate-member-info";
+import AffiliateMember from "@/pages/affiliate-member";
 import ContentManagement from "@/pages/admin/content-management";
 import FullContentManager from "@/pages/admin/full-content-manager";
 import HomepageStructureManager from "@/pages/admin/homepage-structure-manager";
@@ -61,7 +62,7 @@ function Router() {
           <Route path="/affiliate/register" component={AffiliateRegisterSimple} />
           <Route path="/affiliate/join-old" component={AffiliateJoin} />
           <Route path="/affiliate/test" component={AffiliateTest} />
-          <Route path="/affiliate/member" component={AffiliateMemberInfo} />
+          <Route path="/affiliate/member" component={AffiliateMember} />
           <Route path="/admin-access" component={AdminAccess} />
           <Route path="/admin-quick" component={AdminQuick} />
           <Route path="/admin/login" component={AdminLogin} />
