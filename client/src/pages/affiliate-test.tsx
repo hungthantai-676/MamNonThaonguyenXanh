@@ -155,32 +155,60 @@ export default function AffiliateTest() {
           </Card>
         </div>
 
-        {/* Quick Actions */}
+        {/* Member Code Info */}
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
+            <CardTitle>📋 Thông tin về Mã thành viên</CardTitle>
+            <CardDescription>Cách thức tạo và sử dụng mã thành viên affiliate</CardDescription>
           </CardHeader>
-          <CardContent className="flex gap-4">
-            <Button 
-              onClick={() => setRegData({...regData, email: "user" + Date.now() + "@example.com"})}
-              variant="outline"
-            >
-              🔄 Generate New Email
-            </Button>
+          <CardContent className="space-y-4">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h3 className="font-semibold mb-2">🔑 Mã thành viên được tạo như thế nào?</h3>
+              <ul className="space-y-2 text-sm">
+                <li>• <strong>Tự động tạo</strong>: Khi đăng ký thành công, hệ thống tự động tạo mã UUID duy nhất</li>
+                <li>• <strong>Ví dụ</strong>: c9bfc215-8a0a-43ae-9317-2fdf383aca31</li>
+                <li>• <strong>Bảo mật</strong>: Mỗi mã chỉ thuộc về 1 thành viên và không thể trùng lặp</li>
+              </ul>
+            </div>
             
-            <Button 
-              onClick={() => window.open("/affiliate", "_blank")}
-              variant="outline"
-            >
-              🌐 Open Affiliate Page
-            </Button>
-            
-            <Button 
-              onClick={() => window.open("/admin/affiliate", "_blank")}
-              variant="outline"
-            >
-              👑 Open Admin Affiliate
-            </Button>
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h3 className="font-semibold mb-2">📱 QR Code và Link giới thiệu</h3>
+              <ul className="space-y-2 text-sm">
+                <li>• <strong>QR Code</strong>: Tự động tạo khi đăng ký, chứa link giới thiệu</li>
+                <li>• <strong>Link F2/F3</strong>: /affiliate/join?ref=[MÃ_THÀNH_VIÊN]</li>
+                <li>• <strong>Sử dụng</strong>: Gửi QR hoặc link cho người khác để họ đăng ký dưới bạn</li>
+              </ul>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Button 
+                onClick={() => setRegData({...regData, email: "user" + Date.now() + "@example.com"})}
+                variant="outline"
+              >
+                🔄 Tạo Email Mới
+              </Button>
+              
+              <Button 
+                onClick={() => window.open("/affiliate", "_blank")}
+                variant="outline"
+              >
+                🌐 Mở Trang Affiliate
+              </Button>
+              
+              <Button 
+                onClick={() => window.open("/admin/affiliate", "_blank")}
+                variant="outline"
+              >
+                👑 Admin Affiliate
+              </Button>
+              
+              <Button 
+                onClick={() => window.open("/affiliate/member", "_blank")}
+                variant="outline"
+              >
+                👤 Xem QR & Link Member
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
