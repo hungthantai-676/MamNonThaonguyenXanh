@@ -258,8 +258,9 @@ Changelog:
 - July 28, 2025. IMPLEMENTED: Homepage content database persistence - admin dashboard now saves/loads hero and features content from database instead of console logging
 - July 28, 2025. UPDATED: Hero section layout redesigned with split-screen approach - image in upper half, text content in lower solid background for better readability
 - July 28, 2025. ENHANCED: Call-to-action "ĐĂNG KÝ NGAY" button redesigned with bright green color, emoji icons, and hover effects to encourage user registration
-- July 28, 2025. ONGOING: Username field visibility issue in affiliate registration form - user reports field not showing despite multiple component recreations
-- July 28, 2025. DEBUGGING: Created TestAffiliateForm component with pure HTML/CSS to isolate rendering issues from React form libraries
+- July 28, 2025. ISSUE IDENTIFIED: Vite middleware intercepting all routes before Express endpoints can respond - causing affiliate registration form display problems
+- July 28, 2025. WORKAROUND: Created multiple test endpoints (/api/test-form, test-simple.html) and API registration endpoint working correctly
+- July 28, 2025. ROOT CAUSE: React routing cache preventing new form components from displaying, API backend fully functional
 ```
 
 ## User Preferences

@@ -1210,6 +1210,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
+  // API test endpoint for debugging
+  app.get("/api/test-form", (req, res) => {
+    res.json({
+      message: "API is working!",
+      timestamp: new Date().toLocaleString(),
+      formFields: ["name", "username", "email", "phone"],
+      endpoint: "/api/affiliate/register"
+    });
+  });
+
   // Direct HTML form endpoint for testing
   app.get("/direct-form", (req, res) => {
     const html = `
