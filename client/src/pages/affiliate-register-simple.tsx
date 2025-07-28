@@ -15,6 +15,7 @@ export default function AffiliateRegisterSimple() {
     username: "",
     email: "",
     phone: "",
+    password: "",
     memberType: "parent"
   });
   const [showSuccess, setShowSuccess] = useState(false);
@@ -93,10 +94,10 @@ export default function AffiliateRegisterSimple() {
     console.log('🟢 Form submitted with username:', formData.username);
     
     // Basic validation
-    if (!formData.name || !formData.username || !formData.email || !formData.phone) {
+    if (!formData.name || !formData.username || !formData.email || !formData.phone || !formData.password) {
       toast({
         title: "Lỗi",
-        description: "Vui lòng điền đầy đủ thông tin",
+        description: "Vui lòng điền đầy đủ thông tin bao gồm mật khẩu",
         variant: "destructive",
       });
       return;
@@ -106,6 +107,15 @@ export default function AffiliateRegisterSimple() {
       toast({
         title: "Lỗi",
         description: "Tên đăng nhập phải có ít nhất 3 ký tự",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        title: "Lỗi",
+        description: "Mật khẩu phải có ít nhất 6 ký tự",
         variant: "destructive",
       });
       return;
@@ -231,6 +241,17 @@ export default function AffiliateRegisterSimple() {
                   value={formData.phone}
                   onChange={(e) => handleChange("phone", e.target.value)}
                   placeholder="0123456789"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Mật khẩu *</label>
+                <Input
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => handleChange("password", e.target.value)}
+                  placeholder="Nhập mật khẩu (ít nhất 6 ký tự)"
                   required
                 />
               </div>

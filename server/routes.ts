@@ -1269,18 +1269,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('🟢 Registration request received:', req.body);
       
-      const { name, username, email, phone, memberType, sponsorId } = req.body;
+      const { name, username, email, phone, password, memberType, sponsorId } = req.body;
       
       // Basic validation
-      if (!name || !username || !email || !phone || !memberType) {
+      if (!name || !username || !email || !phone || !password || !memberType) {
         return res.status(400).json({ 
-          message: "Thiếu thông tin bắt buộc. Vui lòng điền đầy đủ: Tên, username, email, phone, memberType" 
+          message: "Thiếu thông tin bắt buộc. Vui lòng điền đầy đủ: Tên, username, email, phone, password, memberType" 
         });
       }
       
       if (username.length < 3) {
         return res.status(400).json({ 
           message: "Tên đăng nhập phải có ít nhất 3 ký tự" 
+        });
+      }
+      
+      if (password.length < 6) {
+        return res.status(400).json({ 
+          message: "Mật khẩu phải có ít nhất 6 ký tự" 
         });
       }
       
@@ -1303,6 +1309,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         username,
         email,
         phone,
+        password, // Store password (in production, should be hashed)
         memberType,
         memberId,
         referralLink,
@@ -1341,8 +1348,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Affiliate login endpoint
   app.post("/api/affiliate/login", async (req, res) => {
     try {
-      const { memberCode } = req.body;
+      console.log('🟢 Login request received:', req.body);
       
+      const { username, password, memberCode } = req.body;
+      
+      // Support both new login (username + password) and old login (memberCode only)
+      if (username && password) {
+        // New login with username and password
+        if (!username || !password) {
+          return res.status(400).json({ 
+            message: "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu" 
+          });
+        }
+        
+        // Try to find user in database
+        try {
+          const member = await storage.getAffiliateMemberByUsername(username);
+          if (member && member.password === password) {
+            return res.json({
+              success: true,
+              message: "Đăng nhập thành công!",
+              token: "affiliate-token-" + Date.now(),
+              user: {
+                username: member.username,
+                name: member.name,
+                memberType: member.memberType,
+                memberId: member.memberId,
+                email: member.email,
+                phone: member.phone
+              }
+            });
+          } else {
+            return res.status(401).json({ 
+              message: "Tên đăng nhập hoặc mật khẩu không đúng" 
+            });
+          }
+        } catch (error) {
+          console.log("Database lookup failed:", error);
+          return res.status(401).json({ 
+            message: "Tên đăng nhập hoặc mật khẩu không đúng" 
+          });
+        }
+      }
+      
+      // Old login with memberCode only
       if (!memberCode) {
         return res.status(400).json({ message: "Vui lòng nhập tên đăng nhập hoặc mã thành viên" });
       }
