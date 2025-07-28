@@ -20,6 +20,8 @@ import AffiliateJoin from "@/pages/affiliate-join";
 import AdminLogin from "@/pages/admin/login";
 import AdminDashboardFixed from "@/pages/admin/dashboard-fixed";
 import AffiliateDashboard from "@/pages/admin/affiliate-dashboard";
+import AffiliateAdmin from "@/pages/admin/affiliate-admin";
+import AffiliateTest from "@/pages/affiliate-test";
 import ContentManagement from "@/pages/admin/content-management";
 import FullContentManager from "@/pages/admin/full-content-manager";
 import HomepageStructureManager from "@/pages/admin/homepage-structure-manager";
@@ -47,11 +49,13 @@ function Router() {
           <Route path="/contact" component={Contact} />
           <Route path="/affiliate" component={AffiliateFixed} />
           <Route path="/affiliate/join" component={AffiliateJoin} />
+          <Route path="/affiliate/test" component={AffiliateTest} />
           <Route path="/admin-access" component={AdminAccess} />
           <Route path="/admin-quick" component={AdminQuick} />
           <Route path="/admin/login" component={AdminLogin} />
           <Route path="/admin/dashboard" component={AdminDashboardFixed} />
-          <Route path="/admin/affiliate" component={AffiliateDashboard} />
+          <Route path="/admin/affiliate-old" component={AffiliateDashboard} />
+          <Route path="/admin/affiliate" component={AffiliateAdmin} />
           <Route path="/admin/content" component={ContentManagement} />
           <Route path="/admin/full-content" component={FullContentManager} />
           <Route path="/admin/homepage" component={HomepageStructureManager} />

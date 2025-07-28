@@ -361,7 +361,7 @@ export default function AdminDashboardFixed() {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-9">
+          <TabsList className="grid w-full grid-cols-10">
             <TabsTrigger value="contact">📞 Liên hệ</TabsTrigger>
             <TabsTrigger value="media">🖼️ Ảnh/Video</TabsTrigger>
             <TabsTrigger value="homepage">🏠 Trang chủ</TabsTrigger>
@@ -371,6 +371,7 @@ export default function AdminDashboardFixed() {
             <TabsTrigger value="programs">📚 Chương trình</TabsTrigger>
             <TabsTrigger value="activities">🎯 Hoạt động</TabsTrigger>
             <TabsTrigger value="articles">📰 Bài viết</TabsTrigger>
+            <TabsTrigger value="affiliate">💼 Affiliate</TabsTrigger>
           </TabsList>
 
           {/* Contact Tab */}
@@ -1571,6 +1572,33 @@ export default function AdminDashboardFixed() {
               </Card>
             </div>
           </TabsContent>
+          <TabsContent value="affiliate">
+            <Card>
+              <CardHeader>
+                <CardTitle>💼 Quản lý hệ thống Affiliate</CardTitle>
+                <CardDescription>Truy cập bảng điều khiển affiliate chuyên nghiệp</CardDescription>
+              </CardHeader>
+              <CardContent className="text-center py-8">
+                <div className="space-y-4">
+                  <div className="text-6xl">💼</div>
+                  <h3 className="text-xl font-semibold">Hệ thống Affiliate Marketing</h3>
+                  <p className="text-gray-600 max-w-md mx-auto">
+                    Quản lý toàn bộ hệ thống affiliate, thành viên, hoa hồng và thanh toán
+                  </p>
+                  <div className="flex gap-4 justify-center">
+                    <Button onClick={() => window.location.href = "/admin/affiliate"}>
+                      🚀 Mở Admin Affiliate
+                    </Button>
+                    <Button variant="outline" onClick={() => window.open("/affiliate", "_blank")}>
+                      👥 Xem trang Affiliate
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Affiliate Tab */}
           <TabsContent value="affiliate">
             <Card>
               <CardHeader>

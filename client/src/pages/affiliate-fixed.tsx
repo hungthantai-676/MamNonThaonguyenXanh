@@ -62,22 +62,9 @@ export default function AffiliateFixed() {
   // Registration mutation with proper error handling
   const registerMutation = useMutation({
     mutationFn: async (data: RegistrationFormData) => {
-      try {
-        console.log("Sending registration data:", data);
-        const response = await apiRequest("POST", "/api/affiliate/register", data);
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || `HTTP ${response.status}`);
-        }
-        
-        const result = await response.json();
-        console.log("Registration success:", result);
-        return result;
-      } catch (error: any) {
-        console.error("Registration error:", error);
-        throw error;
-      }
+      console.log("Sending registration data:", data);
+      const response = await apiRequest("POST", "/api/affiliate/register", data);
+      return response;
     },
     onSuccess: (data) => {
       console.log("Registration mutation success:", data);
