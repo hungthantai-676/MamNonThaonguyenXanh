@@ -233,8 +233,9 @@ export default function AffiliateAdmin() {
                   <div className="overflow-x-auto">
                     <div className="min-w-full">
                       {/* Table Header */}
-                      <div className="grid grid-cols-7 gap-4 p-4 bg-gray-50 font-medium text-sm">
-                        <div>Tên</div>
+                      <div className="grid grid-cols-8 gap-4 p-4 bg-gray-50 font-medium text-sm">
+                        <div>Họ tên</div>
+                        <div>Tên đăng nhập</div>
                         <div>Email</div>
                         <div>Loại</div>
                         <div>Mã thành viên</div>
@@ -245,8 +246,11 @@ export default function AffiliateAdmin() {
                       
                       {/* Table Body */}
                       {members && members.length > 0 ? members.map((member: any) => (
-                        <div key={member.id} className="grid grid-cols-7 gap-4 p-4 border-b hover:bg-gray-50">
+                        <div key={member.id} className="grid grid-cols-8 gap-4 p-4 border-b hover:bg-gray-50">
                           <div className="font-medium">{member.name}</div>
+                          <div className="text-sm font-mono bg-blue-50 px-2 py-1 rounded">
+                            @{member.username || member.memberId}
+                          </div>
                           <div className="text-sm">{member.email}</div>
                           <div>
                             <Badge variant={member.memberType === 'teacher' ? 'default' : 'secondary'}>

@@ -1203,24 +1203,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
         {
           id: 1,
           name: "Nguyễn Thị Linh",
+          username: "linh_teacher",
           email: "linh@demo.com",
           phone: "0987654321",
           memberType: "teacher",
+          memberId: "TCH001",
           code: "TCH001",
           createdAt: new Date().toISOString(),
           totalReferrals: 3,
-          totalCommission: 6000000
+          totalCommission: 6000000,
+          isActive: true
         },
         {
           id: 2,
-          name: "Trần Văn Minh", 
+          name: "Trần Văn Minh",
+          username: "minh_parent", 
           email: "minh@demo.com",
           phone: "0912345678",
           memberType: "parent",
+          memberId: "PAR001",
           code: "PAR001",
           createdAt: new Date().toISOString(),
           totalReferrals: 2,
-          totalCommission: 4000
+          totalCommission: 4000,
+          isActive: true
+        },
+        {
+          id: 3,
+          name: "Hoàng Thị Mai",
+          username: "mai_teacher2",
+          email: "mai@demo.com",
+          phone: "0901234567",
+          memberType: "teacher",
+          memberId: "TCH002",
+          code: "TCH002",
+          createdAt: new Date().toISOString(),
+          totalReferrals: 5,
+          totalCommission: 10000000,
+          isActive: true
+        },
+        {
+          id: 4,
+          name: "Lê Văn Nam",
+          username: "nam_parent2",
+          email: "nam@demo.com",
+          phone: "0934567890",
+          memberType: "parent",
+          memberId: "PAR002",
+          code: "PAR002",
+          createdAt: new Date().toISOString(),
+          totalReferrals: 1,
+          totalCommission: 2000,
+          isActive: false
         }
       ];
       
