@@ -22,7 +22,7 @@ export default function AffiliateTest() {
   const registerMutation = useMutation({
     mutationFn: async (data: any) => {
       const response = await apiRequest("POST", "/api/affiliate/register", data);
-      return response;
+      return response.json();
     },
     onSuccess: (data) => {
       console.log("Registration success:", data);
@@ -46,7 +46,7 @@ export default function AffiliateTest() {
   const loginMutation = useMutation({
     mutationFn: async (code: string) => {
       const response = await apiRequest("POST", "/api/affiliate/login", { memberCode: code });
-      return response;
+      return response.json();
     },
     onSuccess: (data) => {
       console.log("Login success:", data);
