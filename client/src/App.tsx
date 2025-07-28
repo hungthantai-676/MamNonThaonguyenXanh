@@ -17,6 +17,7 @@ import Test from "@/pages/test";
 import Contact from "@/pages/contact";
 import AffiliateFixed from "@/pages/affiliate-fixed";
 import AffiliateJoin from "@/pages/affiliate-join";
+import AffiliateJoinNew from "@/pages/affiliate-join-new";
 import AdminLogin from "@/pages/admin/login";
 import AdminDashboardFixed from "@/pages/admin/dashboard-fixed";
 import AffiliateDashboard from "@/pages/admin/affiliate-dashboard";
@@ -49,7 +50,8 @@ function Router() {
           <Route path="/news/:id" component={NewsDetail} />
           <Route path="/contact" component={Contact} />
           <Route path="/affiliate" component={AffiliateFixed} />
-          <Route path="/affiliate/join" component={AffiliateJoin} />
+          <Route path="/affiliate/join" component={AffiliateJoinNew} />
+          <Route path="/affiliate/join-old" component={AffiliateJoin} />
           <Route path="/affiliate/test" component={AffiliateTest} />
           <Route path="/affiliate/member" component={AffiliateMemberInfo} />
           <Route path="/admin-access" component={AdminAccess} />
