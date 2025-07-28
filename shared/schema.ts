@@ -159,6 +159,7 @@ export const serviceRegistrations = pgTable("service_registrations", {
 export const affiliateMembers = pgTable("affiliate_members", {
   id: serial("id").primaryKey(),
   memberId: varchar("member_id", { length: 50 }).unique().notNull(), // UUID
+  username: varchar("username", { length: 50 }).unique().notNull(), // User-friendly login name
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).unique().notNull(),
   phone: varchar("phone", { length: 20 }).notNull(),

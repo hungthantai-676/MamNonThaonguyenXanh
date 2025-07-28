@@ -11,6 +11,7 @@ export default function AffiliateTest() {
   const { toast } = useToast();
   const [regData, setRegData] = useState({
     name: "Test User",
+    username: "testuser" + Date.now(),
     email: "testuser" + Date.now() + "@example.com",
     phone: "0123456789",
     memberType: "parent"
@@ -27,9 +28,9 @@ export default function AffiliateTest() {
       console.log("Registration success:", data);
       toast({
         title: "Đăng ký thành công!",
-        description: `Mã thành viên: ${data.memberId}`,
+        description: `Tên đăng nhập: ${data.username || data.loginInfo?.username}`,
       });
-      setLoginCode(data.memberId || "");
+      setLoginCode(data.username || data.loginInfo?.username || data.memberId || "");
     },
     onError: (error: any) => {
       console.error("Registration error:", error);
@@ -83,6 +84,16 @@ export default function AffiliateTest() {
                   id="name"
                   value={regData.name}
                   onChange={(e) => setRegData({...regData, name: e.target.value})}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="username">Tên đăng nhập</Label>
+                <Input
+                  id="username"
+                  value={regData.username}
+                  onChange={(e) => setRegData({...regData, username: e.target.value})}
+                  placeholder="Chỉ chữ, số và dấu gạch dưới"
                 />
               </div>
               

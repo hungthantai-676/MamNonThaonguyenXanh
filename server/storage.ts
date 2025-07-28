@@ -85,6 +85,7 @@ export interface IStorage {
   getAffiliateMembers(): Promise<AffiliateMember[]>;
   getAffiliateMember(id: number): Promise<AffiliateMember | undefined>;
   getAffiliateMemberByMemberId(memberId: string): Promise<AffiliateMember | undefined>;
+  getAffiliateMemberByUsername(username: string): Promise<AffiliateMember | undefined>;
   getAffiliateMemberByEmail(email: string): Promise<AffiliateMember | undefined>;
   createAffiliateMember(member: InsertAffiliateMember): Promise<AffiliateMember>;
   updateAffiliateMember(id: number, member: Partial<InsertAffiliateMember>): Promise<AffiliateMember>;
@@ -493,6 +494,11 @@ export class DatabaseStorage implements IStorage {
 
   async getAffiliateMemberByMemberId(memberId: string): Promise<AffiliateMember | undefined> {
     const [member] = await db.select().from(affiliateMembers).where(eq(affiliateMembers.memberId, memberId));
+    return member || undefined;
+  }
+
+  async getAffiliateMemberByUsername(username: string): Promise<AffiliateMember | undefined> {
+    const [member] = await db.select().from(affiliateMembers).where(eq(affiliateMembers.username, username));
     return member || undefined;
   }
 
