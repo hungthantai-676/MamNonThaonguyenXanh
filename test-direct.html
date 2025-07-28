@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Direct Form</title>
+    <style>
+        body { 
+            background: linear-gradient(45deg, #ff0000, #0000ff);
+            color: white; 
+            font-family: Arial; 
+            padding: 40px;
+            min-height: 100vh;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            color: black;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .username-field {
+            background: #FFFF00;
+            border: 5px solid #FF0000;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        input {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        button {
+            width: 100%;
+            padding: 20px;
+            font-size: 24px;
+            background: #00FF00;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; font-size: 36px;">
+        🔥 FORM TEST TRỰC TIẾP - KHÔNG QUA REACT 🔥
+    </h1>
+    
+    <div class="form-container">
+        <h2>Đăng ký Affiliate - Pure HTML</h2>
+        
+        <form id="testForm">
+            <div>
+                <label>📝 Họ và tên:</label>
+                <input type="text" name="name" required>
+            </div>
+            
+            <div class="username-field">
+                <label style="font-size: 24px; font-weight: bold; color: red;">
+                    🚨 TÊN ĐĂNG NHẬP (USERNAME) 🚨
+                </label>
+                <input type="text" name="username" placeholder="Nhập username ở đây" required 
+                       style="border: 3px solid red; background: white; font-size: 20px;">
+                <div style="color: blue; font-weight: bold; margin-top: 10px;">
+                    Username sẽ hiển thị ở đây: <span id="usernameDisplay">(chưa nhập)</span>
+                </div>
+            </div>
+            
+            <div>
+                <label>📧 Email:</label>
+                <input type="email" name="email" required>
+            </div>
+            
+            <div>
+                <label>📱 Số điện thoại:</label>
+                <input type="tel" name="phone" required>
+            </div>
+            
+            <button type="submit">🚀 ĐĂNG KÝ AFFILIATE NGAY</button>
+        </form>
+        
+        <div id="result" style="margin-top: 20px; padding: 15px; border-radius: 5px; display: none;"></div>
+    </div>
+
+    <script>
+        // Update username display in real-time
+        document.querySelector('input[name="username"]').addEventListener('input', function(e) {
+            document.getElementById('usernameDisplay').textContent = e.target.value || '(chưa nhập)';
+        });
+
+        // Handle form submission
+        document.getElementById('testForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                name: formData.get('name'),
+                username: formData.get('username'),
+                email: formData.get('email'),
+                phone: formData.get('phone'),
+                memberType: 'parent'
+            };
+            
+            console.log('Sending registration:', data);
+            
+            try {
+                const response = await fetch('/api/affiliate/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                const resultDiv = document.getElementById('result');
+                
+                if (response.ok) {
+                    resultDiv.style.display = 'block';
+                    resultDiv.style.background = '#d4edda';
+                    resultDiv.style.border = '2px solid green';
+                    resultDiv.innerHTML = `
+                        <h3>✅ ĐĂNG KÝ THÀNH CÔNG!</h3>
+                        <p><strong>Username:</strong> ${data.username}</p>
+                        <p><strong>Member ID:</strong> ${result.memberId}</p>
+                        <p><strong>Referral Link:</strong> ${result.referralLink}</p>
+                    `;
+                } else {
+                    resultDiv.style.display = 'block';
+                    resultDiv.style.background = '#f8d7da';
+                    resultDiv.style.border = '2px solid red';
+                    resultDiv.innerHTML = `<h3>❌ LỖI:</h3><p>${result.message}</p>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                resultDiv.style.background = '#f8d7da';
+                resultDiv.style.border = '2px solid red';
+                resultDiv.innerHTML = `<h3>❌ LỖI MẠNG:</h3><p>${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
