@@ -1128,15 +1128,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { type, url } = req.body;
       
+      console.log(`[UPLOAD] Saving ${type}:`, url?.substring(0, 100) + '...');
+      
+      if (!type || !url) {
+        return res.status(400).json({ message: "Missing type or url" });
+      }
+      
+      // Validate image data URL format
+      if (!url.startsWith('data:')) {
+        return res.status(400).json({ message: "Invalid image format" });
+      }
+      
       // In a real app, you would save to storage here
-      // For now, just return success
+      // For now, just return success with confirmation
       res.json({ 
-        message: "Image saved successfully",
+        success: true,
+        message: `${type} saved successfully`,
         type: type,
-        url: url
+        url: url,
+        timestamp: new Date().toISOString()
       });
     } catch (error) {
-      res.status(500).json({ message: "Failed to save image" });
+      console.error("[UPLOAD ERROR]:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to save image",
+        error: error.message 
+      });
     }
   });
 

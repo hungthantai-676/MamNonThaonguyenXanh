@@ -239,6 +239,11 @@ export default function AdminDashboardFixed() {
         title: "Lưu trang chủ thành công!",
         description: "Nội dung trang chủ đã được cập nhật và hiển thị trên website",
       });
+      
+      // Auto redirect to homepage after 2 seconds
+      setTimeout(() => {
+        window.open("/", "_blank");
+      }, 2000);
     },
     onError: () => {
       toast({
@@ -266,19 +271,34 @@ export default function AdminDashboardFixed() {
   // Save image mutation
   const saveImageMutation = useMutation({
     mutationFn: async (data: { type: string; url: string }) => {
+      console.log('Saving image:', data.type, data.url?.substring(0, 50) + '...');
       const response = await apiRequest("POST", "/api/upload-image", data);
       return response.json();
     },
     onSuccess: (data) => {
+      console.log('Image saved successfully:', data);
       toast({
         title: "Lưu hình ảnh thành công!",
         description: `${data.type} đã được cập nhật trên website`,
       });
+      
+      // Clear preview and file after successful save
+      if (data.type === 'logo') {
+        setLogoFile(null);
+        setLogoPreview("");
+      } else if (data.type === 'banner') {
+        setBannerFile(null);
+        setBannerPreview("");
+      } else if (data.type === 'video') {
+        setVideoFile(null);
+        setVideoPreview("");
+      }
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Image save error:', error);
       toast({
         title: "Lỗi lưu hình ảnh",
-        description: "Không thể lưu hình ảnh. Vui lòng thử lại.",
+        description: `Không thể lưu hình ảnh. Chi tiết: ${error.message}`,
         variant: "destructive",
       });
     }
@@ -627,7 +647,7 @@ export default function AdminDashboardFixed() {
                 </div>
 
                 {/* Save Button */}
-                <div className="pt-4 border-t">
+                <div className="pt-4 border-t space-y-3">
                   <Button 
                     onClick={() => saveHomepageMutation.mutate(homepageContent)}
                     disabled={saveHomepageMutation.isPending}
@@ -644,6 +664,23 @@ export default function AdminDashboardFixed() {
                       </>
                     )}
                   </Button>
+                  
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline"
+                      onClick={() => window.open("/", "_blank")}
+                      className="flex-1"
+                    >
+                      🏠 Xem trang chủ
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={() => setLocation("/admin/main-menu")}
+                      className="flex-1"
+                    >
+                      🔙 Quay lại Dashboard
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
