@@ -280,19 +280,25 @@ export default function AffiliateJoin() {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="username"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tên đăng nhập</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nhập tên đăng nhập (chỉ chữ, số và dấu _)" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="border-2 border-blue-500 p-4 rounded bg-blue-50">
+                  <FormField
+                    control={form.control}
+                    name="username"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-blue-800 font-bold">Tên đăng nhập *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Nhập tên đăng nhập (chỉ chữ, số và dấu _)" 
+                            className="border-2 border-blue-400"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
 
 
