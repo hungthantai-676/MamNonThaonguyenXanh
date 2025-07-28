@@ -1763,6 +1763,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Affiliate login endpoint
+  app.post("/api/affiliate/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      console.log('🔑 Login attempt for username:', username);
+      
+      if (!username || !password) {
+        return res.status(400).json({ message: "Username and password required" });
+      }
+      
+      // Simple demo authentication - in production, check against database
+      if (username === "demo" && password === "123456") {
+        const user = {
+          id: "demo001",
+          username: "demo",
+          name: "Demo User",
+          memberType: "parent",
+          email: "demo@example.com"
+        };
+        
+        res.json({
+          success: true,
+          message: "Login successful",
+          token: "demo-token-123",
+          user: user
+        });
+      } else {
+        res.status(401).json({ message: "Invalid username or password" });
+      }
+    } catch (error) {
+      console.error('❌ Login error:', error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
