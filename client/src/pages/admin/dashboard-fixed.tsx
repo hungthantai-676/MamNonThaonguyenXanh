@@ -282,17 +282,20 @@ export default function AdminDashboardFixed() {
         description: `${data.type} đã được cập nhật trên website`,
       });
       
-      // Clear preview and file after successful save
+      // Clear file (since it's now saved) but keep preview visible
       if (data.type === 'logo') {
         setLogoFile(null);
-        setLogoPreview("");
+        // logoPreview stays to show the saved image
       } else if (data.type === 'banner') {
         setBannerFile(null);
-        setBannerPreview("");
+        // bannerPreview stays to show the saved image
       } else if (data.type === 'video') {
         setVideoFile(null);
-        setVideoPreview("");
+        // videoPreview stays to show the saved video
       }
+      
+      // Also refresh the images from backend
+      fetchSavedImages();
     },
     onError: (error) => {
       console.error('Image save error:', error);
@@ -381,6 +384,37 @@ export default function AdminDashboardFixed() {
       reader.readAsDataURL(file);
     }
   };
+
+  // Fetch saved images from backend
+  const fetchSavedImages = async () => {
+    try {
+      const response = await apiRequest("GET", "/api/saved-images");
+      const images = await response.json();
+      
+      if (images.logo) {
+        setLogoPreview(images.logo);
+      }
+      if (images.banner) {
+        setBannerPreview(images.banner);
+      }
+      if (images.video) {
+        setVideoPreview(images.video);
+      }
+      
+      console.log('Loaded saved images:', {
+        logo: images.logo ? 'Available' : 'None',
+        banner: images.banner ? 'Available' : 'None', 
+        video: images.video ? 'Available' : 'None'
+      });
+    } catch (error) {
+      console.log('No saved images found or error loading:', error);
+    }
+  };
+
+  // Load saved images on component mount
+  useEffect(() => {
+    fetchSavedImages();
+  }, []);
 
   const logout = () => {
     localStorage.removeItem("admin-token");

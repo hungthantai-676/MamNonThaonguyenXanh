@@ -1138,6 +1138,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Fetch saved images endpoint
+  app.get("/api/saved-images", (req, res) => {
+    try {
+      const savedImages = global.savedImages || {};
+      
+      console.log(`[FETCH] Returning saved images:`, {
+        logo: savedImages.logo ? 'Available' : 'None',
+        banner: savedImages.banner ? 'Available' : 'None',
+        video: savedImages.video ? 'Available' : 'None'
+      });
+      
+      res.json(savedImages);
+    } catch (error) {
+      console.error("[FETCH ERROR]:", error);
+      res.status(500).json({ message: "Failed to fetch saved images" });
+    }
+  });
+
   // Image upload endpoint
   app.post("/api/upload-image", (req, res) => {
     try {
@@ -1150,12 +1168,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Validate image data URL format
-      if (!url.startsWith('data:')) {
+      if (!url.startsWith('data:') && !url.startsWith('blob:')) {
         return res.status(400).json({ message: "Invalid image format" });
       }
       
-      // In a real app, you would save to storage here
-      // For now, just return success with confirmation
+      // Store in memory (in production, save to database)
+      global.savedImages = global.savedImages || {};
+      global.savedImages[type] = url;
+      
+      console.log(`[UPLOAD SUCCESS] ${type} saved to memory storage`);
+      
       res.json({ 
         success: true,
         message: `${type} saved successfully`,
