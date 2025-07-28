@@ -11,8 +11,11 @@ export default function DebugForm() {
       fontWeight: 'bold'
     }}>
       <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>
-        🚨 DEBUG FORM - KIỂM TRA USERNAME FIELD 🚨
+        🚨 DEBUG FORM - TIMESTAMP: {new Date().toLocaleTimeString()} 🚨
       </h1>
+      <div style={{ textAlign: 'center', marginBottom: '20px', fontSize: '20px' }}>
+        Nếu bạn thấy dòng này nghĩa là component mới đã load thành công!
+      </div>
       
       <div style={{
         backgroundColor: '#FFFF00',
