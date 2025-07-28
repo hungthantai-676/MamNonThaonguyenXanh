@@ -32,6 +32,8 @@ export default function AffiliateJoin() {
   // Navigation will be handled by redirect or back button
   const [referralId, setReferralId] = useState<string>("");
   const [sponsor, setSponsor] = useState<any>(null);
+  const [registeredMember, setRegisteredMember] = useState<any>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const form = useForm<AffiliateJoinFormData>({
     resolver: zodResolver(affiliateJoinSchema),
@@ -69,18 +71,16 @@ export default function AffiliateJoin() {
   const registerMutation = useMutation({
     mutationFn: async (data: AffiliateJoinFormData) => {
       const response = await apiRequest("POST", "/api/affiliate/register", data);
-      return response;
+      return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/affiliate/members"] });
+      setRegisteredMember(data);
+      setShowSuccess(true);
       toast({
         title: "Đăng ký thành công! 🎉",
-        description: "Bạn đã trở thành thành viên affiliate. Chuyển đến trang thành viên...",
+        description: "Bạn đã trở thành thành viên affiliate. Lưu lại thông tin đăng nhập!",
       });
-      // Redirect to affiliate page after successful registration
-      setTimeout(() => {
-        window.location.href = "/affiliate";
-      }, 2000);
     },
     onError: (error: any) => {
       toast({
@@ -94,6 +94,112 @@ export default function AffiliateJoin() {
   const onSubmit = (data: AffiliateJoinFormData) => {
     registerMutation.mutate(data);
   };
+
+  if (showSuccess && registeredMember) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-2xl mx-auto">
+          <Card className="border-green-200 bg-green-50">
+            <CardHeader className="text-center">
+              <div className="text-6xl mb-4">🎉</div>
+              <CardTitle className="text-2xl text-green-700">Đăng ký thành công!</CardTitle>
+              <CardDescription className="text-green-600">
+                Bạn đã trở thành thành viên affiliate. Lưu lại thông tin này để đăng nhập sau!
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Member Login Info */}
+              <div className="bg-white p-4 rounded-lg border">
+                <h3 className="font-semibold mb-3 flex items-center gap-2">
+                  <QrCode className="w-5 h-5" />
+                  Thông tin đăng nhập của bạn
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Mã thành viên (dùng để đăng nhập)</Label>
+                    <div className="flex gap-2">
+                      <Input 
+                        value={registeredMember.memberId} 
+                        readOnly
+                        className="font-mono text-sm bg-yellow-50 border-yellow-200"
+                      />
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          navigator.clipboard.writeText(registeredMember.memberId);
+                          toast({ title: "Đã sao chép mã thành viên!" });
+                        }}
+                      >
+                        Sao chép
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">⚠️ Quan trọng: Lưu mã này để đăng nhập sau</p>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Họ tên</Label>
+                    <Input value={registeredMember.name} readOnly className="bg-gray-50" />
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Loại thành viên</Label>
+                    <Badge className={registeredMember.memberType === "teacher" ? "bg-green-500" : "bg-purple-500"}>
+                      {registeredMember.memberType === "teacher" ? "Chăm sóc phụ huynh" : "Đại sứ thương hiệu"}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* QR Code Info */}
+              <div className="bg-blue-50 p-4 rounded-lg border">
+                <h3 className="font-semibold mb-2">📱 QR Code và Link giới thiệu</h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  QR Code và link giới thiệu đã được tạo tự động. Bạn có thể xem chúng sau khi đăng nhập.
+                </p>
+                <div className="text-xs space-y-1">
+                  <p>• <strong>QR Code</strong>: Tự động tạo và chứa link giới thiệu của bạn</p>
+                  <p>• <strong>Link giới thiệu</strong>: Gửi cho F2, F3 để họ đăng ký dưới bạn</p>
+                  <p>• <strong>Hoa hồng</strong>: Nhận token cho mỗi người bạn giới thiệu thành công</p>
+                </div>
+              </div>
+
+              {/* Next Steps */}
+              <div className="space-y-3">
+                <h3 className="font-semibold">🎯 Bước tiếp theo:</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <Button 
+                    onClick={() => {
+                      localStorage.setItem("affiliate-token", registeredMember.memberId);
+                      window.location.href = "/affiliate/member";
+                    }}
+                    className="w-full"
+                  >
+                    👤 Xem QR Code & Link của tôi
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => window.location.href = "/affiliate"}
+                    className="w-full"
+                  >
+                    🏠 Đến trang Affiliate
+                  </Button>
+                </div>
+              </div>
+
+              {/* Warning */}
+              <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                <p className="text-sm text-red-700">
+                  ⚠️ <strong>Quan trọng</strong>: Hãy lưu lại mã thành viên ở trên. 
+                  Bạn sẽ cần mã này để đăng nhập và quản lý affiliate sau này!
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">

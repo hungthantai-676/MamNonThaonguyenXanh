@@ -552,7 +552,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateAffiliateMember(sponsor.id, updateData);
       }
       
-      res.status(201).json(member);
+      // Return full member info including login details
+      res.status(201).json({
+        ...member,
+        message: "Đăng ký thành công!",
+        loginInfo: {
+          memberId: member.memberId,
+          name: member.name,
+          memberType: member.memberType,
+          qrCode: member.qrCode,
+          referralLink: member.referralLink,
+          walletAddress: member.walletAddress
+        }
+      });
     } catch (error) {
       console.error('Error registering affiliate member:', error);
       res.status(400).json({ message: "Invalid affiliate member data" });
