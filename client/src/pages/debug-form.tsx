@@ -61,19 +61,52 @@ export default function DebugForm() {
         }} />
       </div>
 
-      <button style={{
-        backgroundColor: '#00FF00',
-        color: '#000000',
-        padding: '20px 40px',
-        fontSize: '24px',
-        fontWeight: 'bold',
-        border: 'none',
-        borderRadius: '10px',
-        cursor: 'pointer',
-        width: '100%',
-        marginTop: '20px'
-      }}>
-        ĐĂNG KÝ NGAY - TEST BUTTON
+      <button 
+        onClick={() => {
+          const formData = {
+            name: document.querySelector('input[placeholder="Nhập họ tên"]').value,
+            username: document.querySelector('input[placeholder="Nhập tên đăng nhập ở đây"]').value,
+            email: document.querySelector('input[placeholder="email@example.com"]').value,
+            phone: document.querySelector('input[placeholder="0123456789"]').value,
+            memberType: 'parent'
+          };
+          
+          console.log('🔥 TEST REGISTRATION:', formData);
+          
+          if (!formData.username) {
+            alert('Vui lòng nhập tên đăng nhập!');
+            return;
+          }
+          
+          fetch('/api/affiliate/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+          })
+          .then(res => res.json())
+          .then(data => {
+            console.log('✅ Registration success:', data);
+            alert('Đăng ký thành công! Username: ' + formData.username);
+          })
+          .catch(err => {
+            console.error('❌ Registration failed:', err);
+            alert('Đăng ký thất bại: ' + err.message);
+          });
+        }}
+        style={{
+          backgroundColor: '#00FF00',
+          color: '#000000',
+          padding: '20px 40px',
+          fontSize: '24px',
+          fontWeight: 'bold',
+          border: 'none',
+          borderRadius: '10px',
+          cursor: 'pointer',
+          width: '100%',
+          marginTop: '20px'
+        }}
+      >
+        ĐĂNG KÝ NGAY - TEST WORKING API
       </button>
       
       <div style={{
