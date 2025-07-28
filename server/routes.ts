@@ -1210,6 +1210,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
+  // Direct HTML form endpoint for testing
+  app.get("/direct-form", (req, res) => {
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>USERNAME TEST - ${new Date().toLocaleTimeString()}</title>
+    <style>
+        body { 
+            background: #FF00FF;
+            color: white; 
+            font-family: Arial; 
+            padding: 40px;
+            font-size: 20px;
+        }
+        .username-box {
+            background: #FFFF00;
+            color: #000000;
+            border: 10px solid #FF0000;
+            padding: 30px;
+            margin: 30px 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 20px;
+            font-size: 24px;
+            border: 5px solid #000000;
+            margin: 15px 0;
+        }
+        button {
+            width: 100%;
+            padding: 25px;
+            font-size: 28px;
+            background: #00FF00;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔥 DIRECT FORM TEST - TIMESTAMP: ${new Date().toLocaleString()} 🔥</h1>
+    
+    <div class="username-box">
+        <div>⚠️ USERNAME FIELD TEST ⚠️</div>
+        <input type="text" id="username" placeholder="NHẬP USERNAME VÀO ĐÂY" 
+               onchange="document.getElementById('display').innerText = this.value">
+        <div>Giá trị: <span id="display">(trống)</span></div>
+    </div>
+    
+    <div>
+        <input type="text" placeholder="Họ tên">
+        <input type="email" placeholder="Email">
+        <input type="tel" placeholder="Số điện thoại">
+    </div>
+    
+    <button onclick="testRegister()">ĐĂNG KÝ TEST</button>
+    
+    <div id="result" style="margin-top: 20px; background: white; color: black; padding: 20px;"></div>
+
+    <script>
+        async function testRegister() {
+            const username = document.getElementById('username').value;
+            const data = {
+                name: document.querySelector('input[placeholder="Họ tên"]').value || 'Test User',
+                username: username || 'testuser' + Date.now(),
+                email: document.querySelector('input[placeholder="Email"]').value || 'test@example.com',
+                phone: document.querySelector('input[placeholder="Số điện thoại"]').value || '0123456789',
+                memberType: 'parent'
+            };
+            
+            console.log('Testing registration:', data);
+            
+            try {
+                const response = await fetch('/api/affiliate/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                document.getElementById('result').innerHTML = 
+                    response.ok ? 
+                    \`✅ THÀNH CÔNG! Username: \${data.username}, Member ID: \${result.memberId}\` :
+                    \`❌ LỖI: \${result.message}\`;
+            } catch (error) {
+                document.getElementById('result').innerHTML = \`❌ LỖI: \${error.message}\`;
+            }
+        }
+    </script>
+</body>
+</html>`;
+    res.send(html);
+  });
+
   // Affiliate registration endpoint
   app.post("/api/affiliate/register", async (req, res) => {
     try {
