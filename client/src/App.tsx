@@ -14,6 +14,7 @@ import News from "@/pages/news";
 import NewsDetail from "@/pages/news-detail";
 import NewsDetailTest from "@/pages/news-detail-test";
 import Test from "@/pages/test";
+import TestUsername from "@/pages/test-username";
 import Contact from "@/pages/contact";
 import AffiliateFixed from "@/pages/affiliate-fixed";
 import AffiliateJoin from "@/pages/affiliate-join";
@@ -65,6 +66,7 @@ function Router() {
           <Route path="/admin/homepage" component={HomepageStructureManager} />
           <Route path="/admin/main-menu" component={MainMenuSimple} />
           <Route path="/test" component={Test} />
+          <Route path="/test-username" component={TestUsername} />
           <Route component={NotFound} />
         </Switch>
       </main>
