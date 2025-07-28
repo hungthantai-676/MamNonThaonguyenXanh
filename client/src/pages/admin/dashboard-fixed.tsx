@@ -1598,32 +1598,7 @@ export default function AdminDashboardFixed() {
             </Card>
           </TabsContent>
 
-          {/* Affiliate Tab */}
-          <TabsContent value="affiliate">
-            <Card>
-              <CardHeader>
-                <CardTitle>💼 Quản lý hệ thống Affiliate</CardTitle>
-                <CardDescription>Truy cập bảng điều khiển affiliate chuyên nghiệp</CardDescription>
-              </CardHeader>
-              <CardContent className="text-center py-8">
-                <div className="space-y-4">
-                  <div className="text-6xl">💼</div>
-                  <h3 className="text-xl font-semibold">Hệ thống Affiliate Marketing</h3>
-                  <p className="text-gray-600 max-w-md mx-auto">
-                    Quản lý toàn bộ hệ thống affiliate, thành viên, hoa hồng và thanh toán
-                  </p>
-                  <div className="flex gap-4 justify-center">
-                    <Button onClick={() => window.location.href = "/admin/affiliate"}>
-                      🚀 Mở Admin Affiliate
-                    </Button>
-                    <Button variant="outline" onClick={() => window.open("/affiliate", "_blank")}>
-                      👥 Xem trang Affiliate
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+
         </Tabs>
       </div>
     </div>
