@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,13 +10,14 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
   Copy, Download, Share2, QrCode, Link, Users, DollarSign, TreePine, 
-  CreditCard, History, Wallet, TrendingUp, Eye, EyeOff, CheckCircle2, AlertCircle 
+  CreditCard, History, Wallet, TrendingUp, Eye, EyeOff, CheckCircle2, AlertCircle, LogOut 
 } from "lucide-react";
 import QRCodeLib from "qrcode";
 
 export default function AffiliateMemberFull() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   const [currentMember, setCurrentMember] = useState<any>(null);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
   const [showBalanceDetails, setShowBalanceDetails] = useState(false);
@@ -140,6 +142,16 @@ export default function AffiliateMemberFull() {
     requestPaymentMutation.mutate(currentBalance);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('affiliate-user');
+    localStorage.removeItem('affiliate-token');
+    toast({
+      title: "Đã đăng xuất",
+      description: "Cảm ơn bạn đã sử dụng hệ thống",
+    });
+    setLocation("/"); // Redirect to homepage instead of register page
+  };
+
   if (!currentMember) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4">
@@ -174,10 +186,23 @@ export default function AffiliateMemberFull() {
         {/* Header */}
         <Card className="bg-gradient-to-r from-green-600 to-blue-600 text-white">
           <CardHeader>
-            <CardTitle className="text-2xl">🎯 Dashboard Affiliate</CardTitle>
-            <CardDescription className="text-green-100">
-              Chào mừng, <strong>{currentMember.name}</strong> ({currentMember.memberId})
-            </CardDescription>
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle className="text-2xl">🎯 Dashboard Affiliate</CardTitle>
+                <CardDescription className="text-green-100">
+                  Chào mừng, <strong>{currentMember.name}</strong> ({currentMember.memberId})
+                </CardDescription>
+              </div>
+              <Button 
+                onClick={handleLogout}
+                variant="outline" 
+                size="sm"
+                className="bg-transparent border-white text-white hover:bg-white hover:text-green-600"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Đăng xuất
+              </Button>
+            </div>
           </CardHeader>
         </Card>
 

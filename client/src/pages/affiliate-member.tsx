@@ -23,7 +23,7 @@ export default function AffiliateMember() {
         description: "Vui lòng đăng nhập để truy cập trang này",
         variant: "destructive",
       });
-      setLocation("/affiliate-register-simple");
+      setLocation("/"); // Fixed: redirect to homepage
       return;
     }
     
@@ -38,7 +38,7 @@ export default function AffiliateMember() {
       
     } catch (error) {
       console.error("Error parsing user data:", error);
-      setLocation("/affiliate-register-simple");
+      setLocation("/"); // Fixed: redirect to homepage
     }
   }, [setLocation, toast]);
 
@@ -85,10 +85,10 @@ export default function AffiliateMember() {
     localStorage.removeItem('affiliate-user');
     localStorage.removeItem('affiliate-token');
     toast({
-      title: "Đăng xuất thành công",
+      title: "Đăng xuất thành công",  
       description: "Cảm ơn bạn đã sử dụng hệ thống",
     });
-    setLocation("/affiliate-register-simple");
+    setLocation("/"); // Fixed: redirect to homepage instead of non-existent page
   };
 
   if (!user) {
