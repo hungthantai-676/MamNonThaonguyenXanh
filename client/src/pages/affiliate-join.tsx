@@ -36,17 +36,23 @@ export default function AffiliateJoin() {
   const [registeredMember, setRegisteredMember] = useState<any>(null);
   const [showSuccess, setShowSuccess] = useState(false);
 
+  // DEBUG: Log component render
+  console.log('AffiliateJoin component rendered with username field');
+
   const form = useForm<AffiliateJoinFormData>({
     resolver: zodResolver(affiliateJoinSchema),
     defaultValues: {
       name: "",
-      username: "",
+      username: "", // CRITICAL: Username field default
       email: "",
       phone: "",
       memberType: "parent",
       sponsorId: "",
     },
   });
+
+  // DEBUG: Log form state
+  console.log('Form values:', form.getValues());
 
   // Extract referral ID from URL
   useEffect(() => {
@@ -274,26 +280,29 @@ export default function AffiliateJoin() {
                   )}
                 />
 
+                {/* USERNAME FIELD - FORCED VISIBLE */}
                 <FormField
                   control={form.control}
                   name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-red-600 font-semibold">⚡ Tên đăng nhập (BẮT BUỘC)</FormLabel>
+                      <FormLabel className="text-red-600 font-bold text-lg">🔴 TÊN ĐĂNG NHẬP (BẮT BUỘC)</FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="Ví dụ: nguyenvana123" 
-                          className="border-2 border-red-200 focus:border-red-500"
+                          className="border-4 border-red-500 focus:border-red-700 bg-red-50"
                           {...field} 
                         />
                       </FormControl>
                       <FormMessage />
-                      <p className="text-xs text-red-600 font-medium">
-                        ⚠️ Chỉ được dùng chữ cái, số và dấu gạch dưới (_). Tối thiểu 3 ký tự.
+                      <p className="text-sm text-red-700 font-bold">
+                        🚨 QUAN TRỌNG: Chỉ được dùng chữ cái, số và dấu gạch dưới (_). Tối thiểu 3 ký tự.
                       </p>
                     </FormItem>
                   )}
                 />
+
+
 
                 <FormField
                   control={form.control}
