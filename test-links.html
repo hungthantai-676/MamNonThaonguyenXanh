@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Links - Affiliate Registration</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .link { display: block; margin: 10px 0; padding: 15px; background: #f0f0f0; text-decoration: none; border-radius: 5px; }
+        .link:hover { background: #e0e0e0; }
+        .test-link { background: #ffcccc !important; }
+        .backup-link { background: #ccffcc !important; }
+    </style>
+</head>
+<body>
+    <h1>🔧 AFFILIATE REGISTRATION TEST LINKS</h1>
+    <p>Dành cho debugging username field visibility issue</p>
+    
+    <a href="/affiliate/join" class="link test-link">
+        🚨 /affiliate/join - TestAffiliateForm (Pure HTML, màu đỏ)
+    </a>
+    
+    <a href="/affiliate/register" class="link backup-link">
+        ✅ /affiliate/register - AffiliateRegisterSimple (React với username field)
+    </a>
+    
+    <a href="/affiliate" class="link">
+        🏠 /affiliate - Trang chính affiliate
+    </a>
+    
+    <a href="/affiliate/member" class="link">
+        👤 /affiliate/member - Trang thành viên
+    </a>
+    
+    <h2>Instructions:</h2>
+    <ol>
+        <li>Click vào link đỏ /affiliate/join - phải thấy trang màu đỏ với trường username</li>
+        <li>Nếu vẫn thấy form cũ, try Ctrl+F5 hoặc clear cache</li>
+        <li>Link xanh /affiliate/register là backup form có đầy đủ username field</li>
+    </ol>
+</body>
+</html>
