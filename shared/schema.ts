@@ -163,6 +163,7 @@ export const affiliateMembers = pgTable("affiliate_members", {
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).unique().notNull(),
   phone: varchar("phone", { length: 20 }).notNull(),
+  password: varchar("password", { length: 255 }).default("123456"), // User login password
   memberType: varchar("member_type", { length: 50 }).notNull(), // "teacher" or "parent"
   categoryName: varchar("category_name", { length: 100 }).notNull(), // "Chăm sóc phụ huynh" or "Đại sứ thương hiệu"
   sponsorId: varchar("sponsor_id", { length: 50 }), // Reference to sponsor's memberId

@@ -1304,6 +1304,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const referralLink = `${baseUrl}/affiliate/join?ref=${memberId}`;
       
       // Create new member data
+      const categoryName = memberType === "teacher" ? "Đại sứ thương hiệu" : "Chăm sóc phụ huynh";
+      
       const newMember = {
         name,
         username,
@@ -1311,6 +1313,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         phone,
         password, // Store password (in production, should be hashed)
         memberType,
+        categoryName,
         memberId,
         referralLink,
         sponsorId: sponsorId || null,
@@ -1321,7 +1324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalCommissions: "0",
         level: 1,
         isActive: true,
-        createdAt: new Date().toISOString()
+        createdAt: new Date()
       };
       
       console.log('🟢 Creating new member:', newMember);
