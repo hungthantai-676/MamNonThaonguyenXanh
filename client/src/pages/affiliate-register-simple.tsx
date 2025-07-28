@@ -96,7 +96,10 @@ export default function AffiliateRegisterSimple() {
     <div className="container mx-auto px-4 py-8">
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle>Đăng ký thành viên affiliate - WORKING VERSION</CardTitle>
+          <CardTitle>🔥 AFFILIATE REGISTER - USERNAME FIELD TEST 🔥</CardTitle>
+          <div className="bg-red-500 text-white p-2 rounded font-bold">
+            COMPONENT LOADED SUCCESSFULLY - USERNAME FIELD BELOW
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
