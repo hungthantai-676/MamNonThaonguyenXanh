@@ -105,10 +105,12 @@ export default function AffiliateRegisterSimple() {
       }, 1500);
     },
     onError: (error) => {
-      console.error('🔴 Login error:', error);
+      console.error('🔴 Login error full details:', error);
+      console.error('🔴 Error message:', error.message);
+      console.error('🔴 Error status:', error.status);
       toast({
         title: "Lỗi đăng nhập",
-        description: error.message,
+        description: `${error.message} (Status: ${error.status || 'Unknown'})`,
         variant: "destructive",
       });
     },
