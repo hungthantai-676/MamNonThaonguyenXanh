@@ -17,11 +17,13 @@ export default function Hero() {
 
   return (
     <section className="relative h-screen overflow-hidden">
-      {/* Background Image - Full screen */}
+      {/* Background Image - Full screen with proper sizing */}
       <div 
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url(${heroImage})`
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center center'
         }}
       ></div>
       
@@ -51,8 +53,7 @@ export default function Hero() {
               <Link href="/about">
                 <Button 
                   size="lg" 
-                  variant="outline" 
-                  className="border-2 border-white text-white hover:bg-white hover:text-primary-green px-6 py-4 text-lg font-semibold rounded-full backdrop-blur-sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 text-lg font-semibold rounded-full shadow-xl"
                 >
                   Tìm hiểu thêm
                 </Button>
