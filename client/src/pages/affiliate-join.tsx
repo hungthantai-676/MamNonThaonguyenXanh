@@ -279,13 +279,17 @@ export default function AffiliateJoin() {
                   name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tên đăng nhập</FormLabel>
+                      <FormLabel className="text-red-600 font-semibold">⚡ Tên đăng nhập (BẮT BUỘC)</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ví dụ: nguyenvana123" {...field} />
+                        <Input 
+                          placeholder="Ví dụ: nguyenvana123" 
+                          className="border-2 border-red-200 focus:border-red-500"
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
-                      <p className="text-xs text-gray-500">
-                        Chỉ được dùng chữ cái, số và dấu gạch dưới (_). Tối thiểu 3 ký tự.
+                      <p className="text-xs text-red-600 font-medium">
+                        ⚠️ Chỉ được dùng chữ cái, số và dấu gạch dưới (_). Tối thiểu 3 ký tự.
                       </p>
                     </FormItem>
                   )}
