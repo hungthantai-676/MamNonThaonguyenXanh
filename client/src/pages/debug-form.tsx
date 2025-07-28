@@ -1,0 +1,94 @@
+export default function DebugForm() {
+  console.log('🔥 DEBUG FORM COMPONENT LOADED');
+  
+  return (
+    <div style={{
+      backgroundColor: '#FF0000',
+      color: 'white',
+      padding: '50px',
+      minHeight: '100vh',
+      fontSize: '24px',
+      fontWeight: 'bold'
+    }}>
+      <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>
+        🚨 DEBUG FORM - KIỂM TRA USERNAME FIELD 🚨
+      </h1>
+      
+      <div style={{
+        backgroundColor: '#FFFF00',
+        color: '#000000',
+        padding: '30px',
+        margin: '20px 0',
+        border: '5px solid #000000',
+        borderRadius: '10px'
+      }}>
+        <h2 style={{ margin: '0 0 20px 0' }}>TÊN ĐĂNG NHẬP (BẮT BUỘC)</h2>
+        <input 
+          type="text" 
+          placeholder="Nhập tên đăng nhập ở đây"
+          style={{
+            width: '100%',
+            height: '60px',
+            fontSize: '24px',
+            padding: '15px',
+            border: '3px solid #FF0000',
+            borderRadius: '5px',
+            backgroundColor: '#FFFFFF'
+          }}
+        />
+        <p style={{ margin: '15px 0 0 0', fontSize: '18px' }}>
+          ⚠️ Nếu bạn thấy ô input này thì username field hoạt động bình thường
+        </p>
+      </div>
+
+      <div style={{ backgroundColor: '#333333', padding: '20px', borderRadius: '10px' }}>
+        <p style={{ margin: '10px 0' }}>📝 Họ và tên:</p>
+        <input type="text" placeholder="Nhập họ tên" style={{
+          width: '100%', height: '50px', fontSize: '18px', padding: '10px',
+          marginBottom: '15px', borderRadius: '5px', border: 'none'
+        }} />
+        
+        <p style={{ margin: '10px 0' }}>📧 Email:</p>
+        <input type="email" placeholder="email@example.com" style={{
+          width: '100%', height: '50px', fontSize: '18px', padding: '10px',
+          marginBottom: '15px', borderRadius: '5px', border: 'none'
+        }} />
+        
+        <p style={{ margin: '10px 0' }}>📱 Số điện thoại:</p>
+        <input type="tel" placeholder="0123456789" style={{
+          width: '100%', height: '50px', fontSize: '18px', padding: '10px',
+          marginBottom: '20px', borderRadius: '5px', border: 'none'
+        }} />
+      </div>
+
+      <button style={{
+        backgroundColor: '#00FF00',
+        color: '#000000',
+        padding: '20px 40px',
+        fontSize: '24px',
+        fontWeight: 'bold',
+        border: 'none',
+        borderRadius: '10px',
+        cursor: 'pointer',
+        width: '100%',
+        marginTop: '20px'
+      }}>
+        ĐĂNG KÝ NGAY - TEST BUTTON
+      </button>
+      
+      <div style={{
+        backgroundColor: '#000000',
+        color: '#FFFFFF',
+        padding: '20px',
+        marginTop: '20px',
+        borderRadius: '10px',
+        fontSize: '16px'
+      }}>
+        <p><strong>Hướng dẫn test:</strong></p>
+        <p>1. Nếu thấy trang này (màu đỏ) = routing OK</p>
+        <p>2. Nếu thấy ô input vàng "TÊN ĐĂNG NHẬP" = render OK</p>
+        <p>3. Nếu không thấy = có vấn đề nghiêm trọng về browser</p>
+      </div>
+    </div>
+  );
+}
