@@ -1,4 +1,4 @@
-import { users, articles, testimonials, programs, activities, admissionForms, contactForms, chatMessages, notifications, admissionSteps, mediaCovers, socialMediaLinks, serviceRegistrations, affiliateMembers, affiliateTransactions, affiliateRewards, dexTrades, customerConversions, commissionSettings, commissionTransactions, transactionHistory, withdrawalRequests, type User, type InsertUser, type Article, type InsertArticle, type Testimonial, type InsertTestimonial, type Program, type InsertProgram, type Activity, type InsertActivity, type AdmissionForm, type InsertAdmissionForm, type ContactForm, type InsertContactForm, type ChatMessage, type InsertChatMessage, type Notification, type InsertNotification, type AdmissionStep, type InsertAdmissionStep, type MediaCover, type InsertMediaCover, type SocialMediaLink, type InsertSocialMediaLink, type ServiceRegistration, type InsertServiceRegistration, type AffiliateMember, type InsertAffiliateMember, type AffiliateTransaction, type InsertAffiliateTransaction, type AffiliateReward, type InsertAffiliateReward, type DexTrade, type InsertDexTrade, type CustomerConversion, type InsertCustomerConversion, type CommissionSetting, type InsertCommissionSetting, type CommissionTransaction, type InsertCommissionTransaction, type TransactionHistory, type InsertTransactionHistory, type WithdrawalRequest, type InsertWithdrawalRequest } from "@shared/schema";
+import { users, articles, testimonials, programs, activities, admissionForms, contactForms, chatMessages, notifications, admissionSteps, mediaCovers, socialMediaLinks, serviceRegistrations, affiliateMembers, affiliateTransactions, affiliateRewards, dexTrades, customerConversions, commissionSettings, commissionTransactions, transactionHistory, withdrawalRequests, homepageContent, type User, type InsertUser, type Article, type InsertArticle, type Testimonial, type InsertTestimonial, type Program, type InsertProgram, type Activity, type InsertActivity, type AdmissionForm, type InsertAdmissionForm, type ContactForm, type InsertContactForm, type ChatMessage, type InsertChatMessage, type Notification, type InsertNotification, type AdmissionStep, type InsertAdmissionStep, type MediaCover, type InsertMediaCover, type SocialMediaLink, type InsertSocialMediaLink, type ServiceRegistration, type InsertServiceRegistration, type AffiliateMember, type InsertAffiliateMember, type AffiliateTransaction, type InsertAffiliateTransaction, type AffiliateReward, type InsertAffiliateReward, type DexTrade, type InsertDexTrade, type CustomerConversion, type InsertCustomerConversion, type CommissionSetting, type InsertCommissionSetting, type CommissionTransaction, type InsertCommissionTransaction, type TransactionHistory, type InsertTransactionHistory, type WithdrawalRequest, type InsertWithdrawalRequest, type HomepageContent, type InsertHomepageContent } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 
@@ -146,6 +146,10 @@ export interface IStorage {
   // Transaction history methods
   getTransactionHistory(memberId: string): Promise<TransactionHistory[]>;
   createTransactionHistory(transaction: InsertTransactionHistory): Promise<TransactionHistory>;
+  
+  // Homepage content methods
+  getHomepageContent(): Promise<HomepageContent | undefined>;
+  saveHomepageContent(content: InsertHomepageContent): Promise<HomepageContent>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -815,6 +819,34 @@ export class DatabaseStorage implements IStorage {
       .values(transactionData)
       .returning();
     return transaction;
+  }
+
+  // Homepage content methods
+  async getHomepageContent(): Promise<HomepageContent | undefined> {
+    const [content] = await db.select().from(homepageContent).limit(1);
+    return content || undefined;
+  }
+
+  async saveHomepageContent(contentData: InsertHomepageContent): Promise<HomepageContent> {
+    // Check if content exists
+    const existing = await this.getHomepageContent();
+    
+    if (existing) {
+      // Update existing content
+      const [content] = await db
+        .update(homepageContent)
+        .set({ ...contentData, updatedAt: new Date() })
+        .where(eq(homepageContent.id, existing.id))
+        .returning();
+      return content;
+    } else {
+      // Create new content
+      const [content] = await db
+        .insert(homepageContent)
+        .values(contentData)
+        .returning();
+      return content;
+    }
   }
 
   // Demo data management

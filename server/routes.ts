@@ -1100,15 +1100,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Homepage content API endpoints
+  // Homepage content API endpoints - Save to database
   app.post("/api/homepage-content", async (req, res) => {
     try {
-      // In a real app, save to database. For now, just return success
-      console.log("Homepage content saved:", req.body);
-      res.json({ message: "Homepage content saved successfully", data: req.body });
+      const content = req.body;
+      console.log("Saving homepage content to database:", content);
+      
+      // Save to actual database
+      await storage.saveHomepageContent(content);
+      
+      res.json({ message: "Homepage content saved successfully", data: content });
     } catch (error) {
       console.error("Error saving homepage content:", error);
       res.status(500).json({ message: "Failed to save homepage content" });
+    }
+  });
+
+  // Get homepage content
+  app.get("/api/homepage-content", async (req, res) => {
+    try {
+      const content = await storage.getHomepageContent();
+      res.json(content);
+    } catch (error) {
+      console.error("Error getting homepage content:", error);
+      res.status(500).json({ message: "Failed to get homepage content" });
     }
   });
 

@@ -1,7 +1,20 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import type { HomepageContent } from "@shared/schema";
+import heroImage from "@assets/image_1753710172214.png";
 
 export default function Hero() {
+  // Fetch homepage content from database
+  const { data: content } = useQuery<HomepageContent>({
+    queryKey: ["/api/homepage-content"],
+    retry: false,
+  });
+
+  // Default values if no content from database
+  const heroTitle = content?.heroTitle || "Mầm Non Thảo Nguyên Xanh";
+  const heroSubtitle = content?.heroSubtitle || "Nơi nuôi dưỡng tâm hồn - Phát triển tư duy - Xây dựng tương lai";
+
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
       {/* Hero Background */}
@@ -10,16 +23,16 @@ export default function Hero() {
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: "url('https://images.unsplash.com/photo-1587654780291-39c9404d746b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1920&h=1080')"
+          backgroundImage: `url(${heroImage})`
         }}
       ></div>
       
       <div className="relative z-20 text-center text-white container mx-auto px-4">
         <h1 className="font-bold text-5xl md:text-6xl lg:text-7xl mb-6">
-          Mầm Non Thảo Nguyên Xanh
+          {heroTitle}
         </h1>
         <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
-          Nơi nuôi dưỡng tâm hồn - Phát triển tư duy - Xây dựng tương lai
+          {heroSubtitle}
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/admission">

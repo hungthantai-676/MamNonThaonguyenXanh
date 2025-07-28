@@ -76,24 +76,24 @@ export default function Home() {
             
             <div className="grid grid-cols-2 gap-4">
               <img 
-                src="https://images.unsplash.com/photo-1580582932707-520aed937b7b" 
-                alt="Classroom" 
-                className="rounded-lg shadow-md"
+                src="/attached_assets/image_1753704643377.png" 
+                alt="Lớp học" 
+                className="rounded-lg shadow-md object-cover w-full h-48"
               />
               <img 
-                src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9" 
-                alt="Learning activities" 
-                className="rounded-lg shadow-md"
+                src="/attached_assets/image_1753704749817.png" 
+                alt="Hoạt động học tập" 
+                className="rounded-lg shadow-md object-cover w-full h-48"
               />
               <img 
-                src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b" 
-                alt="Teacher and students" 
-                className="rounded-lg shadow-md"
+                src="/attached_assets/image_1753705454643.png" 
+                alt="Giáo viên và học sinh" 
+                className="rounded-lg shadow-md object-cover w-full h-48"
               />
               <img 
-                src="https://images.unsplash.com/photo-1544717297-fa95b6ee9643" 
-                alt="Playground" 
-                className="rounded-lg shadow-md"
+                src="/attached_assets/image_1753705646404.png" 
+                alt="Sân chơi" 
+                className="rounded-lg shadow-md object-cover w-full h-48"
               />
             </div>
           </div>

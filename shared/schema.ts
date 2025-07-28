@@ -480,3 +480,25 @@ export type InsertDexTrade = z.infer<typeof insertDexTradeSchema>;
 
 export type TransactionHistory = typeof transactionHistory.$inferSelect;
 export type InsertTransactionHistory = z.infer<typeof insertTransactionHistorySchema>;
+
+// Homepage content table
+export const homepageContent = pgTable("homepage_content", {
+  id: serial("id").primaryKey(),
+  heroTitle: text("hero_title").notNull(),
+  heroSubtitle: text("hero_subtitle").notNull(),
+  highlight1Title: text("highlight1_title").notNull(),
+  highlight1Desc: text("highlight1_desc").notNull(),
+  highlight2Title: text("highlight2_title").notNull(),
+  highlight2Desc: text("highlight2_desc").notNull(),
+  highlight3Title: text("highlight3_title").notNull(),
+  highlight3Desc: text("highlight3_desc").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertHomepageContentSchema = createInsertSchema(homepageContent).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export type HomepageContent = typeof homepageContent.$inferSelect;
+export type InsertHomepageContent = z.infer<typeof insertHomepageContentSchema>;
