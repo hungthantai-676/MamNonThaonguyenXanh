@@ -12,7 +12,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Gift, Users, Star, Crown, Shield, UserPlus, QrCode } from "lucide-react";
 
 const affiliateJoinSchema = z.object({
@@ -156,118 +155,106 @@ export default function AffiliateJoinNew() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 {/* Name Field */}
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Họ và tên</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nhập họ và tên của bạn" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* USERNAME FIELD - SIMPLE BUT VISIBLE */}
-                <div className="bg-blue-50 border-2 border-blue-300 p-4 rounded-lg">
-                  <FormField
-                    control={form.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-blue-800 font-bold text-lg">
-                          Tên đăng nhập *
-                        </FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="Nhập tên đăng nhập (ví dụ: nguyenvana123)" 
-                            className="border-2 border-blue-400 focus:border-blue-600 h-12 text-base font-medium"
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                        <p className="text-sm text-blue-700 mt-1">
-                          Chỉ được dùng chữ cái, số và dấu gạch dưới (_)
-                        </p>
-                      </FormItem>
-                    )}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Họ và tên *</label>
+                  <Input 
+                    {...form.register("name")}
+                    placeholder="Nhập họ và tên của bạn" 
+                    className="w-full"
                   />
+                  {form.formState.errors.name && (
+                    <p className="text-red-500 text-sm mt-1">{form.formState.errors.name.message}</p>
+                  )}
+                </div>
+
+                {/* USERNAME FIELD - VERY VISIBLE */}
+                <div className="bg-yellow-100 border-4 border-yellow-500 p-6 rounded-lg">
+                  <label className="block text-xl font-bold text-red-600 mb-3">
+                    🔥 TÊN ĐĂNG NHẬP (BẮT BUỘC) 🔥
+                  </label>
+                  <Input 
+                    {...form.register("username")}
+                    placeholder="Ví dụ: nguyenvana123" 
+                    className="w-full border-3 border-red-500 focus:border-red-700 h-14 text-lg font-bold bg-white"
+                  />
+                  {form.formState.errors.username && (
+                    <p className="text-red-500 text-sm mt-2 font-bold">{form.formState.errors.username.message}</p>
+                  )}
+                  <div className="bg-red-100 p-3 mt-3 rounded border-l-4 border-red-500">
+                    <p className="text-red-700 font-bold text-sm">
+                      ⚠️ QUAN TRỌNG: Chỉ được dùng chữ cái, số và dấu gạch dưới (_). Tối thiểu 3 ký tự.
+                    </p>
+                  </div>
                 </div>
 
                 {/* Email Field */}
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="email@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Email *</label>
+                  <Input 
+                    {...form.register("email")}
+                    type="email"
+                    placeholder="email@example.com" 
+                    className="w-full"
+                  />
+                  {form.formState.errors.email && (
+                    <p className="text-red-500 text-sm mt-1">{form.formState.errors.email.message}</p>
                   )}
-                />
+                </div>
 
                 {/* Phone Field */}
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Số điện thoại</FormLabel>
-                      <FormControl>
-                        <Input placeholder="0123456789" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Số điện thoại *</label>
+                  <Input 
+                    {...form.register("phone")}
+                    placeholder="0123456789" 
+                    className="w-full"
+                  />
+                  {form.formState.errors.phone && (
+                    <p className="text-red-500 text-sm mt-1">{form.formState.errors.phone.message}</p>
                   )}
-                />
+                </div>
 
                 {/* Member Type Field */}
-                <FormField
-                  control={form.control}
-                  name="memberType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Loại thành viên</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-2"
-                        >
-                          <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-green-50">
-                            <RadioGroupItem value="teacher" id="teacher" />
-                            <Label htmlFor="teacher" className="flex items-center gap-2 cursor-pointer">
-                              <Shield className="w-4 h-4 text-green-600" />
-                              <div>
-                                <div className="font-medium">Chăm sóc phụ huynh</div>
-                                <div className="text-sm text-gray-500">Dành cho giáo viên và nhân viên</div>
-                              </div>
-                            </Label>
-                          </div>
-                          <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-purple-50">
-                            <RadioGroupItem value="parent" id="parent" />
-                            <Label htmlFor="parent" className="flex items-center gap-2 cursor-pointer">
-                              <Crown className="w-4 h-4 text-purple-600" />
-                              <div>
-                                <div className="font-medium">Đại sứ thương hiệu</div>
-                                <div className="text-sm text-gray-500">Dành cho phụ huynh và người giới thiệu</div>
-                              </div>
-                            </Label>
-                          </div>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div>
+                  <label className="block text-sm font-medium mb-2">Loại thành viên *</label>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-green-50">
+                      <input 
+                        type="radio" 
+                        id="teacher" 
+                        value="teacher"
+                        {...form.register("memberType")}
+                        className="w-4 h-4"
+                      />
+                      <label htmlFor="teacher" className="flex items-center gap-2 cursor-pointer">
+                        <Shield className="w-4 h-4 text-green-600" />
+                        <div>
+                          <div className="font-medium">Chăm sóc phụ huynh</div>
+                          <div className="text-sm text-gray-500">Dành cho giáo viên và nhân viên</div>
+                        </div>
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-purple-50">
+                      <input 
+                        type="radio" 
+                        id="parent" 
+                        value="parent"
+                        {...form.register("memberType")}
+                        className="w-4 h-4"
+                        defaultChecked
+                      />
+                      <label htmlFor="parent" className="flex items-center gap-2 cursor-pointer">
+                        <Crown className="w-4 h-4 text-purple-600" />
+                        <div>
+                          <div className="font-medium">Đại sứ thương hiệu</div>
+                          <div className="text-sm text-gray-500">Dành cho phụ huynh và người giới thiệu</div>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
 
                 <Button
                   type="submit"
@@ -277,7 +264,6 @@ export default function AffiliateJoinNew() {
                   {registerMutation.isPending ? "Đang xử lý..." : "🎯 Đăng ký ngay"}
                 </Button>
               </form>
-            </Form>
           </CardContent>
         </Card>
       </div>
