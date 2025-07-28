@@ -322,30 +322,61 @@ export default function AdminDashboardFixed() {
 
   // Handle file uploads with preview
   const handleFileUpload = (file: File, type: 'logo' | 'banner' | 'video') => {
-    if (!file) return;
+    if (!file) {
+      console.log('No file provided for upload');
+      return;
+    }
+
+    console.log(`Starting upload for ${type}:`, file.name, file.size, file.type);
 
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result as string;
+      console.log(`File loaded for ${type}, result length:`, result ? result.length : 0);
       
       switch(type) {
         case 'logo':
           setLogoFile(file);
           setLogoPreview(result);
+          console.log('Logo preview set:', result ? 'Success' : 'Failed');
           break;
         case 'banner':
           setBannerFile(file);
           setBannerPreview(result);
+          console.log('Banner preview set:', result ? 'Success' : 'Failed');
           break;
         case 'video':
           setVideoFile(file);
-          setVideoPreview(result);
+          setVideoPreview(URL.createObjectURL(file)); // Better for video
+          console.log('Video preview set:', 'Success');
           break;
       }
+      
+      // Inform user that file is ready
+      toast({
+        title: `${type} đã sẵn sàng!`,
+        description: "File đã được tải lên và xem trước. Bấm 'Lưu' để cập nhật.",
+      });
+    };
+
+    reader.onerror = (error) => {
+      console.error(`Error reading ${type} file:`, error);
+      toast({
+        title: "Lỗi đọc file",
+        description: `Không thể đọc file ${type}. Vui lòng thử lại.`,
+        variant: "destructive",
+      });
     };
 
     if (type === 'video') {
-      reader.readAsDataURL(file);
+      // For video, we'll use URL.createObjectURL instead
+      setVideoFile(file);
+      setVideoPreview(URL.createObjectURL(file));
+      console.log('Video file processed with URL.createObjectURL');
+      toast({
+        title: "Video đã sẵn sàng!",
+        description: "Video đã được tải lên và xem trước. Bấm 'Lưu' để cập nhật.",
+      });
     } else {
       reader.readAsDataURL(file);
     }
@@ -484,8 +515,19 @@ export default function AdminDashboardFixed() {
                     }}
                   />
                   <Button 
-                    onClick={() => saveImageMutation.mutate({ type: 'logo', url: logoPreview || '' })}
-                    disabled={saveImageMutation.isPending || !logoPreview}
+                    onClick={() => {
+                      console.log('Logo save clicked, preview:', logoPreview ? 'Available' : 'Missing');
+                      if (!logoPreview) {
+                        toast({
+                          title: "Chưa có ảnh",
+                          description: "Vui lòng chọn ảnh logo trước khi lưu",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      saveImageMutation.mutate({ type: 'logo', url: logoPreview });
+                    }}
+                    disabled={saveImageMutation.isPending}
                     className="w-full"
                   >
                     {saveImageMutation.isPending ? "Đang lưu..." : "💾 Lưu Logo"}
@@ -519,8 +561,19 @@ export default function AdminDashboardFixed() {
                     }}
                   />
                   <Button 
-                    onClick={() => saveImageMutation.mutate({ type: 'banner', url: bannerPreview || '' })}
-                    disabled={saveImageMutation.isPending || !bannerPreview}
+                    onClick={() => {
+                      console.log('Banner save clicked, preview:', bannerPreview ? 'Available' : 'Missing');
+                      if (!bannerPreview) {
+                        toast({
+                          title: "Chưa có ảnh",
+                          description: "Vui lòng chọn ảnh banner trước khi lưu",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      saveImageMutation.mutate({ type: 'banner', url: bannerPreview });
+                    }}
+                    disabled={saveImageMutation.isPending}
                     className="w-full"
                   >
                     {saveImageMutation.isPending ? "Đang lưu..." : "💾 Lưu Banner"}
@@ -554,8 +607,19 @@ export default function AdminDashboardFixed() {
                     }}
                   />
                   <Button 
-                    onClick={() => saveImageMutation.mutate({ type: 'video', url: videoPreview || '' })}
-                    disabled={saveImageMutation.isPending || !videoPreview}
+                    onClick={() => {
+                      console.log('Video save clicked, preview:', videoPreview ? 'Available' : 'Missing');
+                      if (!videoPreview) {
+                        toast({
+                          title: "Chưa có video",
+                          description: "Vui lòng chọn video trước khi lưu",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      saveImageMutation.mutate({ type: 'video', url: videoPreview });
+                    }}
+                    disabled={saveImageMutation.isPending}
                     className="w-full"
                   >
                     {saveImageMutation.isPending ? "Đang lưu..." : "💾 Lưu Video"}
