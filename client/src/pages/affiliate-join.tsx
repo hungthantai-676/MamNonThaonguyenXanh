@@ -280,41 +280,19 @@ export default function AffiliateJoin() {
                   )}
                 />
 
-                {/* USERNAME FIELD - CRITICAL FIELD - MUST BE VISIBLE */}
-                <div className="bg-red-100 p-6 border-4 border-red-500 rounded-lg">
-                  <div className="text-center mb-4">
-                    <h3 className="text-2xl font-bold text-red-700">⚠️ TRƯỜNG BẮT BUỘC ⚠️</h3>
-                    <p className="text-red-600 font-semibold">Tên đăng nhập để truy cập hệ thống</p>
-                  </div>
-                  <FormField
-                    control={form.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-red-800 font-bold text-xl block text-center">
-                          🔴 TÊN ĐĂNG NHẬP (USERNAME)
-                        </FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="Ví dụ: nguyenvana123, tranvietanh, lethiminh" 
-                            className="border-4 border-red-600 focus:border-red-800 bg-white text-lg p-4 text-center font-bold"
-                            style={{ minHeight: '60px', fontSize: '18px' }}
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage className="text-red-700 font-bold text-center" />
-                        <div className="bg-yellow-100 p-3 rounded border-2 border-yellow-400 mt-2">
-                          <p className="text-sm text-red-800 font-bold text-center">
-                            🚨 QUY TẮC: Chỉ được dùng chữ cái (a-z), số (0-9) và dấu gạch dưới (_)
-                          </p>
-                          <p className="text-sm text-red-800 font-bold text-center">
-                            📝 VÍ DỤ HỢP LỆ: user123, nguyen_van_a, teacher2024
-                          </p>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tên đăng nhập</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nhập tên đăng nhập (chỉ chữ, số và dấu _)" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
 
 
