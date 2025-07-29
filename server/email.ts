@@ -6,7 +6,7 @@ const createTransporter = () => {
   return nodemailer.createTransporter({
     service: 'gmail',
     auth: {
-      user: process.env.EMAIL_USER || 'mamnonthaonguyenxanh@gmail.com',
+      user: process.env.EMAIL_USER || 'Mamnonthaonguyenxanh2019@gmail.com',
       pass: process.env.EMAIL_APP_PASSWORD // Gmail App Password
     }
   });
@@ -17,8 +17,8 @@ export async function sendServiceRegistrationEmail(registration: ServiceRegistra
     const transporter = createTransporter();
     
     const mailOptions = {
-      from: process.env.EMAIL_USER || 'mamnonthaonguyenxanh@gmail.com',
-      to: 'mamnonthaonguyenxanh@gmail.com',
+      from: process.env.EMAIL_USER || 'Mamnonthaonguyenxanh2019@gmail.com',
+      to: 'Mamnonthaonguyenxanh2019@gmail.com',
       subject: `🔔 Đăng ký dịch vụ mới: ${registration.serviceName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -92,7 +92,7 @@ export async function sendPasswordResetEmail(userEmail: string, tempPassword: st
     const transporter = createTransporter();
     
     const mailOptions = {
-      from: process.env.EMAIL_USER || 'mamnonthaonguyenxanh@gmail.com',
+      from: process.env.EMAIL_USER || 'Mamnonthaonguyenxanh2019@gmail.com',
       to: userEmail,
       subject: '🔑 Lấy lại mật khẩu - Mầm Non Thảo Nguyên Xanh',
       html: `
@@ -160,8 +160,8 @@ export async function sendTestEmail() {
     const transporter = createTransporter();
     
     const mailOptions = {
-      from: process.env.EMAIL_USER || 'mamnonthaonguyenxanh@gmail.com',
-      to: 'mamnonthaonguyenxanh@gmail.com',
+      from: process.env.EMAIL_USER || 'Mamnonthaonguyenxanh2019@gmail.com',
+      to: 'Mamnonthaonguyenxanh2019@gmail.com',
       subject: '🧪 Test Email - Hệ thống thông báo hoạt động',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">

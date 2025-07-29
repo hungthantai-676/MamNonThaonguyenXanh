@@ -23,11 +23,11 @@ export default function Footer() {
               Nơi nuôi dưỡng tâm hồn, phát triển tư duy và xây dựng tương lai cho trẻ em.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="https://www.facebook.com/MamNonMontessoriThaoNguyenXanh" target="_blank" className="text-gray-400 hover:text-white transition-colors">
                 <i className="fab fa-facebook-f text-xl"></i>
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <i className="fab fa-instagram text-xl"></i>
+              <a href="https://zalo.me/0856318686" target="_blank" className="text-gray-400 hover:text-white transition-colors">
+                <span className="font-bold text-sm">Zalo</span>
               </a>
               <a href="#" className="text-gray-400 hover:text-white transition-colors">
                 <i className="fab fa-youtube text-xl"></i>
@@ -70,7 +70,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center space-x-3">
                 <i className="fas fa-envelope text-primary-green"></i>
-                <p className="text-gray-400">mamnonthaonguyenxanh@gmail.com</p>
+                <p className="text-gray-400">Mamnonthaonguyenxanh2019@gmail.com</p>
               </div>
             </div>
           </div>

@@ -32,7 +32,7 @@ export default function ContactForm() {
     onSuccess: () => {
       toast({
         title: "Gửi tin nhắn thành công!",
-        description: "Chúng tôi sẽ phản hồi trong thời gian sớm nhất.",
+        description: "Chúng tôi sẽ liên hệ qua Zalo 0856318686 hoặc Facebook page",
       });
       form.reset();
       queryClient.invalidateQueries({ queryKey: ["/api/contact-forms"] });

@@ -54,7 +54,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-dark-gray mb-1">Email</h3>
-                    <p className="text-gray-600">mamnonthaonguyenxanh@gmail.com</p>
+                    <p className="text-gray-600">Mamnonthaonguyenxanh2019@gmail.com</p>
                   </div>
                 </div>
 
@@ -75,7 +75,7 @@ export default function Contact() {
               <div className="mt-8">
                 <h3 className="font-semibold text-dark-gray mb-4">Theo dõi chúng tôi</h3>
                 <div className="flex space-x-4">
-                  <a href="https://www.facebook.com/mamnonthaonguyenxanh" target="_blank" className="w-12 h-12 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center justify-center text-white transition-colors">
+                  <a href="https://www.facebook.com/MamNonMontessoriThaoNguyenXanh" target="_blank" className="w-12 h-12 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center justify-center text-white transition-colors">
                     <i className="fab fa-facebook-f"></i>
                   </a>
                   <a href="https://zalo.me/0856318686" target="_blank" className="w-12 h-12 bg-blue-400 hover:bg-blue-500 rounded-lg flex items-center justify-center text-white transition-colors">

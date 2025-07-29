@@ -36,7 +36,7 @@ export default function AdmissionForm() {
     onSuccess: () => {
       toast({
         title: "Đăng ký thành công!",
-        description: "Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.",
+        description: "Chúng tôi sẽ liên hệ qua Zalo 0856318686 hoặc email Mamnonthaonguyenxanh2019@gmail.com",
       });
       form.reset();
       queryClient.invalidateQueries({ queryKey: ["/api/admission-forms"] });
