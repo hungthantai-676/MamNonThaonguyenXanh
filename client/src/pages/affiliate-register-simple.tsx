@@ -90,16 +90,8 @@ export default function AffiliateRegisterSimple() {
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: async (data: typeof loginData) => {
-      console.log('🟢 Login attempt:', data.username);
-      console.log('🟢 Calling endpoint:', "/api/affiliate/login");
-      try {
-        const response = await apiRequest("POST", "/api/affiliate/login", data);
-        console.log('🟢 Response received:', response.status);
-        return response.json();
-      } catch (error) {
-        console.error('🔴 API call failed:', error);
-        throw error;
-      }
+      const response = await apiRequest("POST", "/api/affiliate/login", data);
+      return response.json();
     },
     onSuccess: (data) => {
       console.log('🟢 Login success:', data);
@@ -119,22 +111,11 @@ export default function AffiliateRegisterSimple() {
       }, 1500);
     },
     onError: (error) => {
-      console.error('🔴 Login error:', error);
-      
-      // Check if it's a 404 error
-      if (error.message.includes('404')) {
-        toast({
-          title: "Lỗi 404 - Không tìm thấy endpoint",
-          description: "Đang kiểm tra lại kết nối server...",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Lỗi đăng nhập",
-          description: error.message,
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Lỗi đăng nhập",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 

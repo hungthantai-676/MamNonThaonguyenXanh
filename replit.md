@@ -261,6 +261,8 @@ Changelog:
 - July 28, 2025. ISSUE IDENTIFIED: Vite middleware intercepting all routes before Express endpoints can respond - causing affiliate registration form display problems
 - July 28, 2025. WORKAROUND: Created multiple test endpoints (/api/test-form, test-simple.html) and API registration endpoint working correctly
 - July 28, 2025. ROOT CAUSE: React routing cache preventing new form components from displaying, API backend fully functional
+- July 29, 2025. RESOLVED: Fixed QR affiliate form input text visibility issues - all form fields now display text clearly with black text on white background
+- July 29, 2025. CONFIRMED: Affiliate login functionality working successfully - users can login with testfinal/123456 and access member dashboard
 ```
 
 ## User Preferences
