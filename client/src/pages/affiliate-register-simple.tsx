@@ -20,6 +20,8 @@ export default function AffiliateRegisterSimple() {
     memberType: "parent"
   });
   const [showSuccess, setShowSuccess] = useState(false);
+  const [tempPassword, setTempPassword] = useState("");
+  const [showTempPassword, setShowTempPassword] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [loginData, setLoginData] = useState({
@@ -41,6 +43,18 @@ export default function AffiliateRegisterSimple() {
     },
     onSuccess: async (data) => {
       console.log('🟢 Registration success:', data);
+      
+      // Check if this was a QR registration (no password provided)
+      if (data.showPassword && data.tempPassword) {
+        setTempPassword(data.tempPassword);
+        setShowTempPassword(true);
+        toast({
+          title: "Đăng ký thành công!",
+          description: "Mật khẩu tạm thời đã được tạo cho bạn",
+        });
+        return;
+      }
+      
       toast({
         title: "Đăng ký thành công!",
         description: "Đang tự động đăng nhập...",
@@ -305,6 +319,66 @@ export default function AffiliateRegisterSimple() {
             >
               🚀 Vào trang thành viên ngay
             </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show temporary password display if auto-generated
+  if (showTempPassword) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-lg bg-white">
+          <CardHeader className="text-center bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-t-lg">
+            <CardTitle className="text-2xl font-bold">🔑 Mật khẩu tạm thời</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center p-6 bg-white">
+            <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4 mb-4">
+              <p className="text-gray-700 mb-3">
+                Mật khẩu tạm thời của bạn đã được tạo:
+              </p>
+              <div className="bg-white border-2 border-yellow-300 rounded-lg p-3 mb-3">
+                <p className="font-bold text-lg text-gray-800">Tên đăng nhập: {formData.username}</p>
+                <p className="font-bold text-lg text-red-600">Mật khẩu: {tempPassword}</p>
+              </div>
+              <p className="text-sm text-gray-600">
+                📝 <strong>Ghi chú quan trọng:</strong> Hãy lưu lại thông tin này để đăng nhập lần sau!
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              <Button 
+                onClick={() => {
+                  setLoginData({username: formData.username, password: tempPassword});
+                  setShowTempPassword(false);
+                  setShowLogin(true);
+                }}
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition-all"
+              >
+                🚀 Đăng nhập ngay
+              </Button>
+              
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  setTempPassword("");
+                  setShowTempPassword(false);
+                  setFormData({
+                    name: "",
+                    username: "",
+                    email: "",
+                    phone: "",
+                    password: "",
+                    confirmPassword: "",
+                    memberType: "parent"
+                  });
+                }}
+                className="w-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 py-3 rounded-lg"
+              >
+                ← Đăng ký tài khoản khác
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

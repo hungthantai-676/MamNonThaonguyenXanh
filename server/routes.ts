@@ -1464,10 +1464,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { name, username, email, phone, password, memberType, sponsorId } = req.body;
       
+      // Generate temporary password if not provided (for QR code registrations)
+      const finalPassword = password || Math.random().toString(36).slice(-8);
+      
       // Basic validation
-      if (!name || !username || !email || !phone || !password || !memberType) {
+      if (!name || !username || !email || !phone || !memberType) {
         return res.status(400).json({ 
-          message: "Thiếu thông tin bắt buộc. Vui lòng điền đầy đủ: Tên, username, email, phone, password, memberType" 
+          message: "Thiếu thông tin bắt buộc. Vui lòng điền đầy đủ: Tên, username, email, phone, memberType" 
         });
       }
       
@@ -1477,7 +1480,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      if (password.length < 6) {
+      if (finalPassword.length < 6) {
         return res.status(400).json({ 
           message: "Mật khẩu phải có ít nhất 6 ký tự" 
         });
@@ -1504,7 +1507,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         username,
         email,
         phone,
-        password, // Store password (in production, should be hashed)
+        password: finalPassword, // Store password (in production, should be hashed)
         memberType,
         categoryName,
         memberId,
@@ -1526,7 +1529,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const savedMember = await storage.createAffiliateMember(newMember);
         console.log('🟢 Member saved to database:', savedMember);
-        res.status(201).json(savedMember);
+        
+        // Include temporary password in response if auto-generated
+        const response = {
+          ...savedMember,
+          tempPassword: !password ? finalPassword : undefined,
+          showPassword: !password
+        };
+        
+        res.status(201).json(response);
       } catch (dbError) {
         console.error('🔴 Database save failed:', dbError);
         

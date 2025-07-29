@@ -265,6 +265,8 @@ Changelog:
 - July 29, 2025. CONFIRMED: Affiliate login functionality working successfully - users can login with testfinal/123456 and access member dashboard
 - July 29, 2025. FIXED: Affiliate registration database persistence - new accounts now properly saved to database and can login immediately
 - July 29, 2025. ENHANCED: Registration error handling - duplicate username detection and proper error messages for failed database operations
+- July 29, 2025. IMPLEMENTED: QR code registration with automatic temporary password generation - users who scan QR codes get auto-generated passwords displayed clearly
+- July 29, 2025. ADDED: Temporary password display screen with clear instructions and one-click login for QR registrations
 ```
 
 ## User Preferences
