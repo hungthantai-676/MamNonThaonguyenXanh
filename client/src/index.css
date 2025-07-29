@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Force input text to be visible */
+input[type="text"], 
+input[type="email"], 
+input[type="tel"], 
+input[type="password"] {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+}
+
+/* Ensure placeholder text is visible */
+input::placeholder {
+  color: #6b7280 !important;
+  opacity: 1 !important;
+}
+
 :root {
   --background: hsl(0, 0%, 100%);
   --foreground: hsl(240, 10%, 3.9%);

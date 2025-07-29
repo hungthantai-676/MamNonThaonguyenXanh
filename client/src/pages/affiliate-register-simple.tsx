@@ -250,7 +250,8 @@ export default function AffiliateRegisterSimple() {
                   placeholder="email@example.com"
                   value={forgotPasswordData.email}
                   onChange={(e) => setForgotPasswordData(prev => ({...prev, email: e.target.value}))}
-                  className="bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-blue-500"
+                  className="bg-white border-2 border-gray-200 text-black placeholder-gray-500 focus:border-blue-500"
+                  style={{ color: '#000000', backgroundColor: '#ffffff' }}
                 />
               </div>
               <div>
@@ -259,7 +260,8 @@ export default function AffiliateRegisterSimple() {
                   placeholder="Nhập tên đăng nhập"
                   value={forgotPasswordData.username}
                   onChange={(e) => setForgotPasswordData(prev => ({...prev, username: e.target.value}))}
-                  className="bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-blue-500"
+                  className="bg-white border-2 border-gray-200 text-black placeholder-gray-500 focus:border-blue-500"
+                  style={{ color: '#000000', backgroundColor: '#ffffff' }}
                 />
               </div>
               <Button 
@@ -346,7 +348,8 @@ export default function AffiliateRegisterSimple() {
                   value={formData.name}
                   onChange={(e) => handleChange("name", e.target.value)}
                   placeholder="Nhập họ và tên"
-                  className="bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-green-500"
+                  className="bg-white border-2 border-gray-200 text-black placeholder-gray-500 focus:border-green-500"
+                  style={{ color: '#000000', backgroundColor: '#ffffff' }}
                   required
                 />
               </div>
@@ -358,7 +361,8 @@ export default function AffiliateRegisterSimple() {
                   value={formData.username}
                   onChange={(e) => handleChange("username", e.target.value)}
                   placeholder="Ví dụ: nguyenvana123"
-                  className="bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-green-500"
+                  className="bg-white border-2 border-gray-200 text-black placeholder-gray-500 focus:border-green-500"
+                  style={{ color: '#000000', backgroundColor: '#ffffff' }}
                   required
                 />
               </div>
@@ -370,7 +374,8 @@ export default function AffiliateRegisterSimple() {
                   value={formData.email}
                   onChange={(e) => handleChange("email", e.target.value)}
                   placeholder="email@example.com"
-                  className="bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-green-500"
+                  className="bg-white border-2 border-gray-200 text-black placeholder-gray-500 focus:border-green-500"
+                  style={{ color: '#000000', backgroundColor: '#ffffff' }}
                   required
                 />
               </div>
@@ -382,7 +387,8 @@ export default function AffiliateRegisterSimple() {
                   value={formData.phone}
                   onChange={(e) => handleChange("phone", e.target.value)}
                   placeholder="0123456789"
-                  className="bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-green-500"
+                  className="bg-white border-2 border-gray-200 text-black placeholder-gray-500 focus:border-green-500"
+                  style={{ color: '#000000', backgroundColor: '#ffffff' }}
                   required
                 />
               </div>
@@ -394,7 +400,8 @@ export default function AffiliateRegisterSimple() {
                   value={formData.password}
                   onChange={(e) => handleChange("password", e.target.value)}
                   placeholder="Nhập mật khẩu (ít nhất 6 ký tự)"
-                  className="bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-green-500"
+                  className="bg-white border-2 border-gray-200 text-black placeholder-gray-500 focus:border-green-500"
+                  style={{ color: '#000000', backgroundColor: '#ffffff' }}
                   required
                 />
               </div>
@@ -406,7 +413,8 @@ export default function AffiliateRegisterSimple() {
                   value={formData.confirmPassword}
                   onChange={(e) => handleChange("confirmPassword", e.target.value)}
                   placeholder="Nhập lại mật khẩu"
-                  className="bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-green-500"
+                  className="bg-white border-2 border-gray-200 text-black placeholder-gray-500 focus:border-green-500"
+                  style={{ color: '#000000', backgroundColor: '#ffffff' }}
                   required
                 />
               </div>
@@ -461,7 +469,8 @@ export default function AffiliateRegisterSimple() {
                   value={loginData.username}
                   onChange={(e) => setLoginData(prev => ({ ...prev, username: e.target.value }))}
                   placeholder="Nhập tên đăng nhập"
-                  className="bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-blue-500"
+                  className="bg-white border-2 border-gray-200 text-black placeholder-gray-500 focus:border-blue-500"
+                  style={{ color: '#000000', backgroundColor: '#ffffff' }}
                   required
                 />
               </div>
@@ -473,7 +482,8 @@ export default function AffiliateRegisterSimple() {
                   value={loginData.password}
                   onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
                   placeholder="Nhập mật khẩu"
-                  className="bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-blue-500"
+                  className="bg-white border-2 border-gray-200 text-black placeholder-gray-500 focus:border-blue-500"
+                  style={{ color: '#000000', backgroundColor: '#ffffff' }}
                   required
                 />
               </div>
