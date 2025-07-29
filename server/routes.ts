@@ -771,15 +771,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // For demo purposes, return success message
-      // In production, you would send an actual email with reset link
-      console.log('🟢 Password reset for user:', user.username, user.email);
+      // Generate temporary password
+      const tempPassword = Math.random().toString(36).slice(-8).toUpperCase();
       
-      res.json({
-        success: true,
-        message: `Mật khẩu tạm thời đã được gửi đến email ${user.email}. Mật khẩu mới: temp123456`,
-        tempPassword: "temp123456" // For demo only - don't do this in production
-      });
+      // Update user password in database (in production, hash this password)
+      await storage.updateAffiliateMember(user.id, { password: tempPassword });
+      
+      // Try to send email
+      try {
+        const { sendPasswordResetEmail } = await import("./email");
+        const emailSent = await sendPasswordResetEmail(user.email, tempPassword, user.username);
+        
+        if (emailSent) {
+          console.log('🟢 Password reset email sent to:', user.email);
+          res.json({
+            success: true,
+            message: `Email đã được gửi đến ${user.email}. Vui lòng kiểm tra hộp thư để lấy mật khẩu mới.`
+          });
+        } else {
+          // If email fails, still show temp password for demo
+          res.json({
+            success: true,
+            message: `Không thể gửi email. Mật khẩu tạm thời: ${tempPassword}`,
+            tempPassword: tempPassword
+          });
+        }
+      } catch (emailError) {
+        console.error('❌ Email service error:', emailError);
+        // Fallback: show temp password if email service fails
+        res.json({
+          success: true,
+          message: `Hệ thống email tạm ngưng. Mật khẩu tạm thời: ${tempPassword}`,
+          tempPassword: tempPassword
+        });
+      }
     } catch (error) {
       console.error('❌ Forgot password error:', error);
       res.status(500).json({ message: "Lỗi hệ thống khi xử lý yêu cầu" });
