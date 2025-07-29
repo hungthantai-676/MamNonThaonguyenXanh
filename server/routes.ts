@@ -1606,15 +1606,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const savedMember = await storage.createAffiliateMember(newMember);
         console.log('🟢 Member saved to database:', savedMember);
         
-        // If has sponsor, update sponsor's referral count
+        // If has sponsor, update sponsor's referral count and add reward to wallet
         if (sponsorId) {
           try {
             const sponsor = await storage.getAffiliateMemberByMemberId(sponsorId);
             if (sponsor) {
+              // Update referral count
               await storage.updateAffiliateMember(sponsor.id, {
                 totalReferrals: sponsor.totalReferrals + 1
               });
               console.log('🟢 Updated sponsor referral count:', sponsor.username);
+              
+              // Add referral reward to sponsor's wallet
+              const currentBalance = parseFloat(sponsor.tokenBalance || "0");
+              const rewardAmount = sponsor.memberType === 'teacher' ? 2000000 : 2000; // Teachers: 2M VND, Parents: 2000 points
+              const newBalance = currentBalance + rewardAmount;
+              
+              await storage.updateAffiliateMember(sponsor.id, {
+                tokenBalance: newBalance.toString()
+              });
+              
+              console.log(`🎉 Added ${rewardAmount} tokens to sponsor ${sponsor.username} (${sponsor.memberType})`);
+              
+              // Check for milestone bonus (every 5 referrals)
+              const newReferralCount = sponsor.totalReferrals + 1;
+              if (newReferralCount % 5 === 0) {
+                const milestoneBonus = sponsor.memberType === 'teacher' ? 10000000 : 10000; // Teachers: 10M VND, Parents: 10K points
+                const finalBalance = newBalance + milestoneBonus;
+                
+                await storage.updateAffiliateMember(sponsor.id, {
+                  tokenBalance: finalBalance.toString()
+                });
+                
+                console.log(`🏆 MILESTONE BONUS: Added ${milestoneBonus} tokens to ${sponsor.username} for reaching ${newReferralCount} referrals!`);
+              }
+              
+              // Create transaction history for the reward
+              try {
+                await storage.createTransactionHistory({
+                  memberId: sponsor.memberId,
+                  transactionType: 'referral_reward',
+                  amount: rewardAmount.toString(),
+                  description: `Hoa hồng giới thiệu thành viên mới: ${newMember.name}`,
+                  balanceBefore: currentBalance.toString(),
+                  balanceAfter: (currentBalance + rewardAmount).toString(),
+                  status: 'completed',
+                  referenceId: `ref_${savedMember.id}`
+                });
+                console.log('📝 Transaction history created for referral reward');
+              } catch (transactionError) {
+                console.log('⚠️ Could not create transaction history:', transactionError);
+              }
             }
           } catch (sponsorError) {
             console.log('⚠️ Could not update sponsor:', sponsorError);

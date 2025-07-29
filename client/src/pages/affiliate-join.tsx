@@ -13,7 +13,8 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Gift, Users, Star, Crown, Shield, UserPlus, QrCode } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Gift, Users, Star, Crown, Shield, UserPlus, QrCode, Eye, EyeOff } from "lucide-react";
 
 const affiliateJoinSchema = z.object({
   name: z.string().min(1, "Tên không được để trống"),
@@ -21,7 +22,12 @@ const affiliateJoinSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
   phone: z.string().min(10, "Số điện thoại phải có ít nhất 10 số"),
   memberType: z.enum(["teacher", "parent"]),
+  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+  confirmPassword: z.string().min(6, "Xác nhận mật khẩu phải có ít nhất 6 ký tự"),
   sponsorId: z.string().optional(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Mật khẩu xác nhận không khớp",
+  path: ["confirmPassword"],
 });
 
 type AffiliateJoinFormData = z.infer<typeof affiliateJoinSchema>;
@@ -29,12 +35,13 @@ type AffiliateJoinFormData = z.infer<typeof affiliateJoinSchema>;
 export default function AffiliateJoin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [location] = useLocation();
-  // Navigation will be handled by redirect or back button
+  const [location, setLocation] = useLocation();
   const [referralId, setReferralId] = useState<string>("");
   const [sponsor, setSponsor] = useState<any>(null);
   const [registeredMember, setRegisteredMember] = useState<any>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // DEBUG: Log component render
   console.log('AffiliateJoin component rendered with username field');
@@ -47,6 +54,8 @@ export default function AffiliateJoin() {
       email: "",
       phone: "",
       memberType: "parent",
+      password: "",
+      confirmPassword: "",
       sponsorId: "",
     },
   });
@@ -78,17 +87,47 @@ export default function AffiliateJoin() {
 
   const registerMutation = useMutation({
     mutationFn: async (data: AffiliateJoinFormData) => {
+      console.log('🟢 QR Registration with sponsor:', data.sponsorId);
       const response = await apiRequest("POST", "/api/affiliate/register", data);
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      console.log('🟢 QR Registration success:', data);
       queryClient.invalidateQueries({ queryKey: ["/api/affiliate/members"] });
-      setRegisteredMember(data);
-      setShowSuccess(true);
-      toast({
-        title: "Đăng ký thành công! 🎉",
-        description: "Bạn đã trở thành thành viên affiliate. Lưu lại thông tin đăng nhập!",
-      });
+      
+      // Auto-login after successful QR registration
+      try {
+        const loginResponse = await apiRequest("POST", "/api/affiliate/login", {
+          username: data.username,
+          password: form.getValues().password
+        });
+        const loginResult = await loginResponse.json();
+        
+        if (loginResult.success) {
+          // Store login info
+          localStorage.setItem("affiliate-token", loginResult.token || "logged-in");
+          localStorage.setItem("affiliate-user", JSON.stringify(loginResult.user));
+          localStorage.setItem("affiliate-login-time", Date.now().toString());
+          
+          toast({
+            title: "Đăng ký thành công!",
+            description: `Đã tự động liên kết với sponsor ${sponsor?.name || 'của bạn'}. Đang chuyển đến trang thành viên...`,
+          });
+          
+          // Redirect to member page
+          setTimeout(() => {
+            setLocation("/affiliate/member");
+          }, 2000);
+        } else {
+          // Fallback to success page if auto-login fails
+          setRegisteredMember(data);
+          setShowSuccess(true);
+        }
+      } catch (loginError) {
+        console.error('Auto-login failed:', loginError);
+        setRegisteredMember(data);
+        setShowSuccess(true);
+      }
     },
     onError: (error: any) => {
       toast({
@@ -258,9 +297,9 @@ export default function AffiliateJoin() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Đăng ký thành viên</CardTitle>
+            <CardTitle>Đăng ký thành viên affiliate</CardTitle>
             <CardDescription>
-              Điền thông tin của bạn để tham gia hệ thống affiliate
+              {sponsor ? `Đăng ký với sự giới thiệu của ${sponsor.name}` : "Điền thông tin của bạn để tham gia hệ thống affiliate"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -280,25 +319,22 @@ export default function AffiliateJoin() {
                   )}
                 />
 
-                <div className="border-2 border-blue-500 p-4 rounded bg-blue-50">
-                  <FormField
-                    control={form.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-blue-800 font-bold">Tên đăng nhập *</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="Nhập tên đăng nhập (chỉ chữ, số và dấu _)" 
-                            className="border-2 border-blue-400"
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tên đăng nhập</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Nhập tên đăng nhập (chỉ chữ, số và dấu _)" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
 
 
@@ -337,32 +373,97 @@ export default function AffiliateJoin() {
                     <FormItem>
                       <FormLabel>Loại thành viên</FormLabel>
                       <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-2"
-                        >
-                          <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-green-50">
-                            <RadioGroupItem value="teacher" id="teacher" />
-                            <Label htmlFor="teacher" className="flex items-center gap-2 cursor-pointer">
-                              <Shield className="w-4 h-4 text-green-600" />
-                              <div>
-                                <div className="font-medium">Chăm sóc phụ huynh</div>
-                                <div className="text-sm text-gray-500">Dành cho giáo viên và nhân viên</div>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Chọn loại thành viên" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="parent">
+                              <div className="flex items-center gap-2">
+                                <Crown className="w-4 h-4 text-purple-600" />
+                                <div>
+                                  <div className="font-medium">Đại sứ thương hiệu</div>
+                                  <div className="text-sm text-gray-500">Dành cho phụ huynh</div>
+                                </div>
                               </div>
-                            </Label>
-                          </div>
-                          <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-purple-50">
-                            <RadioGroupItem value="parent" id="parent" />
-                            <Label htmlFor="parent" className="flex items-center gap-2 cursor-pointer">
-                              <Crown className="w-4 h-4 text-purple-600" />
-                              <div>
-                                <div className="font-medium">Đại sứ thương hiệu</div>
-                                <div className="text-sm text-gray-500">Dành cho phụ huynh và người quan tâm</div>
+                            </SelectItem>
+                            <SelectItem value="teacher">
+                              <div className="flex items-center gap-2">
+                                <Shield className="w-4 h-4 text-green-600" />
+                                <div>
+                                  <div className="font-medium">Chăm sóc phụ huynh</div>
+                                  <div className="text-sm text-gray-500">Dành cho giáo viên</div>
+                                </div>
                               </div>
-                            </Label>
-                          </div>
-                        </RadioGroup>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mật khẩu</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input 
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Nhập mật khẩu (ít nhất 6 ký tự)" 
+                            {...field} 
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Xác nhận mật khẩu</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input 
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="Nhập lại mật khẩu" 
+                            {...field} 
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          >
+                            {showConfirmPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -370,24 +471,17 @@ export default function AffiliateJoin() {
                 />
 
                 {referralId && (
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <Label className="text-sm font-medium text-blue-700">Mã giới thiệu</Label>
-                    <div className="text-sm text-blue-800 font-mono mt-1">{referralId}</div>
+                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <div className="flex items-center gap-2">
+                      <UserPlus className="w-5 h-5 text-green-600" />
+                      <Label className="text-sm font-medium text-green-700">Được giới thiệu bởi: {sponsor?.name}</Label>
+                    </div>
+                    <div className="text-xs text-green-600 font-mono mt-1">ID: {referralId}</div>
+                    <p className="text-sm text-green-600 mt-2">
+                      ✅ Bạn sẽ tự động được liên kết với sponsor và nhận hoa hồng khi hoàn thành đăng ký
+                    </p>
                   </div>
                 )}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
-                  <div className="text-center">
-                    <Gift className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                    <div className="font-semibold text-green-700">Token miễn phí</div>
-                    <div className="text-sm text-gray-600">Nhận 100 TNG token khi đăng ký</div>
-                  </div>
-                  <div className="text-center">
-                    <Users className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                    <div className="font-semibold text-blue-700">Mạng lưới</div>
-                    <div className="text-sm text-gray-600">Xây dựng đội nhóm và kiếm hoa hồng</div>
-                  </div>
-                </div>
 
                 <Button 
                   type="submit" 
