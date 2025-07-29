@@ -237,41 +237,45 @@ export default function AffiliateRegisterSimple() {
   if (showForgotPassword) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-blue-600">🔑 Quên mật khẩu</CardTitle>
+        <Card className="w-full max-w-md shadow-lg bg-white">
+          <CardHeader className="text-center bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-t-lg">
+            <CardTitle className="text-2xl font-bold">🔑 Quên mật khẩu</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6 bg-white">
             <form onSubmit={handleForgotPassword} className="space-y-4">
               <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700">📧 Email đăng ký</label>
                 <Input
                   type="email"
-                  placeholder="Email đăng ký"
+                  placeholder="email@example.com"
                   value={forgotPasswordData.email}
                   onChange={(e) => setForgotPasswordData(prev => ({...prev, email: e.target.value}))}
+                  className="bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-blue-500"
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700">🔐 Hoặc tên đăng nhập</label>
                 <Input
-                  placeholder="Hoặc tên đăng nhập"
+                  placeholder="Nhập tên đăng nhập"
                   value={forgotPasswordData.username}
                   onChange={(e) => setForgotPasswordData(prev => ({...prev, username: e.target.value}))}
+                  className="bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-blue-500"
                 />
               </div>
               <Button 
                 type="submit" 
-                className="w-full bg-blue-600 hover:bg-blue-700"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition-all"
                 disabled={forgotPasswordMutation.isPending}
               >
-                {forgotPasswordMutation.isPending ? "Đang gửi..." : "Gửi email lấy lại mật khẩu"}
+                {forgotPasswordMutation.isPending ? "Đang gửi..." : "📤 Gửi email lấy lại mật khẩu"}
               </Button>
               <Button 
                 type="button" 
                 variant="outline" 
-                className="w-full"
+                className="w-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 py-3 rounded-lg"
                 onClick={() => setShowForgotPassword(false)}
               >
-                Quay lại đăng nhập
+                ← Quay lại đăng nhập
               </Button>
             </form>
           </CardContent>
@@ -283,23 +287,23 @@ export default function AffiliateRegisterSimple() {
   if (showSuccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl text-green-600">🎉 Đăng ký thành công!</CardTitle>
+        <Card className="w-full max-w-md shadow-lg bg-white">
+          <CardHeader className="text-center bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-t-lg">
+            <CardTitle className="text-2xl font-bold">🎉 Đăng ký thành công!</CardTitle>
           </CardHeader>
-          <CardContent className="text-center">
+          <CardContent className="text-center p-6 bg-white">
             <p className="text-gray-600 mb-4">
               Tài khoản affiliate của bạn đã được tạo thành công.
             </p>
-            <p className="font-bold mb-4">Tên đăng nhập: {formData.username}</p>
+            <p className="font-bold mb-4 text-gray-800">Tên đăng nhập: {formData.username}</p>
             <div className="animate-pulse text-blue-600 mb-4">
               Đang chuyển vào trang thành viên...
             </div>
             <Button 
               onClick={() => setLocation("/affiliate/member")}
-              className="w-full bg-green-600 hover:bg-green-700"
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition-all"
             >
-              Vào trang thành viên ngay
+              🚀 Vào trang thành viên ngay
             </Button>
           </CardContent>
         </Card>
@@ -308,174 +312,188 @@ export default function AffiliateRegisterSimple() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-blue-600">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-lg bg-white">
+        <CardHeader className="text-center bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-t-lg">
+          <CardTitle className="text-2xl font-bold">
             {showLogin ? "🔑 Đăng nhập" : "📝 Đăng ký"} Affiliate
           </CardTitle>
           <div className="flex space-x-2 mt-4">
             <Button
               variant={!showLogin ? "default" : "outline"}
               onClick={() => setShowLogin(false)}
-              className="flex-1"
+              className={`flex-1 ${!showLogin ? 'bg-white text-green-600 border-2 border-white' : 'bg-transparent text-white border-2 border-white hover:bg-white hover:text-green-600'}`}
             >
               Đăng ký
             </Button>
             <Button
               variant={showLogin ? "default" : "outline"}
               onClick={() => setShowLogin(true)}
-              className="flex-1"
+              className={`flex-1 ${showLogin ? 'bg-white text-blue-600 border-2 border-white' : 'bg-transparent text-white border-2 border-white hover:bg-white hover:text-blue-600'}`}
             >
               Đăng nhập
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6 bg-white">
           {!showLogin ? (
             // Registration Form
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Họ và tên *</label>
+                <label className="block text-sm font-medium mb-2 text-gray-700">👤 Họ và tên *</label>
                 <Input
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleChange("name", e.target.value)}
                   placeholder="Nhập họ và tên"
+                  className="bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-green-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Tên đăng nhập *</label>
+                <label className="block text-sm font-medium mb-2 text-gray-700">🔐 Tên đăng nhập *</label>
                 <Input
                   type="text"
                   value={formData.username}
                   onChange={(e) => handleChange("username", e.target.value)}
                   placeholder="Ví dụ: nguyenvana123"
+                  className="bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-green-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Email *</label>
+                <label className="block text-sm font-medium mb-2 text-gray-700">📧 Email *</label>
                 <Input
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleChange("email", e.target.value)}
                   placeholder="email@example.com"
+                  className="bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-green-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Số điện thoại *</label>
+                <label className="block text-sm font-medium mb-2 text-gray-700">📱 Số điện thoại *</label>
                 <Input
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleChange("phone", e.target.value)}
                   placeholder="0123456789"
+                  className="bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-green-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Mật khẩu *</label>
+                <label className="block text-sm font-medium mb-2 text-gray-700">🔒 Mật khẩu *</label>
                 <Input
                   type="password"
                   value={formData.password}
                   onChange={(e) => handleChange("password", e.target.value)}
                   placeholder="Nhập mật khẩu (ít nhất 6 ký tự)"
+                  className="bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-green-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Xác nhận mật khẩu *</label>
+                <label className="block text-sm font-medium mb-2 text-gray-700">🔒 Xác nhận mật khẩu *</label>
                 <Input
                   type="password"
                   value={formData.confirmPassword}
                   onChange={(e) => handleChange("confirmPassword", e.target.value)}
                   placeholder="Nhập lại mật khẩu"
+                  className="bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-green-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Loại thành viên *</label>
+                <label className="block text-sm font-medium mb-2 text-gray-700">👥 Loại thành viên *</label>
                 <div className="space-y-2">
-                  <label className="flex items-center space-x-2 p-3 border rounded cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-green-50 hover:border-green-300 transition-all">
                     <input
                       type="radio"
                       value="parent"
                       checked={formData.memberType === "parent"}
                       onChange={(e) => handleChange("memberType", e.target.value)}
-                      className="w-4 h-4"
+                      className="w-5 h-5 text-green-600"
                     />
-                    <span>Phụ huynh - Đại sứ thương hiệu</span>
+                    <div>
+                      <div className="font-medium text-gray-900">👨‍👩‍👧‍👦 Phụ huynh</div>
+                      <div className="text-sm text-gray-600">Đại sứ thương hiệu</div>
+                    </div>
                   </label>
-                  <label className="flex items-center space-x-2 p-3 border rounded cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-all">
                     <input
                       type="radio"
                       value="teacher"
                       checked={formData.memberType === "teacher"}
                       onChange={(e) => handleChange("memberType", e.target.value)}
-                      className="w-4 h-4"
+                      className="w-5 h-5 text-blue-600"
                     />
-                    <span>Giáo viên - Chăm sóc phụ huynh</span>
+                    <div>
+                      <div className="font-medium text-gray-900">👩‍🏫 Giáo viên</div>
+                      <div className="text-sm text-gray-600">Chăm sóc phụ huynh</div>
+                    </div>
                   </label>
                 </div>
               </div>
 
               <Button 
                 type="submit" 
-                className="w-full bg-green-600 hover:bg-green-700"
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition-all"
                 disabled={registerMutation.isPending}
               >
-                {registerMutation.isPending ? "Đang đăng ký..." : "ĐĂNG KÝ NGAY"}
+                {registerMutation.isPending ? "Đang đăng ký..." : "🎯 ĐĂNG KÝ NGAY"}
               </Button>
             </form>
           ) : (
             // Login Form
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Tên đăng nhập *</label>
+                <label className="block text-sm font-medium mb-2 text-gray-700">🔐 Tên đăng nhập *</label>
                 <Input
                   type="text"
                   value={loginData.username}
                   onChange={(e) => setLoginData(prev => ({ ...prev, username: e.target.value }))}
                   placeholder="Nhập tên đăng nhập"
+                  className="bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-blue-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Mật khẩu *</label>
+                <label className="block text-sm font-medium mb-2 text-gray-700">🔒 Mật khẩu *</label>
                 <Input
                   type="password"
                   value={loginData.password}
                   onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
                   placeholder="Nhập mật khẩu"
+                  className="bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-blue-500"
                   required
                 />
               </div>
 
               <Button 
                 type="submit" 
-                className="w-full bg-blue-600 hover:bg-blue-700"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition-all"
                 disabled={loginMutation.isPending}
               >
-                {loginMutation.isPending ? "Đang đăng nhập..." : "ĐĂNG NHẬP"}
+                {loginMutation.isPending ? "Đang đăng nhập..." : "🚀 ĐĂNG NHẬP"}
               </Button>
               
               <div className="text-center">
                 <Button 
                   type="button" 
                   variant="link" 
-                  className="text-sm text-blue-600 hover:text-blue-800"
+                  className="text-sm text-blue-600 hover:text-blue-800 underline"
                   onClick={() => setShowForgotPassword(true)}
                 >
-                  Quên mật khẩu?
+                  🔑 Quên mật khẩu?
                 </Button>
               </div>
             </form>
