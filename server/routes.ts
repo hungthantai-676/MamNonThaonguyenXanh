@@ -1683,7 +1683,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertWithdrawalRequestSchema.parse(req.body);
       
       // Check if member has sufficient balance
-      const member = await storage.getAffiliateMemberById(validatedData.memberId);
+      const member = await storage.getAffiliateMember(validatedData.memberId);
       if (!member) {
         return res.status(404).json({ message: "Member not found" });
       }
@@ -1716,7 +1716,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // If payment is completed, update member balance and create transaction history
       if (status === 'paid') {
-        const member = await storage.getAffiliateMemberById(request.memberId);
+        const member = await storage.getAffiliateMember(request.memberId);
         if (member) {
           const currentBalance = parseFloat(member.tokenBalance || "0");
           const withdrawalAmount = parseFloat(request.amount);
@@ -1933,41 +1933,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Affiliate login endpoint
-  app.post("/api/affiliate/login", async (req, res) => {
-    try {
-      const { username, password } = req.body;
-      
-      console.log('🔑 Login attempt for username:', username);
-      
-      if (!username || !password) {
-        return res.status(400).json({ message: "Username and password required" });
-      }
-      
-      // Simple demo authentication - in production, check against database
-      if (username === "demo" && password === "123456") {
-        const user = {
-          id: "demo001",
-          username: "demo",
-          name: "Demo User",
-          memberType: "parent",
-          email: "demo@example.com"
-        };
-        
-        res.json({
-          success: true,
-          message: "Login successful",
-          token: "demo-token-123",
-          user: user
-        });
-      } else {
-        res.status(401).json({ message: "Invalid username or password" });
-      }
-    } catch (error) {
-      console.error('❌ Login error:', error);
-      res.status(500).json({ message: "Login failed" });
-    }
-  });
+
 
   const httpServer = createServer(app);
   return httpServer;
