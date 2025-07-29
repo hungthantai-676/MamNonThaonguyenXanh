@@ -263,6 +263,8 @@ Changelog:
 - July 28, 2025. ROOT CAUSE: React routing cache preventing new form components from displaying, API backend fully functional
 - July 29, 2025. RESOLVED: Fixed QR affiliate form input text visibility issues - all form fields now display text clearly with black text on white background
 - July 29, 2025. CONFIRMED: Affiliate login functionality working successfully - users can login with testfinal/123456 and access member dashboard
+- July 29, 2025. FIXED: Affiliate registration database persistence - new accounts now properly saved to database and can login immediately
+- July 29, 2025. ENHANCED: Registration error handling - duplicate username detection and proper error messages for failed database operations
 ```
 
 ## User Preferences
