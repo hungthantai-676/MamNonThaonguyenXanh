@@ -75,14 +75,14 @@ export default function AffiliateRegisterSimple() {
           localStorage.setItem("affiliate-login-time", Date.now().toString());
           
           toast({
-            title: "Đăng nhập thành công!",
-            description: "Chuyển đến trang thành viên...",
+            title: "QR Registration + Auto-login thành công!",
+            description: `Tài khoản ${result.username} đã được tạo và đăng nhập tự động. Chuyển đến trang thành viên...`,
           });
           
           // Redirect to member page
           setTimeout(() => {
             setLocation("/affiliate/member");
-          }, 1000);
+          }, 2000);
         } else {
           setShowSuccess(true);
         }

@@ -1481,12 +1481,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get genealogy tree (downline) for a member
-  app.get("/api/affiliate/genealogy/:memberId", async (req, res) => {
+  app.get("/api/affiliate/genealogy/:identifier", async (req, res) => {
     try {
-      const { memberId } = req.params;
+      const { identifier } = req.params;
       
-      // Get direct referrals
-      const directReferrals = await storage.getAffiliateMembersBySponsor(memberId);
+      // Find member by username or memberId
+      let targetMember = await storage.getAffiliateMemberByUsername(identifier);
+      if (!targetMember) {
+        targetMember = await storage.getAffiliateMemberByMemberId(identifier);
+      }
+      
+      if (!targetMember) {
+        return res.status(404).json({ message: "Member not found" });
+      }
+      
+      // Get direct referrals using the actual memberId
+      const directReferrals = await storage.getAffiliateMembersBySponsor(targetMember.memberId);
       
       // Build genealogy tree recursively
       const buildTree = async (members) => {
@@ -1511,7 +1521,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const genealogyTree = await buildTree(directReferrals);
       
       res.json({
-        memberId,
+        memberId: targetMember.memberId,
+        username: targetMember.username,
+        name: targetMember.name,
         totalDirectReferrals: directReferrals.length,
         genealogyTree
       });
@@ -2053,6 +2065,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
 
+
+  // Debug QR referral issue
+  app.get("/debug-qr", async (req, res) => {
+    try {
+      // Get all members
+      const allMembers = await storage.getAffiliateMembers();
+      
+      // Find hungthantai
+      const hungthantai = allMembers.find(m => m.username === 'hungthantai');
+      
+      // Find maimeo  
+      const maimeo = allMembers.find(m => m.username === 'maimeo');
+      
+      // If hungthantai exists, find all members with his memberId as sponsor
+      let downlineMembers = [];
+      if (hungthantai) {
+        downlineMembers = allMembers.filter(m => m.sponsorId === hungthantai.memberId);
+      }
+      
+      const debugInfo = {
+        totalMembers: allMembers.length,
+        hungthantaiExists: !!hungthantai,
+        hungthantaiInfo: hungthantai ? {
+          username: hungthantai.username,
+          memberId: hungthantai.memberId,
+          totalReferrals: hungthantai.totalReferrals,
+          createdAt: hungthantai.createdAt
+        } : null,
+        maimeoExists: !!maimeo,
+        maimeoInfo: maimeo ? {
+          username: maimeo.username,
+          memberId: maimeo.memberId,
+          sponsorId: maimeo.sponsorId,
+          createdAt: maimeo.createdAt
+        } : null,
+        downlineCount: downlineMembers.length,
+        downlineMembers: downlineMembers.map(m => ({
+          username: m.username,
+          name: m.name,
+          memberId: m.memberId,
+          sponsorId: m.sponsorId
+        })),
+        issue: !maimeo ? 'maimeo_not_found' : 
+               (maimeo && (!maimeo.sponsorId || maimeo.sponsorId !== hungthantai?.memberId)) ? 'sponsor_mismatch' : 
+               'unknown'
+      };
+      
+      res.json(debugInfo);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
 
   // Test genealogy tree visualization 
   app.get("/test-genealogy", (req, res) => {

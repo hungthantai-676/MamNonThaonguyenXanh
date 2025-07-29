@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🔧 Fix QR Referral System</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { background: white; margin: 20px 0; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn { padding: 10px 20px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        #result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .member-list { max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; }
+        .member-item { padding: 10px; margin: 5px 0; border: 1px solid #eee; border-radius: 4px; background: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Sửa lỗi QR Referral System</h1>
+        
+        <div class="section">
+            <h2>🔍 Tìm thành viên</h2>
+            <button class="btn btn-primary" onclick="findMembers()">📋 Tìm tất cả thành viên</button>
+            <button class="btn btn-success" onclick="findSpecificMembers()">🎯 Tìm hungthantai & maimeo</button>
+            <div id="memberResult"></div>
+        </div>
+
+        <div class="section">
+            <h2>🧪 Test QR Registration với hungthantai làm sponsor</h2>
+            <button class="btn btn-success" onclick="testQrRegistration()">🔗 Test đăng ký QR với sponsor hungthantai</button>
+            <div id="qrTestResult"></div>
+        </div>
+
+        <div class="section">
+            <h2>📊 Check Genealogy Tree</h2>
+            <button class="btn btn-primary" onclick="checkGenealogyTree()">🌳 Xem cây genealogy của hungthantai</button>
+            <div id="genealogyResult"></div>
+        </div>
+    </div>
+
+    <script>
+        async function findMembers() {
+            try {
+                const response = await fetch('/api/affiliate/members');
+                const members = await response.json();
+                
+                let html = `<div class="success">✅ Tìm thấy ${members.length} thành viên</div>`;
+                html += '<div class="member-list">';
+                
+                members.forEach(member => {
+                    html += `
+                        <div class="member-item">
+                            <strong>${member.name}</strong> (@${member.username})
+                            <br>Member ID: ${member.memberId}
+                            <br>Loại: ${member.memberType}
+                            <br>Sponsor: ${member.sponsorId || 'Không có'}
+                            <br>Số referral: ${member.totalReferrals}
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                document.getElementById('memberResult').innerHTML = html;
+            } catch (error) {
+                document.getElementById('memberResult').innerHTML = `<div class="error">❌ LỖI: ${error.message}</div>`;
+            }
+        }
+
+        async function findSpecificMembers() {
+            try {
+                const response = await fetch('/api/affiliate/members');
+                const members = await response.json();
+                
+                const hungthantai = members.find(m => m.username === 'hungthantai');
+                const maimeo = members.find(m => m.username === 'maimeo');
+                
+                let html = '<h3>🎯 Kết quả tìm kiếm cụ thể:</h3>';
+                
+                if (hungthantai) {
+                    html += `
+                        <div class="success">
+                            ✅ Tìm thấy hungthantai
+                            <br><strong>Member ID:</strong> ${hungthantai.memberId}
+                            <br><strong>Sponsor:</strong> ${hungthantai.sponsorId || 'Không có'}
+                            <br><strong>Total Referrals:</strong> ${hungthantai.totalReferrals}
+                        </div>
+                    `;
+                } else {
+                    html += '<div class="error">❌ KHÔNG tìm thấy hungthantai</div>';
+                }
+                
+                if (maimeo) {
+                    html += `
+                        <div class="success">
+                            ✅ Tìm thấy maimeo
+                            <br><strong>Member ID:</strong> ${maimeo.memberId}
+                            <br><strong>Sponsor:</strong> ${maimeo.sponsorId || 'Không có'}
+                        </div>
+                    `;
+                } else {
+                    html += '<div class="error">❌ KHÔNG tìm thấy maimeo - Đây là vấn đề!</div>';
+                }
+                
+                document.getElementById('memberResult').innerHTML = html;
+            } catch (error) {
+                document.getElementById('memberResult').innerHTML = `<div class="error">❌ LỖI: ${error.message}</div>`;
+            }
+        }
+
+        async function testQrRegistration() {
+            // First find hungthantai's member ID
+            try {
+                const membersResponse = await fetch('/api/affiliate/members');
+                const members = await membersResponse.json();
+                const hungthantai = members.find(m => m.username === 'hungthantai');
+                
+                if (!hungthantai) {
+                    document.getElementById('qrTestResult').innerHTML = '<div class="error">❌ Không tìm thấy hungthantai để làm sponsor</div>';
+                    return;
+                }
+                
+                const testData = {
+                    name: 'Test QR User Fix',
+                    username: 'qrfix' + Date.now(),
+                    email: 'qrfix@test.com',
+                    phone: '0987654321',
+                    memberType: 'parent',
+                    sponsorId: hungthantai.memberId  // Use actual memberId
+                };
+                
+                const response = await fetch('/api/affiliate/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('qrTestResult').innerHTML = `
+                        <div class="success">
+                            ✅ QR Registration test thành công!
+                            <br><strong>Username:</strong> ${result.username}
+                            <br><strong>Member ID:</strong> ${result.memberId}
+                            <br><strong>Sponsor ID:</strong> ${result.sponsorId}
+                            <br><strong>Temp Password:</strong> ${result.tempPassword}
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('qrTestResult').innerHTML = `<div class="error">❌ LỖI: ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('qrTestResult').innerHTML = `<div class="error">❌ LỖI: ${error.message}</div>`;
+            }
+        }
+
+        async function checkGenealogyTree() {
+            try {
+                const response = await fetch('/api/affiliate/genealogy/hungthantai');
+                const data = await response.json();
+                
+                let html = `
+                    <div class="success">
+                        ✅ Genealogy tree của ${data.username || data.memberId}
+                        <br><strong>Member ID:</strong> ${data.memberId}
+                        <br><strong>Tên:</strong> ${data.name}
+                        <br><strong>Tổng F1 trực tiếp:</strong> ${data.totalDirectReferrals}
+                    </div>
+                `;
+                
+                if (data.genealogyTree && data.genealogyTree.length > 0) {
+                    html += '<h4>🌳 Thành viên dưới chân:</h4>';
+                    data.genealogyTree.forEach(member => {
+                        html += `
+                            <div class="member-item">
+                                <strong>${member.name}</strong> (@${member.username})
+                                <br>Member ID: ${member.memberId}
+                                <br>Ngày join: ${new Date(member.createdAt).toLocaleDateString('vi-VN')}
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += '<div style="color: #6c757d; font-style: italic;">📄 Chưa có thành viên F1 nào</div>';
+                }
+                
+                document.getElementById('genealogyResult').innerHTML = html;
+            } catch (error) {
+                document.getElementById('genealogyResult').innerHTML = `<div class="error">❌ LỖI: ${error.message}</div>`;
+            }
+        }
+
+        // Auto-load
+        window.onload = () => {
+            findSpecificMembers();
+        };
+    </script>
+</body>
+</html>
