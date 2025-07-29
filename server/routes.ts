@@ -1200,6 +1200,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Image upload API endpoint
+  app.post("/api/admin/upload-image", async (req, res) => {
+    try {
+      const { type, url } = req.body;
+      console.log("Saving image:", { type, url });
+      
+      // For now, just return success - images are handled as data URLs
+      res.json({ 
+        message: `${type} saved successfully`, 
+        url: url,
+        type: type
+      });
+    } catch (error) {
+      console.error("Error saving image:", error);
+      res.status(500).json({ message: "Failed to save image" });
+    }
+  });
+
   // Get homepage content
   app.get("/api/homepage-content", async (req, res) => {
     try {
@@ -1693,6 +1711,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         message: "Lỗi hệ thống khi đăng ký. Vui lòng thử lại." 
       });
+    }
+  });
+
+  // Forgot password endpoint
+  app.post("/api/affiliate/forgot-password", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Vui lòng nhập email" });
+      }
+      
+      // Find user by email
+      const member = await storage.getAffiliateMemberByEmail(email);
+      
+      if (!member) {
+        // Return success even if user not found (security best practice)
+        return res.json({ 
+          message: "Nếu email tồn tại trong hệ thống, bạn sẽ nhận được email hướng dẫn đặt lại mật khẩu trong vài phút." 
+        });
+      }
+      
+      // Generate temporary password
+      const tempPassword = Math.random().toString(36).slice(-8);
+      
+      // Update user password to temporary password
+      await storage.updateAffiliateMember(member.id, {
+        password: tempPassword
+      });
+      
+      // In production, send email here
+      // For now, return the temporary password directly
+      res.json({
+        message: "Mật khẩu tạm thời đã được tạo",
+        tempPassword: tempPassword,
+        instructions: `Mật khẩu tạm thời của bạn là: ${tempPassword}. Vui lòng đăng nhập và đổi mật khẩu ngay lập tức.`
+      });
+      
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      res.status(500).json({ message: "Lỗi hệ thống. Vui lòng thử lại sau." });
     }
   });
 

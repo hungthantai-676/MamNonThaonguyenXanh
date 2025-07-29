@@ -75,10 +75,10 @@ export default function Contact() {
               <div className="mt-8">
                 <h3 className="font-semibold text-dark-gray mb-4">Theo dõi chúng tôi</h3>
                 <div className="flex space-x-4">
-                  <a href="#" className="w-12 h-12 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center justify-center text-white transition-colors">
+                  <a href="https://www.facebook.com/mamnonthaonguyenxanh" target="_blank" className="w-12 h-12 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center justify-center text-white transition-colors">
                     <i className="fab fa-facebook-f"></i>
                   </a>
-                  <a href="#" className="w-12 h-12 bg-blue-400 hover:bg-blue-500 rounded-lg flex items-center justify-center text-white transition-colors">
+                  <a href="https://zalo.me/0856318686" target="_blank" className="w-12 h-12 bg-blue-400 hover:bg-blue-500 rounded-lg flex items-center justify-center text-white transition-colors">
                     <span className="font-bold text-sm">Zalo</span>
                   </a>
                   <a href="#" className="w-12 h-12 bg-pink-600 hover:bg-pink-700 rounded-lg flex items-center justify-center text-white transition-colors">
@@ -94,7 +94,10 @@ export default function Contact() {
               <div className="mt-8 bg-gradient-to-r from-primary-green/10 to-secondary-blue/10 rounded-xl p-6">
                 <h3 className="font-semibold text-dark-gray mb-4">Liên hệ nhanh</h3>
                 <div className="grid grid-cols-2 gap-4">
-                  <Button className="bg-primary-green hover:bg-primary-green/90 text-white">
+                  <Button 
+                    className="bg-primary-green hover:bg-primary-green/90 text-white"
+                    onClick={() => window.open('https://zalo.me/0856318686', '_blank')}
+                  >
                     <i className="fab fa-zalo mr-2"></i>
                     Chat Zalo
                   </Button>
