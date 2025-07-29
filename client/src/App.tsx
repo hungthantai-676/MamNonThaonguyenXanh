@@ -1,4 +1,5 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
+import { useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -40,8 +41,16 @@ import AdminQuick from "@/pages/admin-quick";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import SimpleChatbot from "@/components/chatbot-simple";
+import SocialChat from "@/components/social-chat";
 
 function Router() {
+  const [location] = useLocation();
+  
+  // Scroll to top when route changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -83,6 +92,9 @@ function Router() {
       
       {/* AI Chatbot */}
       <SimpleChatbot />
+      
+      {/* Social Chat */}
+      <SocialChat />
     </div>
   );
 }

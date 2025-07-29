@@ -22,10 +22,24 @@ export default function AffiliateMemberFull() {
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
   const [showBalanceDetails, setShowBalanceDetails] = useState(false);
 
-  // Get member data from localStorage
+  // Get member data from localStorage with session management
   useEffect(() => {
-    const userData = localStorage.getItem('affiliate-user');
-    if (userData) {
+    const checkAuth = () => {
+      const token = localStorage.getItem('affiliate-token');
+      const loginTime = localStorage.getItem('affiliate-login-time');
+      const userData = localStorage.getItem('affiliate-user');
+      const currentTime = Date.now();
+      
+      // Check if session is valid (24 hours)
+      if (!token || !userData || !loginTime || (currentTime - parseInt(loginTime)) > 24 * 60 * 60 * 1000) {
+        // Session expired, redirect to login
+        localStorage.removeItem('affiliate-token');
+        localStorage.removeItem('affiliate-user');
+        localStorage.removeItem('affiliate-login-time');
+        setLocation('/affiliate-register-simple');
+        return false;
+      }
+      
       try {
         const user = JSON.parse(userData);
         setCurrentMember(user);
@@ -37,10 +51,15 @@ export default function AffiliateMemberFull() {
             .then(setQrCodeDataUrl)
             .catch(console.error);
         }
+        return true;
       } catch (error) {
         console.error('Error parsing user data:', error);
+        setLocation('/affiliate-register-simple');
+        return false;
       }
-    }
+    };
+
+    checkAuth();
   }, []);
 
   // Fetch member tree data
@@ -53,13 +72,13 @@ export default function AffiliateMemberFull() {
   const { data: transactions = [] } = useQuery({
     queryKey: ['/api/affiliate/transactions', currentMember?.memberId],
     enabled: !!currentMember?.memberId,
-  });
+  }) as { data: any[] };
 
   // Fetch member rewards/earnings
   const { data: rewards = [] } = useQuery({
     queryKey: ['/api/affiliate/rewards', currentMember?.memberId],
     enabled: !!currentMember?.memberId,
-  });
+  }) as { data: any[] };
 
   // Request payment mutation
   const requestPaymentMutation = useMutation({
@@ -174,9 +193,10 @@ export default function AffiliateMemberFull() {
   const totalEarnings = rewards.reduce((sum: number, reward: any) => sum + parseFloat(reward.amount || 0), 0);
   
   // Calculate F1, F2, F3 statistics
-  const f1Count = treeData?.children?.length || 0;
-  const f2Count = treeData?.children?.reduce((sum: number, child: any) => sum + (child.children?.length || 0), 0) || 0;
-  const f3Count = treeData?.children?.reduce((sum: number, child: any) => 
+  const treeDataTyped = treeData as any;
+  const f1Count = treeDataTyped?.children?.length || 0;
+  const f2Count = treeDataTyped?.children?.reduce((sum: number, child: any) => sum + (child.children?.length || 0), 0) || 0;
+  const f3Count = treeDataTyped?.children?.reduce((sum: number, child: any) => 
     sum + (child.children?.reduce((childSum: number, grandChild: any) => childSum + (grandChild.children?.length || 0), 0) || 0), 0) || 0;
 
   return (
@@ -359,7 +379,7 @@ export default function AffiliateMemberFull() {
                     
                     {/* F1 Members */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {treeData?.children?.map((f1: any, index: number) => (
+                      {treeDataTyped?.children?.map((f1: any, index: number) => (
                         <div key={index} className="border rounded-lg p-4 bg-blue-50">
                           <div className="font-semibold text-blue-800">F1: {f1.name}</div>
                           <div className="text-sm text-blue-600">{f1.memberId}</div>

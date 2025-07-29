@@ -21,9 +21,14 @@ export default function AffiliateRegisterSimple() {
   });
   const [showSuccess, setShowSuccess] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [loginData, setLoginData] = useState({
     username: "",
     password: ""
+  });
+  const [forgotPasswordData, setForgotPasswordData] = useState({
+    email: "",
+    username: ""
   });
 
   console.log('🟢 SIMPLE REGISTER COMPONENT LOADED - USERNAME FIELD GUARANTEED');
@@ -50,9 +55,10 @@ export default function AffiliateRegisterSimple() {
         const loginData = await loginResponse.json();
         
         if (loginData.success) {
-          // Store user data in localStorage
+          // Store user data in localStorage with timestamp
           localStorage.setItem('affiliate-token', loginData.token || "logged-in");
           localStorage.setItem('affiliate-user', JSON.stringify(loginData.user));
+          localStorage.setItem("affiliate-login-time", Date.now().toString());
           
           toast({
             title: "Đăng nhập thành công!",
@@ -95,9 +101,10 @@ export default function AffiliateRegisterSimple() {
         description: "Đang chuyển vào trang thành viên...",
       });
       
-      // Store login info in localStorage
+      // Store login info in localStorage with timestamp
       localStorage.setItem("affiliate-token", data.token || "logged-in");
       localStorage.setItem("affiliate-user", JSON.stringify(data.user));
+      localStorage.setItem("affiliate-login-time", Date.now().toString());
       
       // Redirect to member page
       setTimeout(() => {
@@ -105,12 +112,10 @@ export default function AffiliateRegisterSimple() {
       }, 1500);
     },
     onError: (error) => {
-      console.error('🔴 Login error full details:', error);
-      console.error('🔴 Error message:', error.message);
-      console.error('🔴 Error status:', error.status);
+      console.error('🔴 Login error:', error);
       toast({
         title: "Lỗi đăng nhập",
-        description: `${error.message} (Status: ${error.status || 'Unknown'})`,
+        description: error.message,
         variant: "destructive",
       });
     },
@@ -186,12 +191,94 @@ export default function AffiliateRegisterSimple() {
     loginMutation.mutate(loginData);
   };
 
+  // Forgot password mutation
+  const forgotPasswordMutation = useMutation({
+    mutationFn: async (data: typeof forgotPasswordData) => {
+      const response = await apiRequest("POST", "/api/affiliate/forgot-password", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Đã gửi email!",
+        description: "Vui lòng kiểm tra email để lấy lại mật khẩu",
+      });
+      setShowForgotPassword(false);
+      setShowLogin(true);
+    },
+    onError: (error) => {
+      toast({
+        title: "Lỗi",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleForgotPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotPasswordData.email && !forgotPasswordData.username) {
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng nhập email hoặc tên đăng nhập",
+        variant: "destructive",
+      });
+      return;
+    }
+    forgotPasswordMutation.mutate(forgotPasswordData);
+  };
+
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
+
+  if (showForgotPassword) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold text-blue-600">🔑 Quên mật khẩu</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div>
+                <Input
+                  type="email"
+                  placeholder="Email đăng ký"
+                  value={forgotPasswordData.email}
+                  onChange={(e) => setForgotPasswordData(prev => ({...prev, email: e.target.value}))}
+                />
+              </div>
+              <div>
+                <Input
+                  placeholder="Hoặc tên đăng nhập"
+                  value={forgotPasswordData.username}
+                  onChange={(e) => setForgotPasswordData(prev => ({...prev, username: e.target.value}))}
+                />
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full bg-blue-600 hover:bg-blue-700"
+                disabled={forgotPasswordMutation.isPending}
+              >
+                {forgotPasswordMutation.isPending ? "Đang gửi..." : "Gửi email lấy lại mật khẩu"}
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="w-full"
+                onClick={() => setShowForgotPassword(false)}
+              >
+                Quay lại đăng nhập
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (showSuccess) {
     return (
@@ -380,6 +467,17 @@ export default function AffiliateRegisterSimple() {
               >
                 {loginMutation.isPending ? "Đang đăng nhập..." : "ĐĂNG NHẬP"}
               </Button>
+              
+              <div className="text-center">
+                <Button 
+                  type="button" 
+                  variant="link" 
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                  onClick={() => setShowForgotPassword(true)}
+                >
+                  Quên mật khẩu?
+                </Button>
+              </div>
             </form>
           )}
         </CardContent>

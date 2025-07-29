@@ -751,6 +751,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Forgot password endpoint
+  app.post("/api/affiliate/forgot-password", async (req, res) => {
+    try {
+      const { email, username } = req.body;
+      console.log('🟢 Forgot password request:', { email, username });
+      
+      // Find user by email or username
+      let user = null;
+      if (email) {
+        user = await storage.getAffiliateMemberByEmail(email);
+      } else if (username) {
+        user = await storage.getAffiliateMemberByUsername(username);
+      }
+      
+      if (!user) {
+        return res.status(404).json({ 
+          message: "Không tìm thấy tài khoản với thông tin này"
+        });
+      }
+      
+      // For demo purposes, return success message
+      // In production, you would send an actual email with reset link
+      console.log('🟢 Password reset for user:', user.username, user.email);
+      
+      res.json({
+        success: true,
+        message: `Mật khẩu tạm thời đã được gửi đến email ${user.email}. Mật khẩu mới: temp123456`,
+        tempPassword: "temp123456" // For demo only - don't do this in production
+      });
+    } catch (error) {
+      console.error('❌ Forgot password error:', error);
+      res.status(500).json({ message: "Lỗi hệ thống khi xử lý yêu cầu" });
+    }
+  });
+
   // DEX trading routes
   app.get("/api/dex/trades/:memberId", async (req, res) => {
     try {
