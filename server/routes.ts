@@ -1457,6 +1457,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.send(html);
   });
 
+  // Get sponsor info by member ID for QR referral
+  app.get("/api/affiliate/sponsor/:memberId", async (req, res) => {
+    try {
+      const { memberId } = req.params;
+      const sponsor = await storage.getAffiliateMemberByMemberId(memberId);
+      
+      if (!sponsor) {
+        return res.status(404).json({ message: "Sponsor not found" });
+      }
+      
+      res.json({
+        name: sponsor.name,
+        email: sponsor.email,
+        memberType: sponsor.memberType,
+        memberId: sponsor.memberId,
+        totalReferrals: sponsor.totalReferrals
+      });
+    } catch (error) {
+      console.error('Error getting sponsor info:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Get genealogy tree (downline) for a member
+  app.get("/api/affiliate/genealogy/:memberId", async (req, res) => {
+    try {
+      const { memberId } = req.params;
+      
+      // Get direct referrals
+      const directReferrals = await storage.getAffiliateMembersBySponsor(memberId);
+      
+      // Build genealogy tree recursively
+      const buildTree = async (members) => {
+        const tree = [];
+        for (const member of members) {
+          const children = await storage.getAffiliateMembersBySponsor(member.memberId);
+          tree.push({
+            id: member.id,
+            name: member.name,
+            username: member.username,
+            memberType: member.memberType,
+            memberId: member.memberId,
+            totalReferrals: member.totalReferrals,
+            tokenBalance: member.tokenBalance,
+            createdAt: member.createdAt,
+            children: children.length > 0 ? await buildTree(children) : []
+          });
+        }
+        return tree;
+      };
+      
+      const genealogyTree = await buildTree(directReferrals);
+      
+      res.json({
+        memberId,
+        totalDirectReferrals: directReferrals.length,
+        genealogyTree
+      });
+    } catch (error) {
+      console.error('Error getting genealogy tree:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Affiliate registration endpoint
   app.post("/api/affiliate/register", async (req, res) => {
     try {
@@ -1530,11 +1594,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const savedMember = await storage.createAffiliateMember(newMember);
         console.log('🟢 Member saved to database:', savedMember);
         
+        // If has sponsor, update sponsor's referral count
+        if (sponsorId) {
+          try {
+            const sponsor = await storage.getAffiliateMemberByMemberId(sponsorId);
+            if (sponsor) {
+              await storage.updateAffiliateMember(sponsor.id, {
+                totalReferrals: sponsor.totalReferrals + 1
+              });
+              console.log('🟢 Updated sponsor referral count:', sponsor.username);
+            }
+          } catch (sponsorError) {
+            console.log('⚠️ Could not update sponsor:', sponsorError);
+          }
+        }
+        
         // Include temporary password in response if auto-generated
         const response = {
           ...savedMember,
           tempPassword: !password ? finalPassword : undefined,
-          showPassword: !password
+          showPassword: !password,
+          sponsorInfo: sponsorId ? `Đã ghi nhận dưới sponsor: ${sponsorId}` : undefined
         };
         
         res.status(201).json(response);
@@ -1973,6 +2053,241 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
 
+
+  // Test genealogy tree visualization 
+  app.get("/test-genealogy", (req, res) => {
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+    <title>🌳 Test Genealogy & QR Referral System</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .section { background: white; margin: 20px 0; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .member { 
+            border: 1px solid #ddd; 
+            margin: 10px; 
+            padding: 15px; 
+            border-radius: 8px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        }
+        .teacher { border-left: 5px solid #28a745; }
+        .parent { border-left: 5px solid #007bff; }
+        .children { margin-left: 30px; border-left: 2px dashed #ccc; padding-left: 20px; }
+        .input-group { margin: 10px 0; }
+        .input-group input { width: 300px; padding: 8px; margin-right: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .btn { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        #result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .stats { display: flex; gap: 20px; margin: 20px 0; }
+        .stat-card { flex: 1; padding: 15px; background: #e3f2fd; border-radius: 8px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌳 Test Hệ thống QR Referral & Genealogy Tree</h1>
+        
+        <div class="section">
+            <h2>📊 Thống kê hệ thống</h2>
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>👩‍🏫 Cô giáo</h3>
+                    <div id="teacherCount">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>👪 Phụ huynh</h3>
+                    <div id="parentCount">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>🔗 Tổng referral</h3>
+                    <div id="totalReferrals">-</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🔍 Xem cây genealogy</h2>
+            <div class="input-group">
+                <input type="text" id="memberId" value="PARENT-1753762770405-MFBGXQ" placeholder="Nhập Member ID">
+                <button class="btn btn-primary" onclick="loadGenealogyTree()">🌳 Xem cây thành viên</button>
+            </div>
+            <div id="result"></div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Test QR Registration</h2>
+            <div class="input-group">
+                <input type="text" id="sponsorId" value="PARENT-1753762770405-MFBGXQ" placeholder="Sponsor Member ID">
+                <input type="text" id="newName" value="Test User QR" placeholder="Tên người mới">
+                <input type="text" id="newUsername" value="" placeholder="Username (auto-generate if empty)">
+                <button class="btn btn-success" onclick="testQRRegistration()">🔗 Test QR Registration</button>
+            </div>
+            <div id="qrResult"></div>
+        </div>
+
+        <div class="section" id="genealogySection">
+            <h2>🌳 Cây gia phả</h2>
+            <div id="genealogyTree"></div>
+        </div>
+    </div>
+
+    <script>
+        function renderMember(member, level = 0) {
+            const typeClass = member.memberType === 'teacher' ? 'teacher' : 'parent';
+            const typeIcon = member.memberType === 'teacher' ? '👩‍🏫' : '👪';
+            const typeName = member.memberType === 'teacher' ? 'Cô giáo' : 'Phụ huynh';
+            
+            let html = \`
+                <div class="member \${typeClass}" style="margin-left: \${level * 20}px;">
+                    <strong>\${typeIcon} \${member.name}</strong> (@\${member.username})
+                    <br>Loại: \${typeName}
+                    <br>Member ID: <code>\${member.memberId}</code>
+                    <br>Số người giới thiệu: <strong>\${member.totalReferrals}</strong>
+                    <br>Số dư ví: \${Number(member.tokenBalance).toLocaleString('vi-VN')} VND
+                    <br>Ngày tham gia: \${new Date(member.createdAt).toLocaleDateString('vi-VN')}
+                </div>
+            \`;
+            
+            if (member.children && member.children.length > 0) {
+                html += '<div class="children">';
+                member.children.forEach(child => {
+                    html += renderMember(child, level + 1);
+                });
+                html += '</div>';
+            }
+            
+            return html;
+        }
+
+        async function loadGenealogyTree() {
+            const memberId = document.getElementById('memberId').value;
+            
+            if (!memberId) {
+                document.getElementById('result').innerHTML = '<div class="error">❌ Vui lòng nhập Member ID</div>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(\`/api/affiliate/genealogy/\${memberId}\`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = \`
+                        <div class="success">
+                            ✅ Tìm thấy \${data.totalDirectReferrals} thành viên trực tiếp dưới \${memberId}
+                        </div>
+                    \`;
+                    
+                    let treeHtml = \`<h3>🌳 Cây gia phả của \${memberId}</h3>\`;
+                    
+                    if (data.genealogyTree.length === 0) {
+                        treeHtml += '<p style="color: #6c757d; font-style: italic;">📄 Chưa có thành viên nào được giới thiệu</p>';
+                    } else {
+                        data.genealogyTree.forEach(member => {
+                            treeHtml += renderMember(member);
+                        });
+                    }
+                    
+                    document.getElementById('genealogyTree').innerHTML = treeHtml;
+                } else {
+                    document.getElementById('result').innerHTML = \`<div class="error">❌ LỖI: \${data.message}</div>\`;
+                    document.getElementById('genealogyTree').innerHTML = '';
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = \`<div class="error">❌ LỖI: \${error.message}</div>\`;
+                document.getElementById('genealogyTree').innerHTML = '';
+            }
+        }
+
+        async function testQRRegistration() {
+            const sponsorId = document.getElementById('sponsorId').value;
+            const name = document.getElementById('newName').value;
+            let username = document.getElementById('newUsername').value;
+            
+            if (!sponsorId || !name) {
+                document.getElementById('qrResult').innerHTML = '<div class="error">❌ Vui lòng nhập Sponsor ID và Tên</div>';
+                return;
+            }
+            
+            // Auto-generate username if empty
+            if (!username) {
+                username = 'qr' + Date.now().toString(36);
+                document.getElementById('newUsername').value = username;
+            }
+            
+            const registrationData = {
+                name: name,
+                username: username,
+                email: username + '@qrtest.com',
+                phone: '098' + Math.floor(Math.random() * 10000000),
+                memberType: 'parent',
+                sponsorId: sponsorId
+            };
+            
+            try {
+                const response = await fetch('/api/affiliate/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(registrationData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('qrResult').innerHTML = \`
+                        <div class="success">
+                            ✅ QR Registration thành công!
+                            <br><strong>Member ID:</strong> \${result.memberId}
+                            <br><strong>Username:</strong> \${result.username}
+                            <br><strong>Temp Password:</strong> \${result.tempPassword || 'N/A'}
+                            <br><strong>Sponsor:</strong> \${result.sponsorId || 'Không có'}
+                            <br><strong>Token Balance:</strong> \${Number(result.tokenBalance).toLocaleString('vi-VN')} VND
+                        </div>
+                    \`;
+                    
+                    // Auto-reload genealogy tree
+                    setTimeout(() => {
+                        loadGenealogyTree();
+                        loadStats();
+                    }, 500);
+                } else {
+                    document.getElementById('qrResult').innerHTML = \`<div class="error">❌ LỖI: \${result.message}</div>\`;
+                }
+            } catch (error) {
+                document.getElementById('qrResult').innerHTML = \`<div class="error">❌ LỖI: \${error.message}</div>\`;
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/affiliate/members');
+                const members = await response.json();
+                
+                const teachers = members.filter(m => m.memberType === 'teacher');
+                const parents = members.filter(m => m.memberType === 'parent');
+                const totalReferrals = members.reduce((sum, m) => sum + m.totalReferrals, 0);
+                
+                document.getElementById('teacherCount').textContent = teachers.length;
+                document.getElementById('parentCount').textContent = parents.length;
+                document.getElementById('totalReferrals').textContent = totalReferrals;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+        
+        // Auto-load on page load
+        window.onload = () => {
+            loadGenealogyTree();
+            loadStats();
+        };
+    </script>
+</body>
+</html>`;
+    res.send(html);
+  });
 
   const httpServer = createServer(app);
   return httpServer;
