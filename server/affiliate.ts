@@ -43,7 +43,7 @@ export class AffiliateService {
     // Use production domain if available, otherwise use provided baseUrl
     const productionDomain = process.env.PRODUCTION_DOMAIN || "https://mamnonthaonguyenxanh.com";
     const finalUrl = process.env.NODE_ENV === "production" ? productionDomain : baseUrl;
-    return `${finalUrl}/affiliate/join?ref=${memberId}`;
+    return `${finalUrl}/affiliate-register?ref=${memberId}`;
   }
 
   // Generate unique member ID

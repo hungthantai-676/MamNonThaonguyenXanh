@@ -6,6 +6,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function AffiliateRegisterSimple() {
   const { toast } = useToast();
@@ -32,6 +33,8 @@ export default function AffiliateRegisterSimple() {
     email: "",
     username: ""
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   console.log('🟢 SIMPLE REGISTER COMPONENT LOADED - USERNAME FIELD GUARANTEED');
 
@@ -467,28 +470,58 @@ export default function AffiliateRegisterSimple() {
 
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-700">🔒 Mật khẩu *</label>
-                <Input
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => handleChange("password", e.target.value)}
-                  placeholder="Nhập mật khẩu (ít nhất 6 ký tự)"
-                  className="bg-white border-2 border-gray-200 text-black placeholder-gray-500 focus:border-green-500"
-                  style={{ color: '#000000', backgroundColor: '#ffffff' }}
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={(e) => handleChange("password", e.target.value)}
+                    placeholder="Nhập mật khẩu (ít nhất 6 ký tự)"
+                    className="bg-white border-2 border-gray-200 text-black placeholder-gray-500 focus:border-green-500 pr-12"
+                    style={{ color: '#000000', backgroundColor: '#ffffff' }}
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4 text-gray-500" />
+                    ) : (
+                      <Eye className="w-4 h-4 text-gray-500" />
+                    )}
+                  </Button>
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-700">🔒 Xác nhận mật khẩu *</label>
-                <Input
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={(e) => handleChange("confirmPassword", e.target.value)}
-                  placeholder="Nhập lại mật khẩu"
-                  className="bg-white border-2 border-gray-200 text-black placeholder-gray-500 focus:border-green-500"
-                  style={{ color: '#000000', backgroundColor: '#ffffff' }}
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={formData.confirmPassword}
+                    onChange={(e) => handleChange("confirmPassword", e.target.value)}
+                    placeholder="Nhập lại mật khẩu"
+                    className="bg-white border-2 border-gray-200 text-black placeholder-gray-500 focus:border-green-500 pr-12"
+                    style={{ color: '#000000', backgroundColor: '#ffffff' }}
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="w-4 h-4 text-gray-500" />
+                    ) : (
+                      <Eye className="w-4 h-4 text-gray-500" />
+                    )}
+                  </Button>
+                </div>
               </div>
 
               <div>
