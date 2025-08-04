@@ -209,7 +209,7 @@ export default function AffiliateRegisterSimple() {
   // Forgot password mutation
   const forgotPasswordMutation = useMutation({
     mutationFn: async (data: typeof forgotPasswordData) => {
-      const response = await apiRequest("POST", "/api/affiliate/forgot-password", data);
+      const response = await apiRequest("POST", "/api/affiliate/reset-password", data);
       return response.json();
     },
     onSuccess: () => {
