@@ -2122,26 +2122,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Lỗi hệ thống. Vui lòng thử lại sau." });
     }
   });
-              message: "Đăng nhập thành công!",
-              token: "affiliate-token-" + Date.now(),
-              user: demoUser
-            });
-          }
-          
-          return res.status(401).json({ 
-            message: "Tên đăng nhập hoặc mật khẩu không đúng" 
-          });
-        }
-      }
-      
-      // Old login with memberCode only
-      if (!memberCode) {
-        return res.status(400).json({ message: "Vui lòng nhập tên đăng nhập hoặc mã thành viên" });
-      }
 
-      // Try to find member by username first, then by memberId
-      try {
-        let member = null;
+  // Email test endpoint
         
         // Try username first (more user-friendly)
         try {

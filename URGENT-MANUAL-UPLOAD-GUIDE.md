@@ -1,111 +1,74 @@
-# 🚨 HƯỚNG DẪN UPLOAD MANUAL - SỬA 404 NGAY
+# 🚨 HƯỚNG DẪN UPLOAD MANUAL ĐỂ FIX LỖI 404
 
-## ⚠️ TÌNH HUỐNG: Vite Deploy không sync routing được
+## 🔍 VẤN ĐỀ
+Website báo lỗi 404 vì hosting package chưa được upload lên server thực.
 
-**Vấn đề**: Assets (JS/CSS) đã lên nhưng thiếu .htaccess → tất cả pages trả về 404
+## 📦 GIẢI PHÁP NGAY LẬP TỨC
 
-## 📦 PACKAGE MANUAL UPLOAD
+### File cần upload: `SIMPLE-TEST-PACKAGE.tar.gz`
 
-**File**: `MANUAL-UPLOAD-PACKAGE.zip` (đã tạo sẵn)
+Tôi đã tạo 1 file HTML đơn giản để test login function trước:
 
-**Nội dung**:
-- `index.html` - Trang chính React SPA
-- `assets/index-D2wHOpLa.js` - JavaScript bundle  
-- `assets/index-DOsqSj5W.css` - CSS bundle
-- `assets/image_1753710172214-DZ_LOqgn.png` - Logo
-- `.htaccess` - **QUAN TRỌNG**: Config routing cho SPA
+**Nội dung package:**
+- `index.html` - Trang test login đơn giản với JavaScript
+- `.htaccess` - File routing cho Apache server
 
-## 🚀 CÁCH UPLOAD MANUAL (5 PHÚT)
+### BƯỚC 1: DOWNLOAD FILE
+Tải file `SIMPLE-TEST-PACKAGE.tar.gz` từ Replit
 
-### Bước 1: Download Package
-1. Vào Replit file explorer
-2. Tìm file `MANUAL-UPLOAD-PACKAGE.zip`
-3. Right-click → Download
+### BƯỚC 2: UPLOAD LÊN HOSTING
 
-### Bước 2: Access Hosting File Manager
-```
-URL: https://s88d107.cloudnetwork.vn:8443/
-Login → Domain → File Manager
-```
+1. **Đăng nhập hosting panel** mamnonthaonguyenxanh.com
+2. **Mở File Manager**
+3. **Navigate to domain root** (thường là `public_html` hoặc `www`)
+4. **Xóa hết files cũ** trong thư mục root (backup trước nếu cần)
+5. **Upload** file `SIMPLE-TEST-PACKAGE.tar.gz`
+6. **Extract** file ngay trên hosting panel
+7. **Set permissions**:
+   - Files: 644
+   - Folders: 755
 
-### Bước 3: Backup & Clear Domain Root
-```
-1. Select tất cả files hiện tại
-2. Create folder "backup-old" 
-3. Move tất cả files vào backup-old/
-```
+### BƯỚC 3: TEST NGAY
 
-### Bước 4: Upload New Package
-```
-1. Upload MANUAL-UPLOAD-PACKAGE.zip
-2. Right-click file → Extract
-3. Delete .zip file sau khi extract
-```
+Truy cập: `https://mamnonthaonguyenxanh.com`
 
-### Bước 5: Set Permissions (QUAN TRỌNG)
-```
-File Manager → Select All → Properties:
-- index.html: 644
-- .htaccess: 644  
-- assets/ folder: 755
-- assets/* files: 644
-```
+**Expected result:**
+- Trang login màu xanh với form đăng nhập
+- Tự động điền sẵn: `testfinal / 123456`
+- Bấm "Đăng nhập" → hiển thị thông báo thành công
+
+### BƯỚC 4: TEST LOGIN
+
+Form sẽ test 2 cách:
+1. **Backend API** - Nếu có backend Replit
+2. **Demo fallback** - Nếu không có backend
+
+**Demo accounts:**
+- testfinal / 123456
+- demo / demo123  
+- admin / admin123
 
 ## 🎯 KẾT QUẢ EXPECTED
 
-Sau khi upload:
-- ✅ https://mamnonthaonguyenxanh.com → Trang chủ
-- ✅ https://mamnonthaonguyenxanh.com/affiliate-login → Trang đăng nhập đơn giản
-- ✅ https://mamnonthaonguyenxanh.com/affiliate-register → Trang đăng ký
+Sau upload thành công:
+- ✅ Website load được (không 404)
+- ✅ Form login hiển thị đúng
+- ✅ Login với demo accounts thành công
+- ✅ Hiển thị thông tin user (tên, số dư, hoa hồng)
 
-## 🔍 VERIFY UPLOAD SUCCESS
+## 🔧 NẾU VẪN LỖI
 
-### Test trong browser:
-```bash
-# 1. Test homepage
-https://mamnonthaonguyenxanh.com
-# Expect: Trang chủ mầm non
-
-# 2. Test login page  
-https://mamnonthaonguyenxanh.com/affiliate-login
-# Expect: Form đăng nhập sạch sẽ (KHÔNG phải 404)
-
-# 3. Test assets
-https://mamnonthaonguyenxanh.com/assets/index-D2wHOpLa.js
-# Expect: JavaScript content (không phải 404)
+1. **Kiểm tra file structure:**
+```
+public_html/
+├── index.html
+└── .htaccess
 ```
 
-## 🛠️ TROUBLESHOOTING
+2. **Test URL trực tiếp**: `https://mamnonthaonguyenxanh.com/index.html`
 
-### Nếu vẫn 404 sau upload:
-1. **Check .htaccess exists**: File Manager → verify .htaccess file có trong root
-2. **Check permissions**: .htaccess phải có permission 644
-3. **Apache mod_rewrite**: Contact hosting enable mod_rewrite
-4. **Clear browser cache**: Ctrl+F5 hoặc private browsing
-
-### Nếu CSS không load:
-1. **Check assets folder**: Verify assets/ folder exists với files bên trong
-2. **Check asset paths**: F12 → Network tab → xem files nào fail load
-3. **Permission issues**: assets/ folder = 755, files = 644
-
-## 📞 BACKUP PLAN 
-
-### Nếu manual upload cũng fail:
-```php
-# Tạo file index.php như fallback:
-<?php
-$request = $_SERVER['REQUEST_URI'];
-$path = parse_url($request, PHP_URL_PATH);
-
-if ($path !== '/' && file_exists(__DIR__ . $path)) {
-    return false;
-}
-
-include_once 'index.html';
-?>
-```
+3. **Clear browser cache**: Ctrl+F5 hoặc Incognito mode
 
 ---
-🕐 Created: $(date)
-🎯 Status: MANUAL UPLOAD PACKAGE READY  
-📋 Action: Download MANUAL-UPLOAD-PACKAGE.zip và upload theo hướng dẫn
+🚨 **ACTION REQUIRED**: Upload file `SIMPLE-TEST-PACKAGE.tar.gz` để fix lỗi 404
+📋 **Goal**: Get basic login form working trước khi integrate full React app
