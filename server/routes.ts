@@ -2124,17 +2124,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Email test endpoint
-        
-        // Try username first (more user-friendly)
-        try {
-          member = await storage.getAffiliateMemberByUsername(memberCode);
-        } catch (error) {
-          // If username search fails, try memberId
-          member = await storage.getAffiliateMemberByMemberId(memberCode);
-        }
-        
-        if (member && member.isActive) {
-          res.json({ 
+  app.post("/api/test-email", async (req, res) => {
+    try {
+      res.json({ message: "Email test endpoint" });
+    } catch (error) {
+      res.status(500).json({ message: "Email test failed" });
+    }
+  });
+
+  // Initialize commission settings on startup
+  commissionService.initializeDefaultSettings().catch(console.error);
+
+  // Withdrawal request endpoints
+  app.get("/api/withdrawal-requests", async (req, res) => {
+    try {
+      const requests = await storage.getWithdrawalRequests();
+      res.json(requests);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch withdrawal requests" });
+    }
+  });
+
+  // Create hosting package with React only
+  app.get("/api/build-hosting", (req, res) => {
+    res.json({
+      message: "Tạo hosting package với React thuần",
+      architecture: "React-only",
+      status: "ready"
+    });
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+} 
             message: "Đăng nhập thành công",
             memberCode,
             member: {
