@@ -1,5 +1,6 @@
 import { pgTable, text, serial, integer, boolean, timestamp, varchar, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
+import { relations, sql } from "drizzle-orm";
 import { z } from "zod";
 
 export const users = pgTable("users", {
@@ -159,9 +160,11 @@ export const serviceRegistrations = pgTable("service_registrations", {
 export const affiliateMembers = pgTable("affiliate_members", {
   id: serial("id").primaryKey(),
   memberId: varchar("member_id", { length: 50 }).unique().notNull(), // UUID
+  username: varchar("username", { length: 50 }).unique().notNull(), // User-friendly login name
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).unique().notNull(),
   phone: varchar("phone", { length: 20 }).notNull(),
+  password: varchar("password", { length: 255 }).default("123456"), // User login password
   memberType: varchar("member_type", { length: 50 }).notNull(), // "teacher" or "parent"
   categoryName: varchar("category_name", { length: 100 }).notNull(), // "Chăm sóc phụ huynh" or "Đại sứ thương hiệu"
   sponsorId: varchar("sponsor_id", { length: 50 }), // Reference to sponsor's memberId
@@ -244,6 +247,21 @@ export const commissionTransactions = pgTable("commission_transactions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Withdrawal Requests Table
+export const withdrawalRequests = pgTable("withdrawal_requests", {
+  id: serial("id").primaryKey(),
+  memberId: varchar("member_id", { length: 50 }).notNull(),
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
+  bankInfo: text("bank_info"), // JSON string for bank details
+  requestNote: text("request_note"),
+  adminNote: text("admin_note"),
+  status: varchar("status", { length: 20 }).default("pending"), // pending, approved, rejected, paid
+  requestedAt: timestamp("requested_at").defaultNow(),
+  processedAt: timestamp("processed_at"),
+  paidAt: timestamp("paid_at"),
+  processedBy: varchar("processed_by", { length: 50 }), // admin username
+});
+
 export const dexTrades = pgTable("dex_trades", {
   id: serial("id").primaryKey(),
   tradeId: varchar("trade_id", { length: 100 }).unique().notNull(),
@@ -256,6 +274,20 @@ export const dexTrades = pgTable("dex_trades", {
   blockchainTxHash: varchar("blockchain_tx_hash", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Transaction history for wallet statements
+export const transactionHistory = pgTable("transaction_history", {
+  id: serial("id").primaryKey(),
+  memberId: varchar("member_id", { length: 50 }).notNull(),
+  transactionType: varchar("transaction_type", { length: 50 }).notNull(), // "payment_received", "commission_earned", "bonus_received", "withdrawal"
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
+  description: text("description").notNull(),
+  balanceBefore: decimal("balance_before", { precision: 15, scale: 2 }).notNull(),
+  balanceAfter: decimal("balance_after", { precision: 15, scale: 2 }).notNull(),
+  status: varchar("status", { length: 20 }).default("completed"), // "completed", "pending", "failed"
+  referenceId: varchar("reference_id", { length: 100 }), // Reference to commission transaction or other source
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const insertUserSchema = createInsertSchema(users).omit({
@@ -340,6 +372,16 @@ export const insertCommissionTransactionSchema = createInsertSchema(commissionTr
   createdAt: true,
 });
 
+export const insertWithdrawalRequestSchema = createInsertSchema(withdrawalRequests).omit({
+  id: true,
+  requestedAt: true,
+  processedAt: true,
+  paidAt: true,
+});
+
+export type WithdrawalRequest = typeof withdrawalRequests.$inferSelect;
+export type InsertWithdrawalRequest = typeof withdrawalRequests.$inferInsert;
+
 // Type exports for customer conversion tracking
 export type CustomerConversion = typeof customerConversions.$inferSelect;
 export type InsertCustomerConversion = z.infer<typeof insertCustomerConversionSchema>;
@@ -394,6 +436,11 @@ export const insertDexTradeSchema = createInsertSchema(dexTrades).omit({
   updatedAt: true,
 });
 
+export const insertTransactionHistorySchema = createInsertSchema(transactionHistory).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Article = typeof articles.$inferSelect;
@@ -432,3 +479,29 @@ export type InsertAffiliateReward = z.infer<typeof insertAffiliateRewardSchema>;
 
 export type DexTrade = typeof dexTrades.$inferSelect;
 export type InsertDexTrade = z.infer<typeof insertDexTradeSchema>;
+
+export type TransactionHistory = typeof transactionHistory.$inferSelect;
+export type InsertTransactionHistory = z.infer<typeof insertTransactionHistorySchema>;
+
+// Homepage content table
+export const homepageContent = pgTable("homepage_content", {
+  id: serial("id").primaryKey(),
+  heroTitle: text("hero_title").notNull(),
+  heroSubtitle: text("hero_subtitle").notNull(),
+  highlight1Title: text("highlight1_title").notNull(),
+  highlight1Desc: text("highlight1_desc").notNull(),
+  highlight2Title: text("highlight2_title").notNull(),
+  highlight2Desc: text("highlight2_desc").notNull(),
+  highlight3Title: text("highlight3_title").notNull(),
+  highlight3Desc: text("highlight3_desc").notNull(),
+  homepage_banner: text("homepage_banner"), // Add banner field
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertHomepageContentSchema = createInsertSchema(homepageContent).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export type HomepageContent = typeof homepageContent.$inferSelect;
+export type InsertHomepageContent = z.infer<typeof insertHomepageContentSchema>;

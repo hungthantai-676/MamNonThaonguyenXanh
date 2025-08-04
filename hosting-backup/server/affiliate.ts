@@ -40,7 +40,10 @@ export class AffiliateService {
 
   // Create unique referral link for member
   static generateReferralLink(memberId: string, baseUrl: string): string {
-    return `${baseUrl}/affiliate/join?ref=${memberId}`;
+    // Use production domain if available, otherwise use provided baseUrl
+    const productionDomain = process.env.PRODUCTION_DOMAIN || "https://mamnonthaonguyenxanh.com";
+    const finalUrl = process.env.NODE_ENV === "production" ? productionDomain : baseUrl;
+    return `${finalUrl}/affiliate-register?ref=${memberId}`;
   }
 
   // Generate unique member ID

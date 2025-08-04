@@ -6,7 +6,7 @@ const createTransporter = () => {
   return nodemailer.createTransporter({
     service: 'gmail',
     auth: {
-      user: process.env.EMAIL_USER || 'mamnonthaonguyenxanh@gmail.com',
+      user: process.env.EMAIL_USER || 'Mamnonthaonguyenxanh2019@gmail.com',
       pass: process.env.EMAIL_APP_PASSWORD // Gmail App Password
     }
   });
@@ -17,8 +17,8 @@ export async function sendServiceRegistrationEmail(registration: ServiceRegistra
     const transporter = createTransporter();
     
     const mailOptions = {
-      from: process.env.EMAIL_USER || 'mamnonthaonguyenxanh@gmail.com',
-      to: 'mamnonthaonguyenxanh@gmail.com',
+      from: process.env.EMAIL_USER || 'Mamnonthaonguyenxanh2019@gmail.com',
+      to: 'Mamnonthaonguyenxanh2019@gmail.com',
       subject: `🔔 Đăng ký dịch vụ mới: ${registration.serviceName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -86,14 +86,82 @@ export async function sendServiceRegistrationEmail(registration: ServiceRegistra
   }
 }
 
+// Send password reset email function
+export async function sendPasswordResetEmail(userEmail: string, tempPassword: string, username: string) {
+  try {
+    const transporter = createTransporter();
+    
+    const mailOptions = {
+      from: process.env.EMAIL_USER || 'Mamnonthaonguyenxanh2019@gmail.com',
+      to: userEmail,
+      subject: '🔑 Lấy lại mật khẩu - Mầm Non Thảo Nguyên Xanh',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #2E7D32; text-align: center; margin-bottom: 30px;">
+            🔑 Lấy lại mật khẩu tài khoản Affiliate
+          </h2>
+          
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #1976D2; margin-top: 0;">📋 Thông tin đăng nhập mới</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 8px 0; font-weight: bold; color: #666;">Tên đăng nhập:</td>
+                <td style="padding: 8px 0; color: #333; font-weight: bold;">${username}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; font-weight: bold; color: #666;">Mật khẩu tạm thời:</td>
+                <td style="padding: 8px 0; color: #d32f2f; font-weight: bold; font-size: 18px;">${tempPassword}</td>
+              </tr>
+            </table>
+          </div>
+          
+          <div style="background-color: #fff3e0; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #F57C00; margin-top: 0;">⚠️ Lưu ý quan trọng</h3>
+            <ul style="color: #333; line-height: 1.6;">
+              <li>Mật khẩu này chỉ có hiệu lực trong 24 giờ</li>
+              <li>Vui lòng đăng nhập và đổi mật khẩu mới ngay</li>
+              <li>Không chia sẻ thông tin này với ai khác</li>
+            </ul>
+          </div>
+          
+          <div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; text-align: center;">
+            <h3 style="color: #2E7D32; margin-top: 0;">🚀 Đăng nhập ngay</h3>
+            <p style="color: #333; margin-bottom: 15px;">
+              Nhấn vào link dưới để đăng nhập với mật khẩu tạm thời
+            </p>
+            <a href="${process.env.NODE_ENV === 'production' ? 'https://mamnonthaonguyenxanh.com' : 'http://localhost:5000'}/affiliate-login" 
+               style="display: inline-block; background-color: #2E7D32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+              Đăng nhập ngay
+            </a>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+            <p style="color: #666; font-size: 14px; margin: 0;">
+              Email này được gửi từ hệ thống Mầm Non Thảo Nguyên Xanh<br>
+              Thời gian: ${new Date().toLocaleString('vi-VN')}
+            </p>
+          </div>
+        </div>
+      `
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+    console.log('📧 Password reset email sent successfully:', result.messageId);
+    return true;
+  } catch (error) {
+    console.error('❌ Failed to send password reset email:', error);
+    return false;
+  }
+}
+
 // Test email function
 export async function sendTestEmail() {
   try {
     const transporter = createTransporter();
     
     const mailOptions = {
-      from: process.env.EMAIL_USER || 'mamnonthaonguyenxanh@gmail.com',
-      to: 'mamnonthaonguyenxanh@gmail.com',
+      from: process.env.EMAIL_USER || 'Mamnonthaonguyenxanh2019@gmail.com',
+      to: 'Mamnonthaonguyenxanh2019@gmail.com',
       subject: '🧪 Test Email - Hệ thống thông báo hoạt động',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">

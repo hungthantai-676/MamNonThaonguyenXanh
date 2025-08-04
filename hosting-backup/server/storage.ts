@@ -1,6 +1,6 @@
-import { users, articles, testimonials, programs, activities, admissionForms, contactForms, chatMessages, notifications, admissionSteps, mediaCovers, socialMediaLinks, serviceRegistrations, affiliateMembers, affiliateTransactions, affiliateRewards, dexTrades, customerConversions, commissionSettings, commissionTransactions, type User, type InsertUser, type Article, type InsertArticle, type Testimonial, type InsertTestimonial, type Program, type InsertProgram, type Activity, type InsertActivity, type AdmissionForm, type InsertAdmissionForm, type ContactForm, type InsertContactForm, type ChatMessage, type InsertChatMessage, type Notification, type InsertNotification, type AdmissionStep, type InsertAdmissionStep, type MediaCover, type InsertMediaCover, type SocialMediaLink, type InsertSocialMediaLink, type ServiceRegistration, type InsertServiceRegistration, type AffiliateMember, type InsertAffiliateMember, type AffiliateTransaction, type InsertAffiliateTransaction, type AffiliateReward, type InsertAffiliateReward, type DexTrade, type InsertDexTrade, type CustomerConversion, type InsertCustomerConversion, type CommissionSetting, type InsertCommissionSetting, type CommissionTransaction, type InsertCommissionTransaction } from "@shared/schema";
+import { users, articles, testimonials, programs, activities, admissionForms, contactForms, chatMessages, notifications, admissionSteps, mediaCovers, socialMediaLinks, serviceRegistrations, affiliateMembers, affiliateTransactions, affiliateRewards, dexTrades, customerConversions, commissionSettings, commissionTransactions, transactionHistory, withdrawalRequests, homepageContent, type User, type InsertUser, type Article, type InsertArticle, type Testimonial, type InsertTestimonial, type Program, type InsertProgram, type Activity, type InsertActivity, type AdmissionForm, type InsertAdmissionForm, type ContactForm, type InsertContactForm, type ChatMessage, type InsertChatMessage, type Notification, type InsertNotification, type AdmissionStep, type InsertAdmissionStep, type MediaCover, type InsertMediaCover, type SocialMediaLink, type InsertSocialMediaLink, type ServiceRegistration, type InsertServiceRegistration, type AffiliateMember, type InsertAffiliateMember, type AffiliateTransaction, type InsertAffiliateTransaction, type AffiliateReward, type InsertAffiliateReward, type DexTrade, type InsertDexTrade, type CustomerConversion, type InsertCustomerConversion, type CommissionSetting, type InsertCommissionSetting, type CommissionTransaction, type InsertCommissionTransaction, type TransactionHistory, type InsertTransactionHistory, type WithdrawalRequest, type InsertWithdrawalRequest, type HomepageContent, type InsertHomepageContent } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -85,6 +85,7 @@ export interface IStorage {
   getAffiliateMembers(): Promise<AffiliateMember[]>;
   getAffiliateMember(id: number): Promise<AffiliateMember | undefined>;
   getAffiliateMemberByMemberId(memberId: string): Promise<AffiliateMember | undefined>;
+  getAffiliateMemberByUsername(username: string): Promise<AffiliateMember | undefined>;
   getAffiliateMemberByEmail(email: string): Promise<AffiliateMember | undefined>;
   createAffiliateMember(member: InsertAffiliateMember): Promise<AffiliateMember>;
   updateAffiliateMember(id: number, member: Partial<InsertAffiliateMember>): Promise<AffiliateMember>;
@@ -133,6 +134,22 @@ export interface IStorage {
   getCommissionTransactionsByRecipient(recipientId: string): Promise<CommissionTransaction[]>;
   createCommissionTransaction(transaction: InsertCommissionTransaction): Promise<CommissionTransaction>;
   updateCommissionTransaction(id: number, transaction: Partial<InsertCommissionTransaction>): Promise<CommissionTransaction>;
+
+  // Withdrawal request methods
+  getWithdrawalRequests(): Promise<WithdrawalRequest[]>;
+  getWithdrawalRequest(id: number): Promise<WithdrawalRequest | undefined>;
+  getWithdrawalRequestsByMember(memberId: string): Promise<WithdrawalRequest[]>;
+  createWithdrawalRequest(request: InsertWithdrawalRequest): Promise<WithdrawalRequest>;
+  updateWithdrawalRequest(id: number, request: Partial<InsertWithdrawalRequest>): Promise<WithdrawalRequest>;
+  processWithdrawalRequest(id: number, adminNote: string, status: string, processedBy: string): Promise<WithdrawalRequest>;
+
+  // Transaction history methods
+  getTransactionHistory(memberId: string): Promise<TransactionHistory[]>;
+  createTransactionHistory(transaction: InsertTransactionHistory): Promise<TransactionHistory>;
+  
+  // Homepage content methods
+  getHomepageContent(): Promise<HomepageContent | undefined>;
+  saveHomepageContent(content: InsertHomepageContent): Promise<HomepageContent>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -484,6 +501,11 @@ export class DatabaseStorage implements IStorage {
     return member || undefined;
   }
 
+  async getAffiliateMemberByUsername(username: string): Promise<AffiliateMember | undefined> {
+    const [member] = await db.select().from(affiliateMembers).where(eq(affiliateMembers.username, username));
+    return member || undefined;
+  }
+
   async getAffiliateMemberByEmail(email: string): Promise<AffiliateMember | undefined> {
     const [member] = await db.select().from(affiliateMembers).where(eq(affiliateMembers.email, email));
     return member || undefined;
@@ -690,6 +712,32 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(commissionTransactions).where(eq(commissionTransactions.recipientId, recipientId));
   }
 
+  async updateCommissionTransactionStatus(transactionId: string, status: string): Promise<CommissionTransaction> {
+    const [transaction] = await db
+      .update(commissionTransactions)
+      .set({ status, processedAt: status === "paid" ? new Date() : null })
+      .where(eq(commissionTransactions.transactionId, transactionId))
+      .returning();
+    return transaction;
+  }
+
+  // Transaction history methods
+  async createTransactionHistory(historyData: InsertTransactionHistory): Promise<TransactionHistory> {
+    const [history] = await db
+      .insert(transactionHistory)
+      .values(historyData)
+      .returning();
+    return history;
+  }
+
+  async getMemberTransactionHistory(memberId: string): Promise<TransactionHistory[]> {
+    return await db
+      .select()
+      .from(transactionHistory)
+      .where(eq(transactionHistory.memberId, memberId))
+      .orderBy(desc(transactionHistory.createdAt));
+  }
+
   async createCommissionTransaction(insertTransaction: InsertCommissionTransaction): Promise<CommissionTransaction> {
     const [transaction] = await db
       .insert(commissionTransactions)
@@ -705,6 +753,169 @@ export class DatabaseStorage implements IStorage {
       .where(eq(commissionTransactions.id, id))
       .returning();
     return transaction;
+  }
+
+  // Withdrawal request methods
+  async getWithdrawalRequests(): Promise<WithdrawalRequest[]> {
+    return await db.select().from(withdrawalRequests).orderBy(desc(withdrawalRequests.requestedAt));
+  }
+
+  async getWithdrawalRequest(id: number): Promise<WithdrawalRequest | undefined> {
+    const [request] = await db.select().from(withdrawalRequests).where(eq(withdrawalRequests.id, id));
+    return request || undefined;
+  }
+
+  async getWithdrawalRequestsByMember(memberId: string): Promise<WithdrawalRequest[]> {
+    return await db.select().from(withdrawalRequests)
+      .where(eq(withdrawalRequests.memberId, memberId))
+      .orderBy(desc(withdrawalRequests.requestedAt));
+  }
+
+  async createWithdrawalRequest(requestData: InsertWithdrawalRequest): Promise<WithdrawalRequest> {
+    const [request] = await db
+      .insert(withdrawalRequests)
+      .values(requestData)
+      .returning();
+    return request;
+  }
+
+  async updateWithdrawalRequest(id: number, requestData: Partial<InsertWithdrawalRequest>): Promise<WithdrawalRequest> {
+    const [request] = await db
+      .update(withdrawalRequests)
+      .set(requestData)
+      .where(eq(withdrawalRequests.id, id))
+      .returning();
+    return request;
+  }
+
+  async processWithdrawalRequest(id: number, adminNote: string, status: string, processedBy: string): Promise<WithdrawalRequest> {
+    const processedAt = new Date();
+    const paidAt = status === 'paid' ? processedAt : null;
+    
+    const [request] = await db
+      .update(withdrawalRequests)
+      .set({ 
+        adminNote, 
+        status, 
+        processedBy, 
+        processedAt,
+        paidAt 
+      })
+      .where(eq(withdrawalRequests.id, id))
+      .returning();
+    return request;
+  }
+
+  // Transaction history methods
+  async getTransactionHistory(memberId: string): Promise<TransactionHistory[]> {
+    return await db.select().from(transactionHistory)
+      .where(eq(transactionHistory.memberId, memberId))
+      .orderBy(desc(transactionHistory.createdAt));
+  }
+
+  async createTransactionHistory(transactionData: InsertTransactionHistory): Promise<TransactionHistory> {
+    const [transaction] = await db
+      .insert(transactionHistory)
+      .values(transactionData)
+      .returning();
+    return transaction;
+  }
+
+  // Homepage content methods
+  async getHomepageContent(): Promise<HomepageContent | undefined> {
+    const [content] = await db.select().from(homepageContent).limit(1);
+    return content || undefined;
+  }
+
+  async saveHomepageContent(contentData: InsertHomepageContent): Promise<HomepageContent> {
+    // Check if content exists
+    const existing = await this.getHomepageContent();
+    
+    if (existing) {
+      // Update existing content
+      const [content] = await db
+        .update(homepageContent)
+        .set({ ...contentData, updatedAt: new Date() })
+        .where(eq(homepageContent.id, existing.id))
+        .returning();
+      return content;
+    } else {
+      // Create new content
+      const [content] = await db
+        .insert(homepageContent)
+        .values(contentData)
+        .returning();
+      return content;
+    }
+  }
+
+  // Settings management
+  async getSetting(key: string): Promise<string | null> {
+    try {
+      // For now, use simple key-value storage in homepage content table
+      // In production, create a dedicated settings table
+      const [setting] = await db.select().from(homepageContent)
+        .where(eq(homepageContent.id, 1)).limit(1);
+      
+      if (setting && (setting as any)[key]) {
+        return (setting as any)[key];
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting setting:', error);
+      return null;
+    }
+  }
+
+  async setSetting(key: string, value: string | null): Promise<void> {
+    try {
+      // Get existing content
+      const existing = await this.getHomepageContent();
+      
+      if (existing) {
+        // Update existing with new setting
+        await db.update(homepageContent)
+          .set({ 
+            ...(existing as any),
+            [key]: value,
+            updatedAt: new Date()
+          })
+          .where(eq(homepageContent.id, existing.id));
+      } else {
+        // Create new with setting
+        await db.insert(homepageContent)
+          .values({
+            title: 'Mầm Non Thảo Nguyên Xanh',
+            subtitle: 'Giáo dục bằng trái tim',
+            description: 'Nơi nuôi dưỡng tương lai của bé',
+            [key]: value
+          } as any);
+      }
+    } catch (error) {
+      console.error('Error setting:', error);
+      throw error;
+    }
+  }
+
+  // Demo data management
+  async clearDemoData(): Promise<void> {
+    try {
+      // Delete demo transactions first (foreign key constraints)
+      await db.delete(transactionHistory).where(eq(transactionHistory.description, 'Demo transaction'));
+      await db.delete(commissionTransactions).where(eq(commissionTransactions.notes, 'Demo transaction'));
+      
+      // Delete demo customer conversions
+      await db.delete(customerConversions).where(eq(customerConversions.notes, 'Demo conversion'));
+      
+      // Delete demo affiliate members
+      await db.delete(affiliateMembers).where(eq(affiliateMembers.email, 'linh@demo.com'));
+      await db.delete(affiliateMembers).where(eq(affiliateMembers.email, 'minh@demo.com'));
+      await db.delete(affiliateMembers).where(eq(affiliateMembers.email, 'hoa@demo.com'));
+      
+    } catch (error) {
+      console.error('Error clearing demo data:', error);
+      throw error;
+    }
   }
 }
 
