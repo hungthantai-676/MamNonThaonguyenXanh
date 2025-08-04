@@ -263,12 +263,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/contact-forms", async (req, res) => {
+  app.post("/api/contact", async (req, res) => {
     try {
+      console.log('🟢 Contact form submission received:', req.body);
       const validatedData = insertContactFormSchema.parse(req.body);
       const form = await storage.createContactForm(validatedData);
       
-      // Send notification email to admin
+      // Send notification email to admin (optional)
       try {
         const { sendServiceRegistrationEmail } = await import("./email");
         const registration = {
@@ -283,8 +284,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await sendServiceRegistrationEmail(registration);
       } catch (emailError) {
         console.error('Error sending contact notification email:', emailError);
+        // Don't fail the request if email fails
       }
       
+      res.status(201).json({ 
+        success: true, 
+        message: "Tin nhắn đã được gửi thành công!", 
+        form 
+      });
+    } catch (error) {
+      console.error('Contact form error:', error);
+      res.status(400).json({ message: "Có lỗi xảy ra khi gửi tin nhắn" });
+    }
+  });
+
+  app.post("/api/contact-forms", async (req, res) => {
+    try {
+      const validatedData = insertContactFormSchema.parse(req.body);
+      const form = await storage.createContactForm(validatedData);
       res.status(201).json(form);
     } catch (error) {
       res.status(400).json({ message: "Invalid contact form data" });
@@ -1733,6 +1750,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Password reset endpoint
+  app.post("/api/affiliate/reset-password", async (req, res) => {
+    try {
+      console.log('🟢 Password reset request received:', req.body);
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Vui lòng nhập email" });
+      }
+      
+      // Check if user exists
+      try {
+        const member = await storage.getAffiliateMemberByEmail(email);
+        if (member) {
+          // Generate temporary password
+          const tempPassword = Math.random().toString(36).slice(-8);
+          
+          // Update password in database
+          await storage.updateAffiliateMember(member.id, { password: tempPassword });
+          
+          // Send email with temporary password (optional)
+          try {
+            const { sendServiceRegistrationEmail } = await import("./email");
+            const emailData = {
+              serviceName: "Khôi phục mật khẩu",
+              parentName: member.name,
+              parentEmail: email,
+              parentPhone: member.phone || "Không có",
+              preferredTime: "Ngay lập tức",
+              notes: `Mật khẩu tạm thời mới: ${tempPassword}. Vui lòng đăng nhập và đổi mật khẩu ngay.`,
+              createdAt: new Date().toISOString()
+            };
+            await sendServiceRegistrationEmail(emailData);
+          } catch (emailError) {
+            console.error('Error sending password reset email:', emailError);
+          }
+          
+          res.json({ 
+            success: true, 
+            message: "Mật khẩu tạm thời đã được gửi qua email", 
+            tempPassword: tempPassword  // For demo - remove in production
+          });
+        } else {
+          res.status(404).json({ message: "Email không tồn tại trong hệ thống" });
+        }
+      } catch (error) {
+        console.error('Password reset error:', error);
+        res.status(500).json({ message: "Có lỗi xảy ra khi khôi phục mật khẩu" });
+      }
+    } catch (error) {
+      console.error('Password reset error:', error);
+      res.status(500).json({ message: "Có lỗi xảy ra khi khôi phục mật khẩu" });
+    }
+  });
+
   // Affiliate registration endpoint
   app.post("/api/affiliate/register", async (req, res) => {
     try {
@@ -2238,11 +2310,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Content Management API endpoints
   app.post("/api/admin/homepage", async (req, res) => {
     try {
+      console.log('🟢 Homepage content update received:', req.body);
       const { heroTitle, heroSubtitle, heroImage, features } = req.body;
-      // Save homepage data to database or file system
-      res.json({ message: "Homepage updated successfully" });
+      
+      // Save individual settings
+      if (heroTitle) await storage.setSetting('homepage_hero_title', heroTitle);
+      if (heroSubtitle) await storage.setSetting('homepage_hero_subtitle', heroSubtitle);
+      if (heroImage) await storage.setSetting('homepage_hero_image', heroImage);
+      if (features) await storage.setSetting('homepage_features', JSON.stringify(features));
+      
+      res.json({ success: true, message: "Homepage updated successfully" });
     } catch (error) {
+      console.error('Homepage update error:', error);
       res.status(500).json({ message: "Failed to update homepage" });
+    }
+  });
+
+  // Get homepage content
+  app.get("/api/homepage-content", async (req, res) => {
+    try {
+      const heroTitle = await storage.getSetting('homepage_hero_title');
+      const heroSubtitle = await storage.getSetting('homepage_hero_subtitle');
+      const heroImage = await storage.getSetting('homepage_hero_image');
+      const featuresJson = await storage.getSetting('homepage_features');
+      
+      let features = [];
+      try {
+        features = featuresJson ? JSON.parse(featuresJson) : [];
+      } catch (e) {
+        features = [];
+      }
+      
+      res.json({
+        heroTitle: heroTitle || "Chào mừng đến với Mầm Non Thảo Nguyên Xanh",
+        heroSubtitle: heroSubtitle || "Nơi nuôi dưỡng những ước mơ nhỏ thành hiện thực lớn",
+        heroImage: heroImage || null,
+        features: features
+      });
+    } catch (error) {
+      console.error('Get homepage content error:', error);
+      res.status(500).json({ message: "Failed to get homepage content" });
     }
   });
 

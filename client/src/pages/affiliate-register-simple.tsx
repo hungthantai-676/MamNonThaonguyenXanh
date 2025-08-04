@@ -79,7 +79,7 @@ export default function AffiliateRegisterSimple() {
           
           toast({
             title: "QR Registration + Auto-login thành công!",
-            description: `Tài khoản ${result.username} đã được tạo và đăng nhập tự động. Chuyển đến trang thành viên...`,
+            description: `Tài khoản ${data.username} đã được tạo và đăng nhập tự động. Chuyển đến trang thành viên...`,
           });
           
           // Redirect to member page
