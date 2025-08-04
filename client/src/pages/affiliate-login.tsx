@@ -52,15 +52,23 @@ export default function AffiliateLogin() {
       return response.json();
     },
     onSuccess: (data) => {
-      if (data.success) {
-        setLoginResult(data.member);
+      if (data.success || data.user) {
+        // Handle both old and new response formats
+        const member = data.member || data.user;
+        setLoginResult(member);
+        
+        // Store login info for session persistence
+        localStorage.setItem("affiliate-token", data.token || "affiliate-token-" + Date.now());
+        localStorage.setItem("affiliate-user", JSON.stringify(member));
+        
         toast({
           title: "Đăng nhập thành công!",
-          description: `Chào mừng ${data.member.name}`,
+          description: `Chào mừng ${member.name || member.fullName}`,
         });
+        
         // Redirect to dashboard after successful login
         setTimeout(() => {
-          window.location.href = `/affiliate-dashboard?member=${data.member.memberId}`;
+          window.location.href = `/affiliate-dashboard?member=${member.memberId || member.id}`;
         }, 1500);
       }
     },
@@ -129,13 +137,13 @@ export default function AffiliateLogin() {
                               type="button"
                               variant="ghost"
                               size="sm"
-                              className="absolute right-0 top-0 h-full px-3"
+                              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                               onClick={() => setShowPassword(!showPassword)}
                             >
                               {showPassword ? (
-                                <EyeOff className="w-4 h-4" />
+                                <EyeOff className="h-4 w-4 text-gray-400" />
                               ) : (
-                                <Eye className="w-4 h-4" />
+                                <Eye className="h-4 w-4 text-gray-400" />
                               )}
                             </Button>
                           </div>

@@ -582,15 +582,30 @@ export default function AffiliateRegisterSimple() {
 
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-700">🔒 Mật khẩu *</label>
-                <Input
-                  type="password"
-                  value={loginData.password}
-                  onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
-                  placeholder="Nhập mật khẩu"
-                  className="bg-white border-2 border-gray-200 text-black placeholder-gray-500 focus:border-blue-500"
-                  style={{ color: '#000000', backgroundColor: '#ffffff' }}
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    value={loginData.password}
+                    onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
+                    placeholder="Nhập mật khẩu"
+                    className="bg-white border-2 border-gray-200 text-black placeholder-gray-500 focus:border-blue-500 pr-12"
+                    style={{ color: '#000000', backgroundColor: '#ffffff' }}
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4 text-gray-500" />
+                    ) : (
+                      <Eye className="w-4 h-4 text-gray-500" />
+                    )}
+                  </Button>
+                </div>
               </div>
 
               <Button 

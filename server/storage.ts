@@ -511,11 +511,6 @@ export class DatabaseStorage implements IStorage {
     return member || undefined;
   }
 
-  async getAffiliateMemberByEmail(email: string): Promise<AffiliateMember | undefined> {
-    const [member] = await db.select().from(affiliateMembers).where(eq(affiliateMembers.email, email));
-    return member || undefined;
-  }
-
   async createAffiliateMember(insertMember: InsertAffiliateMember): Promise<AffiliateMember> {
     const [member] = await db
       .insert(affiliateMembers)

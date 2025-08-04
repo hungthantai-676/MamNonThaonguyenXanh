@@ -238,7 +238,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           parentName: validatedData.parentName,
           parentEmail: validatedData.parentEmail,
           parentPhone: validatedData.parentPhone,
-          preferredTime: validatedData.desiredStartDate,
+          preferredTime: validatedData.preferredStartDate || '',
           notes: `Tên bé: ${validatedData.childName}, Tuổi: ${validatedData.childAge}, Ghi chú: ${validatedData.notes || 'Không có'}`,
           createdAt: new Date().toISOString()
         };
@@ -1740,15 +1740,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { name, username, email, phone, password, memberType, sponsorId } = req.body;
       
-      // Generate temporary password if not provided (for QR code registrations)
+      // Generate temporary password if not provided (for QR code registrations)  
       const finalPassword = password || Math.random().toString(36).slice(-8);
       
-      // Basic validation
-      if (!name || !username || !email || !phone || !memberType) {
+      // Basic validation - check all required fields
+      if (!name || !username || !email || !phone) {
         return res.status(400).json({ 
-          message: "Thiếu thông tin bắt buộc. Vui lòng điền đầy đủ: Tên, username, email, phone, memberType" 
+          message: "Thiếu thông tin bắt buộc. Vui lòng điền đầy đủ: Tên, username, email, phone" 
         });
       }
+      
+      // Set default memberType if not provided
+      const finalMemberType = memberType || "parent";
       
       if (username.length < 3) {
         return res.status(400).json({ 
@@ -1768,15 +1771,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Check if username already exists
+      try {
+        const existingUser = await storage.getAffiliateMemberByUsername(username);
+        if (existingUser) {
+          return res.status(400).json({ 
+            message: "Tên đăng nhập đã tồn tại, vui lòng chọn tên khác" 
+          });
+        }
+      } catch (error) {
+        console.log("Username check failed:", error);
+      }
+      
+      // Check if email already exists
+      try {
+        const existingEmail = await storage.getAffiliateMemberByEmail(email);
+        if (existingEmail) {
+          return res.status(400).json({ 
+            message: "Email đã được đăng ký, vui lòng sử dụng email khác" 
+          });
+        }
+      } catch (error) {
+        console.log("Email check failed:", error);
+      }
+      
       // Generate unique member ID
-      const memberId = `${memberType.toUpperCase()}-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+      const memberId = `${finalMemberType.toUpperCase()}-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
       
       // Generate referral link
       const baseUrl = `${req.protocol}://${req.get('host')}`;
       const referralLink = `${baseUrl}/affiliate/join?ref=${memberId}`;
       
       // Create new member data
-      const categoryName = memberType === "teacher" ? "Đại sứ thương hiệu" : "Chăm sóc phụ huynh";
+      const categoryName = finalMemberType === "teacher" ? "Đại sứ thương hiệu" : "Chăm sóc phụ huynh";
       
       const newMember = {
         name,
@@ -1784,7 +1811,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email,
         phone,
         password: finalPassword, // Store password (in production, should be hashed)
-        memberType,
+        memberType: finalMemberType,
         categoryName,
         memberId,
         referralLink,
@@ -1813,7 +1840,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (sponsor) {
               // Update referral count
               await storage.updateAffiliateMember(sponsor.id, {
-                totalReferrals: sponsor.totalReferrals + 1
+                totalReferrals: (sponsor.totalReferrals || 0) + 1
               });
               console.log('🟢 Updated sponsor referral count:', sponsor.username);
               
@@ -1829,7 +1856,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.log(`🎉 Added ${rewardAmount} tokens to sponsor ${sponsor.username} (${sponsor.memberType})`);
               
               // Check for milestone bonus (every 5 referrals)
-              const newReferralCount = sponsor.totalReferrals + 1;
+              const newReferralCount = (sponsor.totalReferrals || 0) + 1;
               if (newReferralCount % 5 === 0) {
                 const milestoneBonus = sponsor.memberType === 'teacher' ? 10000000 : 10000; // Teachers: 10M VND, Parents: 10K points
                 const finalBalance = newBalance + milestoneBonus;
@@ -1958,23 +1985,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const member = await storage.getAffiliateMemberByUsername(username);
           if (member && member.password === password) {
             // Store user in session
-            req.session.affiliateUser = {
+            const userSession = {
               id: member.id,
               username: member.username,
-              fullName: member.fullName || member.name,
+              fullName: member.name,
               email: member.email,
               memberType: member.memberType,
-              status: member.status || 'active',
-              balance: member.balance || '0',
-              commission: member.commission || '0',
+              status: 'active',
+              balance: member.tokenBalance || '0',
+              commission: '0',
               walletAddress: member.walletAddress
             };
+            
+            (req as any).session.affiliateUser = userSession;
 
             return res.json({
               success: true,
               message: "Đăng nhập thành công!",
               token: "affiliate-token-" + Date.now(),
-              user: req.session.affiliateUser
+              user: userSession
             });
           } else {
             return res.status(401).json({ 
@@ -1986,7 +2015,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Hard-coded demo accounts fallback
           if (username === "testfinal" && password === "123456") {
-            req.session.affiliateUser = {
+            const demoUser = {
               id: "demo-1",
               username: "testfinal",
               fullName: "Test Final User",
@@ -1997,12 +2026,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
               commission: "500",
               walletAddress: "0xDemo123"
             };
+            
+            (req as any).session.affiliateUser = demoUser;
 
             return res.json({
               success: true,
               message: "Đăng nhập thành công!",
               token: "affiliate-token-" + Date.now(),
-              user: req.session.affiliateUser
+              user: demoUser
             });
           }
           
