@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Article, Program, Activity, AdmissionStep, MediaCover, ServiceRegistration } from "@shared/schema";
+import BannerUploader from "@/components/banner-uploader";
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
@@ -636,6 +637,16 @@ export default function AdminDashboard() {
                 <CardDescription>Cập nhật nội dung trang chủ</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* Banner Upload Section */}
+                <BannerUploader 
+                  onBannerUpdate={(bannerUrl) => {
+                    toast({
+                      title: "Thành công",
+                      description: "Banner trang chủ đã được cập nhật",
+                    });
+                  }}
+                />
+
                 <div className="space-y-4">
                   <h3 className="font-semibold text-lg">🎯 Phần Hero</h3>
                   <div>
@@ -653,14 +664,6 @@ export default function AdminDashboard() {
                       defaultValue="Nơi nuôi dưỡng tương lai của trẻ em với tình yêu thương và chăm sóc tận tâm"
                       placeholder="Nhập mô tả ngắn..."
                       rows={3}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="hero-image">🖼️ Ảnh nền Hero</Label>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      className="cursor-pointer"
                     />
                   </div>
                 </div>

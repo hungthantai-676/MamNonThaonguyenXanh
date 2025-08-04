@@ -494,6 +494,7 @@ export const homepageContent = pgTable("homepage_content", {
   highlight2Desc: text("highlight2_desc").notNull(),
   highlight3Title: text("highlight3_title").notNull(),
   highlight3Desc: text("highlight3_desc").notNull(),
+  homepage_banner: text("homepage_banner"), // Add banner field
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 

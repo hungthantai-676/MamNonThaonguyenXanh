@@ -854,6 +854,54 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  // Settings management
+  async getSetting(key: string): Promise<string | null> {
+    try {
+      // For now, use simple key-value storage in homepage content table
+      // In production, create a dedicated settings table
+      const [setting] = await db.select().from(homepageContent)
+        .where(eq(homepageContent.id, 1)).limit(1);
+      
+      if (setting && (setting as any)[key]) {
+        return (setting as any)[key];
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting setting:', error);
+      return null;
+    }
+  }
+
+  async setSetting(key: string, value: string | null): Promise<void> {
+    try {
+      // Get existing content
+      const existing = await this.getHomepageContent();
+      
+      if (existing) {
+        // Update existing with new setting
+        await db.update(homepageContent)
+          .set({ 
+            ...(existing as any),
+            [key]: value,
+            updatedAt: new Date()
+          })
+          .where(eq(homepageContent.id, existing.id));
+      } else {
+        // Create new with setting
+        await db.insert(homepageContent)
+          .values({
+            title: 'Mầm Non Thảo Nguyên Xanh',
+            subtitle: 'Giáo dục bằng trái tim',
+            description: 'Nơi nuôi dưỡng tương lai của bé',
+            [key]: value
+          } as any);
+      }
+    } catch (error) {
+      console.error('Error setting:', error);
+      throw error;
+    }
+  }
+
   // Demo data management
   async clearDemoData(): Promise<void> {
     try {

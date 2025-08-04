@@ -17,6 +17,23 @@ import { ChatbotService } from "./chatbot";
 import { commissionService } from "./commission";
 import { RewardCalculator } from "./reward-calculator";
 import { v4 as uuidv4 } from 'uuid';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs/promises';
+import express from 'express';
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  }
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Article routes
@@ -212,6 +229,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertAdmissionFormSchema.parse(req.body);
       const form = await storage.createAdmissionForm(validatedData);
+      
+      // Send notification email to admin
+      try {
+        const { sendServiceRegistrationEmail } = await import("./email");
+        const registration = {
+          serviceName: "Đăng ký tuyển sinh",
+          parentName: validatedData.parentName,
+          parentEmail: validatedData.parentEmail,
+          parentPhone: validatedData.parentPhone,
+          preferredTime: validatedData.desiredStartDate,
+          notes: `Tên bé: ${validatedData.childName}, Tuổi: ${validatedData.childAge}, Ghi chú: ${validatedData.notes || 'Không có'}`,
+          createdAt: new Date().toISOString()
+        };
+        await sendServiceRegistrationEmail(registration);
+      } catch (emailError) {
+        console.error('Error sending admission notification email:', emailError);
+      }
+      
       res.status(201).json(form);
     } catch (error) {
       res.status(400).json({ message: "Invalid admission form data" });
@@ -232,21 +267,143 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertContactFormSchema.parse(req.body);
       const form = await storage.createContactForm(validatedData);
+      
+      // Send notification email to admin
+      try {
+        const { sendServiceRegistrationEmail } = await import("./email");
+        const registration = {
+          serviceName: "Liên hệ từ website",
+          parentName: validatedData.name,
+          parentEmail: validatedData.email,
+          parentPhone: validatedData.phone || "Không cung cấp",
+          preferredTime: "Sớm nhất có thể",
+          notes: validatedData.message,
+          createdAt: new Date().toISOString()
+        };
+        await sendServiceRegistrationEmail(registration);
+      } catch (emailError) {
+        console.error('Error sending contact notification email:', emailError);
+      }
+      
       res.status(201).json(form);
     } catch (error) {
       res.status(400).json({ message: "Invalid contact form data" });
     }
   });
 
-  // Admin routes
+  // Admin routes with session persistence
   app.post("/api/admin/login", async (req, res) => {
     const { username, password } = req.body;
     
     // Simple authentication (in production, use proper hashing)
     if (username === "admin" && password === "admin123") {
-      res.json({ success: true, message: "Login successful" });
+      req.session.adminUser = { username, isAdmin: true };
+      res.json({ success: true, message: "Login successful", user: { username, isAdmin: true } });
     } else {
       res.status(401).json({ message: "Invalid credentials" });
+    }
+  });
+
+  // Check admin session
+  app.get("/api/admin/check-session", async (req, res) => {
+    if (req.session.adminUser) {
+      res.json({ authenticated: true, user: req.session.adminUser });
+    } else {
+      res.json({ authenticated: false });
+    }
+  });
+
+  // Admin logout
+  app.post("/api/admin/logout", async (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Could not log out" });
+      }
+      res.json({ success: true, message: "Logged out successfully" });
+    });
+  });
+
+  // Banner upload endpoint
+  app.post("/api/admin/upload-banner", upload.single('banner'), async (req, res) => {
+    try {
+      if (!req.session.adminUser) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      // Create uploads directory if it doesn't exist
+      const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+      try {
+        await fs.access(uploadsDir);
+      } catch {
+        await fs.mkdir(uploadsDir, { recursive: true });
+      }
+
+      // Generate unique filename
+      const fileExtension = path.extname(req.file.originalname);
+      const fileName = `banner-${Date.now()}${fileExtension}`;
+      const filePath = path.join(uploadsDir, fileName);
+
+      // Save file
+      await fs.writeFile(filePath, req.file.buffer);
+
+      // Return URL
+      const bannerUrl = `/uploads/${fileName}`;
+      
+      // Store banner URL in session or database
+      await storage.setSetting('homepage_banner', bannerUrl);
+
+      res.json({ 
+        success: true, 
+        bannerUrl,
+        message: "Banner uploaded successfully" 
+      });
+    } catch (error) {
+      console.error('Banner upload error:', error);
+      res.status(500).json({ message: "Failed to upload banner" });
+    }
+  });
+
+  // Remove banner endpoint
+  app.delete("/api/admin/remove-banner", async (req, res) => {
+    try {
+      if (!req.session.adminUser) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Get current banner
+      const currentBanner = await storage.getSetting('homepage_banner');
+      
+      if (currentBanner) {
+        // Remove file from filesystem
+        try {
+          const filePath = path.join(process.cwd(), 'public', currentBanner);
+          await fs.unlink(filePath);
+        } catch (fileError) {
+          console.log('File not found or already deleted:', fileError);
+        }
+      }
+
+      // Remove from database
+      await storage.setSetting('homepage_banner', null);
+
+      res.json({ success: true, message: "Banner removed successfully" });
+    } catch (error) {
+      console.error('Banner removal error:', error);
+      res.status(500).json({ message: "Failed to remove banner" });
+    }
+  });
+
+  // Get homepage banner
+  app.get("/api/homepage-banner", async (req, res) => {
+    try {
+      const bannerUrl = await storage.getSetting('homepage_banner');
+      res.json({ bannerUrl: bannerUrl || null });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get banner" });
     }
   });
 
@@ -1800,18 +1957,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const member = await storage.getAffiliateMemberByUsername(username);
           if (member && member.password === password) {
+            // Store user in session
+            req.session.affiliateUser = {
+              id: member.id,
+              username: member.username,
+              fullName: member.fullName || member.name,
+              email: member.email,
+              memberType: member.memberType,
+              status: member.status || 'active',
+              balance: member.balance || '0',
+              commission: member.commission || '0',
+              walletAddress: member.walletAddress
+            };
+
             return res.json({
               success: true,
               message: "Đăng nhập thành công!",
               token: "affiliate-token-" + Date.now(),
-              user: {
-                username: member.username,
-                name: member.name,
-                memberType: member.memberType,
-                memberId: member.memberId,
-                email: member.email,
-                phone: member.phone
-              }
+              user: req.session.affiliateUser
             });
           } else {
             return res.status(401).json({ 
@@ -1823,18 +1986,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Hard-coded demo accounts fallback
           if (username === "testfinal" && password === "123456") {
+            req.session.affiliateUser = {
+              id: "demo-1",
+              username: "testfinal",
+              fullName: "Test Final User",
+              email: "testfinal@example.com",
+              memberType: "parent",
+              status: "active",
+              balance: "1000",
+              commission: "500",
+              walletAddress: "0xDemo123"
+            };
+
             return res.json({
               success: true,
               message: "Đăng nhập thành công!",
               token: "affiliate-token-" + Date.now(),
-              user: {
-                username: "testfinal",
-                name: "Test Final User",
-                memberType: "parent",
-                memberId: "PARENT-1753720187245-CEOG21",
-                email: "testfinal@example.com",
-                phone: "0987654321"
-              }
+              user: req.session.affiliateUser
             });
           }
           
@@ -2621,6 +2789,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Có lỗi xảy ra khi cập nhật khách hàng" });
     }
   });
+
+  // Serve static files from public/uploads
+  app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 
   const httpServer = createServer(app);
   return httpServer;

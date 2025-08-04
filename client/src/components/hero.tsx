@@ -11,9 +11,17 @@ export default function Hero() {
     retry: false,
   });
 
+  // Get homepage banner
+  const { data: bannerData } = useQuery<{ bannerUrl: string | null }>({
+    queryKey: ["/api/homepage-banner"],
+  });
+
   // Default values if no content from database
   const heroTitle = content?.heroTitle || "Mầm Non Thảo Nguyên Xanh";
   const heroSubtitle = content?.heroSubtitle || "Nơi nuôi dưỡng tâm hồn - Phát triển tư duy - Xây dựng tương lai";
+  
+  // Use custom banner if available, otherwise use default
+  const backgroundImage = bannerData?.bannerUrl || heroImage;
 
   return (
     <section className="relative h-screen overflow-hidden">
@@ -21,7 +29,7 @@ export default function Hero() {
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url(${heroImage})`,
+          backgroundImage: `url(${backgroundImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center center'
         }}

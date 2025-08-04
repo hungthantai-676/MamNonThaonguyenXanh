@@ -129,7 +129,7 @@ export async function sendPasswordResetEmail(userEmail: string, tempPassword: st
             <p style="color: #333; margin-bottom: 15px;">
               Nhấn vào link dưới để đăng nhập với mật khẩu tạm thời
             </p>
-            <a href="${process.env.NODE_ENV === 'production' ? 'https://mamnonthaonguyenxanh.com' : 'http://localhost:3000'}/affiliate-register-simple" 
+            <a href="${process.env.NODE_ENV === 'production' ? 'https://mamnonthaonguyenxanh.com' : 'http://localhost:5000'}/affiliate-login" 
                style="display: inline-block; background-color: #2E7D32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
               Đăng nhập ngay
             </a>

@@ -71,6 +71,43 @@ export default function Contact() {
                 </div>
               </div>
 
+              {/* Quick Contact Actions */}
+              <div className="mt-8">
+                <h3 className="font-semibold text-dark-gray mb-4">Liên hệ nhanh</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* Zalo Chat */}
+                  <a 
+                    href="https://zalo.me/0856318686"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-lg transition-colors"
+                  >
+                    <i className="fas fa-comments mr-2"></i>
+                    Chat Zalo
+                  </a>
+                  
+                  {/* Facebook Messenger */}
+                  <a 
+                    href="https://m.me/MamNonMontessoriThaoNguyenXanh"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition-colors"
+                  >
+                    <i className="fab fa-facebook-messenger mr-2"></i>
+                    Chat Facebook
+                  </a>
+                  
+                  {/* Call Now */}
+                  <a 
+                    href="tel:0856318686"
+                    className="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white p-3 rounded-lg transition-colors"
+                  >
+                    <i className="fas fa-phone mr-2"></i>
+                    Gọi ngay
+                  </a>
+                </div>
+              </div>
+
               {/* Social Media */}
               <div className="mt-8">
                 <h3 className="font-semibold text-dark-gray mb-4">Theo dõi chúng tôi</h3>
