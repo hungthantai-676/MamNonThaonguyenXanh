@@ -1,5 +1,6 @@
 import { pgTable, text, serial, integer, boolean, timestamp, varchar, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
+import { relations, sql } from "drizzle-orm";
 import { z } from "zod";
 
 export const users = pgTable("users", {

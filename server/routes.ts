@@ -2479,6 +2479,149 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.send(html);
   });
 
+  // Affiliate system routes
+  app.post("/api/affiliate/register", async (req, res) => {
+    try {
+      const { name, phone, email, memberType, categoryName, sponsorId } = req.body;
+      
+      // Check if phone already exists
+      const existingMember = await storage.getAffiliateMemberByPhone(phone);
+      if (existingMember) {
+        return res.status(400).json({ message: "Số điện thoại đã được đăng ký" });
+      }
+      
+      // Generate unique member ID and username
+      const memberId = `${memberType === 'teacher' ? 'TCH' : 'PAR'}${Date.now().toString().slice(-6)}`;
+      const username = `${name.toLowerCase().replace(/\s+/g, '')}${Math.floor(Math.random() * 1000)}`;
+      
+      // Create wallet and QR code
+      const { walletAddress, privateKey } = await storage.createWallet();
+      const referralLink = `https://mamnonthaonguyenxanh.com/?ref=${memberId}`;
+      const qrCode = await storage.generateQRCode(referralLink, name);
+      
+      const newMember = await storage.createAffiliateMember({
+        memberId,
+        username,
+        name,
+        email,
+        phone,
+        memberType,
+        categoryName,
+        sponsorId,
+        qrCode,
+        referralLink,
+        walletAddress,
+        privateKey: privateKey // Will be encrypted by storage
+      });
+      
+      res.json({
+        success: true,
+        member: {
+          memberId: newMember.memberId,
+          username: newMember.username,
+          name: newMember.name,
+          referralLink: newMember.referralLink,
+          qrCode: newMember.qrCode,
+          walletAddress: newMember.walletAddress
+        }
+      });
+    } catch (error) {
+      console.error("Affiliate registration error:", error);
+      res.status(500).json({ message: "Có lỗi xảy ra khi đăng ký" });
+    }
+  });
+
+  app.post("/api/affiliate/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      const member = await storage.authenticateAffiliateMember(username, password);
+      if (!member) {
+        return res.status(401).json({ message: "Tên đăng nhập hoặc mật khẩu không đúng" });
+      }
+      
+      if (!member.isActive) {
+        return res.status(403).json({ message: "Tài khoản đã bị khóa" });
+      }
+      
+      res.json({
+        success: true,
+        member: {
+          memberId: member.memberId,
+          username: member.username,
+          name: member.name,
+          memberType: member.memberType,
+          categoryName: member.categoryName,
+          referralLink: member.referralLink,
+          qrCode: member.qrCode,
+          walletAddress: member.walletAddress,
+          tokenBalance: member.tokenBalance,
+          totalReferrals: member.totalReferrals,
+          level: member.level
+        }
+      });
+    } catch (error) {
+      console.error("Affiliate login error:", error);
+      res.status(500).json({ message: "Có lỗi xảy ra khi đăng nhập" });
+    }
+  });
+
+  app.get("/api/affiliate/dashboard/:memberId", async (req, res) => {
+    try {
+      const { memberId } = req.params;
+      
+      const member = await storage.getAffiliateMemberById(memberId);
+      if (!member) {
+        return res.status(404).json({ message: "Không tìm thấy thành viên" });
+      }
+      
+      const dashboard = await storage.getAffiliateDashboard(memberId);
+      res.json(dashboard);
+    } catch (error) {
+      console.error("Dashboard error:", error);
+      res.status(500).json({ message: "Có lỗi xảy ra khi tải dashboard" });
+    }
+  });
+
+  app.post("/api/affiliate/add-customer", async (req, res) => {
+    try {
+      const { f1AgentId, customerName, customerPhone, customerEmail, notes, f0ReferrerId } = req.body;
+      
+      const customer = await storage.addCustomerConversion({
+        f1AgentId,
+        f0ReferrerId,
+        customerName,
+        customerPhone,
+        customerEmail,
+        notes
+      });
+      
+      res.json({ success: true, customer });
+    } catch (error) {
+      console.error("Add customer error:", error);
+      res.status(500).json({ message: "Có lỗi xảy ra khi thêm khách hàng" });
+    }
+  });
+
+  app.put("/api/affiliate/update-customer/:customerId", async (req, res) => {
+    try {
+      const { customerId } = req.params;
+      const { conversionStatus, paymentAmount, notes } = req.body;
+      
+      const customer = await storage.updateCustomerConversion(customerId, {
+        conversionStatus,
+        paymentAmount,
+        notes,
+        confirmedAt: conversionStatus === 'payment_completed' ? new Date() : null
+      });
+      
+      res.json({ success: true, customer });
+    } catch (error) {
+      console.error("Update customer error:", error);
+      res.status(500).json({ message: "Có lỗi xảy ra khi cập nhật khách hàng" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
