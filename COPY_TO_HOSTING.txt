@@ -1,20 +1,48 @@
-📋 CHO TEAM KỸ THUẬT HOSTING
+🚨 VẤN ĐỀ: VITE DEPLOY KHÔNG SYNC .HTACCESS → TẤT CẢ PAGES BỊ 404
 
-File cần copy: FINAL-mamnonthaonguyenxanh-com.tar.gz
+📋 GIẢI PHÁP: UPLOAD MANUAL PACKAGE ĐÃ SẴN SÀNG
 
-Yêu cầu:
-1. Upload file backup lên hosting
-2. Giải nén vào thư mục gốc domain mamnonthaonguyenxanh.com  
-3. Tạo database MySQL
-4. Truy cập setup-hosting.php để cài đặt
-5. Trỏ DNS A record và CNAME
-6. Kích hoạt SSL certificate
+==================================================
 
-Chi tiết trong file: CHO_NHA_CUNG_CAP_HOSTING.md
+📦 FILE CẦN DOWNLOAD VÀ UPLOAD:
+MANUAL-UPLOAD-PACKAGE.tar.gz
 
-Sau khi hoàn tất sẽ có:
-- Website: https://mamnonthaonguyenxanh.com
-- Admin: https://mamnonthaonguyenxanh.com/admin.php (admin/admin123)
-- Tự động cập nhật từ Replit
+🎯 HƯỚNG DẪN UPLOAD (5 PHÚT):
 
-Cảm ơn team hỗ trợ!
+1️⃣ DOWNLOAD PACKAGE TỪ REPLIT:
+   - Tìm file "MANUAL-UPLOAD-PACKAGE.tar.gz" trong file explorer
+   - Right-click → Download về máy
+
+2️⃣ VÀO HOSTING FILE MANAGER:
+   URL: https://s88d107.cloudnetwork.vn:8443/
+   → Login → Domain mamnonthaonguyenxanh.com → File Manager
+
+3️⃣ BACKUP FILES HIỆN TẠI:
+   - Select tất cả files hiện tại
+   - Tạo folder "backup-old"
+   - Move files vào backup-old/
+
+4️⃣ UPLOAD PACKAGE MỚI:
+   - Upload MANUAL-UPLOAD-PACKAGE.tar.gz
+   - Right-click → Extract Here
+   - Xóa file .tar.gz sau khi extract
+
+5️⃣ SET PERMISSIONS:
+   - index.html: 644
+   - .htaccess: 644 (QUAN TRỌNG!)
+   - assets/ folder: 755
+   - Tất cả files trong assets/: 644
+
+==================================================
+
+🎉 KẾT QUẢ SAU KHI UPLOAD:
+✅ https://mamnonthaonguyenxanh.com/affiliate-login → Trang đăng nhập sạch
+✅ https://mamnonthaonguyenxanh.com/affiliate-register → Trang đăng ký  
+✅ Không còn 404 errors
+
+⚠️ LƯU Ý:
+- File .htaccess là KEY để fix 404 routing
+- Nếu vẫn 404: Clear browser cache (Ctrl+F5)  
+- Nếu CSS không load: Check assets/ permissions
+
+==================================================
