@@ -2,19 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Force input text to be visible */
+/* Force all text and inputs to be visible */
 input[type="text"], 
 input[type="email"], 
 input[type="tel"], 
-input[type="password"] {
+input[type="password"],
+input,
+textarea,
+select {
   color: #000000 !important;
   background-color: #ffffff !important;
+  border: 1px solid #d1d5db !important;
 }
 
 /* Ensure placeholder text is visible */
-input::placeholder {
+input::placeholder,
+textarea::placeholder {
   color: #6b7280 !important;
   opacity: 1 !important;
+}
+
+/* Fix all text visibility */
+* {
+  color: inherit;
+}
+
+/* Ensure all text is visible on light backgrounds */
+body, div, p, span, h1, h2, h3, h4, h5, h6, label {
+  color: #111827;
+}
+
+/* Fix card and form styling */
+.bg-white {
+  background-color: #ffffff !important;
+}
+
+/* Ensure buttons are visible */
+button {
+  color: inherit !important;
 }
 
 :root {
