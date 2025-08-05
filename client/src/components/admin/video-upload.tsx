@@ -123,15 +123,25 @@ export default function VideoUpload({ currentVideoUrl, onVideoChange, title }: V
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="videoFile">Hoặc tải video từ máy tính:</Label>
-          <Input
-            id="videoFile"
-            type="file"
-            accept="video/*"
-            onChange={handleFileUpload}
-            disabled={isLoading}
-          />
-          {isLoading && <p className="text-sm text-gray-500">Đang tải video...</p>}
+          <Label>Hoặc tải video từ máy tính:</Label>
+          <div>
+            <input
+              type="file"
+              accept="video/*"
+              onChange={handleFileUpload}
+              disabled={isLoading}
+              className="hidden"
+              id={`video-upload-${title}`}
+            />
+            <Button
+              onClick={() => document.getElementById(`video-upload-${title}`)?.click()}
+              disabled={isLoading}
+              className="w-full bg-purple-600 hover:bg-purple-700"
+            >
+              {isLoading ? "Đang tải..." : "🎬 Chọn video từ máy tính"}
+            </Button>
+          </div>
+          {isLoading && <p className="text-sm text-gray-500 text-center">Đang tải video...</p>}
         </div>
         
         <div className="text-xs text-gray-500 space-y-1">

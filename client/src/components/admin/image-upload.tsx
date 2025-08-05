@@ -107,15 +107,25 @@ export default function ImageUpload({ currentImageUrl, onImageChange, title }: I
 
         <div className="text-center">
           <p className="text-sm text-gray-600 mb-2">Hoặc</p>
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={handleFileUpload}
-            disabled={isLoading}
-            className="cursor-pointer"
-          />
+          <div>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              disabled={isLoading}
+              className="hidden"
+              id={`image-upload-${title}`}
+            />
+            <Button
+              onClick={() => document.getElementById(`image-upload-${title}`)?.click()}
+              disabled={isLoading}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              {isLoading ? "Đang tải..." : "📸 Chọn ảnh từ máy tính"}
+            </Button>
+          </div>
           <p className="text-xs text-gray-500 mt-1">
-            Upload lên imgur.com hoặc cloudinary.com rồi copy link vào ô URL
+            Hỗ trợ: JPG, PNG, GIF. Tối đa 5MB
           </p>
         </div>
       </CardContent>
