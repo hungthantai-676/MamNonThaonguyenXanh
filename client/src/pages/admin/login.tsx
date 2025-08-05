@@ -1,80 +1,101 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 
 export default function AdminLogin() {
   const [, setLocation] = useLocation();
+  const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    username: "",
-    password: ""
-  });
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Đăng nhập đơn giản - không cần gọi API
-    if (formData.username === "admin" && formData.password === "admin123") {
+    try {
+      // Simple authentication check
+      if (credentials.email === "admin@mamnon.com" && credentials.password === "admin123") {
+        // Set admin token
+        localStorage.setItem("admin-token", "admin-logged-in");
+        
+        toast({
+          title: "Đăng nhập thành công",
+          description: "Chào mừng quản trị viên!",
+        });
+        
+        // Redirect to dashboard
+        setLocation("/admin");
+      } else {
+        toast({
+          title: "Lỗi đăng nhập",
+          description: "Email hoặc mật khẩu không đúng",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Đăng nhập thành công",
-        description: "Chào mừng bạn đến với trang quản trị",
-      });
-      localStorage.setItem("admin-token", "authenticated");
-      localStorage.setItem("admin-login-time", Date.now().toString());
-      setLocation("/admin/dashboard");
-    } else {
-      toast({
-        title: "Lỗi đăng nhập",
-        description: "Sai tên đăng nhập hoặc mật khẩu",
+        title: "Lỗi",
+        description: "Có lỗi xảy ra khi đăng nhập",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-dark-gray">Quản trị viên</CardTitle>
-          <CardDescription>Mầm Non Thảo Nguyên Xanh</CardDescription>
+          <CardTitle className="text-2xl font-bold text-green-600">
+            🏫 Admin Panel
+          </CardTitle>
+          <CardDescription>
+            Đăng nhập để quản lý website Mầm Non Thảo Nguyên Xanh
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="username">Tên đăng nhập</Label>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                type="text"
-                value={formData.username}
-                onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+                id="email"
+                type="email"
+                value={credentials.email}
+                onChange={(e) => setCredentials(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="admin@mamnon.com"
                 required
-                disabled={isLoading}
               />
             </div>
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="password">Mật khẩu</Label>
               <Input
                 id="password"
                 type="password"
-                value={formData.password}
-                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                value={credentials.password}
+                onChange={(e) => setCredentials(prev => ({ ...prev, password: e.target.value }))}
+                placeholder="••••••••"
                 required
-                disabled={isLoading}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
+            <Button 
+              type="submit" 
+              className="w-full bg-green-600 hover:bg-green-700"
+              disabled={isLoading}
+            >
+              {isLoading ? "Đang đăng nhập..." : "🔑 Đăng nhập"}
             </Button>
           </form>
+          
+          <div className="mt-6 p-3 bg-blue-50 rounded-lg text-sm">
+            <p className="text-blue-800 font-medium">Thông tin đăng nhập:</p>
+            <p className="text-blue-600">Email: admin@mamnon.com</p>
+            <p className="text-blue-600">Mật khẩu: admin123</p>
+          </div>
         </CardContent>
       </Card>
     </div>

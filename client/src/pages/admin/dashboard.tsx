@@ -1962,8 +1962,8 @@ export default function AdminDashboard() {
                 <Label htmlFor="edit-activity-name">🎯 Tên hoạt động</Label>
                 <Input
                   id="edit-activity-name"
-                  value={editingActivity.name}
-                  onChange={(e) => setEditingActivity({ ...editingActivity, name: e.target.value })}
+                  value={editingActivity?.name || ''}
+                  onChange={(e) => editingActivity && setEditingActivity({ ...editingActivity, name: e.target.value })}
                   placeholder="Nhập tên hoạt động..."
                 />
               </div>
@@ -1971,8 +1971,8 @@ export default function AdminDashboard() {
                 <Label htmlFor="edit-activity-description">📝 Mô tả</Label>
                 <Textarea
                   id="edit-activity-description"
-                  value={editingActivity.description}
-                  onChange={(e) => setEditingActivity({ ...editingActivity, description: e.target.value })}
+                  value={editingActivity?.description || ''}
+                  onChange={(e) => editingActivity && setEditingActivity({ ...editingActivity, description: e.target.value })}
                   rows={4}
                   placeholder="Nhập mô tả hoạt động..."
                 />
@@ -1984,15 +1984,15 @@ export default function AdminDashboard() {
                     type="date"
                     id="edit-activity-date"
                     value={editingActivity ? new Date().toISOString().split('T')[0] : ''}
-                    onChange={(e) => setEditingActivity({ ...editingActivity, // date: new Date(e.target.value) })}
+                    onChange={(e) => editingActivity && setEditingActivity({ ...editingActivity, name: e.target.value })}
                   />
                 </div>
                 <div>
                   <Label htmlFor="edit-activity-location">📍 Địa điểm</Label>
                   <Input
                     id="edit-activity-location"
-                    value={editingActivity.location || ''}
-                    onChange={(e) => setEditingActivity({ ...editingActivity, // location: e.target.value })}
+                    value={editingActivity?.name || ''}
+                    onChange={(e) => editingActivity && setEditingActivity({ ...editingActivity, name: e.target.value })}
                     placeholder="Nhập địa điểm..."
                   />
                 </div>
@@ -2001,8 +2001,8 @@ export default function AdminDashboard() {
                 <Label htmlFor="edit-activity-frequency">🔄 Tần suất</Label>
                 <Input
                   id="edit-activity-frequency"
-                  value={editingActivity.frequency}
-                  onChange={(e) => setEditingActivity({ ...editingActivity, frequency: e.target.value })}
+                  value={editingActivity?.frequency || ''}
+                  onChange={(e) => editingActivity && setEditingActivity({ ...editingActivity, frequency: e.target.value })}
                   placeholder="VD: Hàng tuần, Hàng tháng..."
                 />
               </div>

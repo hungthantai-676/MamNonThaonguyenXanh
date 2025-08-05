@@ -25,6 +25,8 @@ import TestAffiliateForm from "@/pages/test-affiliate-form";
 import DebugForm from "@/pages/debug-form";
 import ForceNewForm from "@/pages/force-new-form";
 import AdminLogin from "@/pages/admin/login";
+import SimpleDashboard from "@/pages/admin/simple-dashboard";
+import AdminDashboard from "@/pages/admin/dashboard";
 import AdminDashboardFixed from "@/pages/admin/dashboard-fixed";
 import AffiliateDashboard from "@/pages/admin/affiliate-dashboard";
 import AffiliateAdmin from "@/pages/admin/affiliate-admin";
@@ -84,7 +86,9 @@ function Router() {
           <Route path="/admin-access" component={AdminAccess} />
           <Route path="/admin-quick" component={AdminQuick} />
           <Route path="/admin/login" component={AdminLogin} />
-          <Route path="/admin/dashboard" component={AdminDashboardFixed} />
+          <Route path="/admin" component={SimpleDashboard} />
+          <Route path="/admin/dashboard" component={AdminDashboard} />
+          <Route path="/admin/dashboard-fixed" component={AdminDashboardFixed} />
           <Route path="/admin/affiliate-old" component={AffiliateDashboard} />
           <Route path="/admin/affiliate" component={AffiliateAdmin} />
           <Route path="/admin/content" component={ContentManagement} />
