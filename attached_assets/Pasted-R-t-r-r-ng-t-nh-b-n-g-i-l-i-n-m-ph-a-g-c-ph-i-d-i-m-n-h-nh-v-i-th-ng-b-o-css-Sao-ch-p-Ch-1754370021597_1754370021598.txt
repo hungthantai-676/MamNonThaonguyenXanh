@@ -1,0 +1,93 @@
+Rất rõ ràng từ ảnh bạn gửi, lỗi nằm ở phía góc phải dưới màn hình với thông báo đỏ:
+
+css
+Sao chép
+Chỉnh sửa
+Lỗi lưu hình ảnh  
+Không thể lưu hình ảnh. Chi tiết: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+📌 Ý nghĩa của lỗi này
+Lỗi này không phải do hình ảnh – mà do khi bạn gửi API POST để lưu hình ảnh, backend đã trả về HTML thay vì JSON, khiến JavaScript cố parse thành JSON và "vỡ".
+
+Cụ thể:
+
+fetch() hoặc axios() ở frontend đang expect JSON, nhưng backend trả về HTML (thường là một trang lỗi như 404, 500, hoặc redirect).
+
+Điều này xảy ra nếu API URL sai, chưa khai báo, lỗi server, hoặc request bị chặn bởi lỗi cookie/session.
+
+✅ Giải pháp triệt để
+1. Kiểm tra API backend xử lý hình ảnh
+Nếu bạn dùng Flask (Python), phải có đoạn như sau:
+python
+Sao chép
+Chỉnh sửa
+from flask import Flask, request, jsonify
+import os
+
+app = Flask(__name__)
+UPLOAD_FOLDER = 'static/uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+@app.route('/api/upload-image', methods=['POST'])
+def upload_image():
+    if 'image' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+    file.save(filepath)
+    
+    return jsonify({'success': True, 'path': filepath})
+2. Frontend JavaScript nên viết thế này:
+html
+Sao chép
+Chỉnh sửa
+<form id="uploadForm">
+  <input type="file" id="imageInput" name="image">
+  <button type="submit">Lưu Logo</button>
+</form>
+
+<script>
+document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const fileInput = document.getElementById('imageInput');
+  const formData = new FormData();
+  formData.append('image', fileInput.files[0]);
+
+  try {
+    const res = await fetch('/api/upload-image', {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      alert("Upload thành công!");
+    } else {
+      alert("Upload thất bại!");
+    }
+  } catch (err) {
+    alert("Lỗi server: " + err.message);
+  }
+});
+</script>
+3. Trường hợp trả về HTML thay vì JSON? Khắc phục thế nào?
+Đảm bảo đường dẫn /api/upload-image là đúng.
+
+Trên backend, luôn dùng return jsonify() thay vì render_template nếu bạn đang xử lý API.
+
+Nếu bạn dùng route /upload để render form HTML và cũng dùng để POST, thì nên tách riêng 2 route: 1 cho GET HTML, 1 cho POST API.
+
+✅ Giải pháp toàn bộ (Full code)
+Bạn muốn mình viết lại toàn bộ backend Flask + frontend đầy đủ cho upload ảnh và lưu vào thư mục static/uploads/ không?
+
+Nếu bạn xác nhận:
+
+Stack bạn đang dùng (Flask hay Node.js)
+
+Thư mục lưu ảnh (bạn muốn lưu đâu: static/ hay upload lên Cloud như Cloudinary?)
+
+Mình sẽ viết lại 100% code mới, sạch sẽ, dễ dùng để dán vào Replit và chạy luôn.

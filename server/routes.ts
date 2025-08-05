@@ -2,20 +2,76 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import express from "express";
 import path from "path";
+import multer from "multer";
+import fs from "fs";
 import { storage } from "./storage";
 import { registerAffiliateRoutes } from "./affiliate-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Ensure upload directories exist
+  const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+  const imagesDir = path.join(uploadsDir, 'images');
+  const videosDir = path.join(uploadsDir, 'videos');
+  
+  [uploadsDir, imagesDir, videosDir].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  });
+
+  // Multer setup for file uploads
+  const storage_multer = multer.diskStorage({
+    destination: function (req, file, cb) {
+      if (file.mimetype.startsWith('image/')) {
+        cb(null, imagesDir);
+      } else if (file.mimetype.startsWith('video/')) {
+        cb(null, videosDir);
+      } else {
+        cb(new Error('Invalid file type'), '');
+      }
+    },
+    filename: function (req, file, cb) {
+      const timestamp = Date.now();
+      const ext = path.extname(file.originalname);
+      const type = file.mimetype.startsWith('image/') ? 'image' : 'video';
+      cb(null, `${type}-${timestamp}${ext}`);
+    }
+  });
+
+  const upload = multer({ 
+    storage: storage_multer,
+    limits: {
+      fileSize: 50 * 1024 * 1024, // 50MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only images and videos are allowed'), false);
+      }
+    }
+  });
+
   // Middleware setup
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
+  
+  // Serve static files
+  app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 
   // Image upload endpoints - MUST BE BEFORE other routes
-  app.post('/api/admin/upload-image', (req, res) => {
+  app.post('/api/admin/upload-image', upload.single('image'), (req, res) => {
     try {
-      console.log('Upload image endpoint hit:', req.body);
-      const timestamp = Date.now();
-      const imageUrl = `/images/uploaded/image-${timestamp}.jpg`;
+      console.log('Upload image endpoint hit, file:', req.file);
+      
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "Không có file được upload"
+        });
+      }
+
+      const imageUrl = `/uploads/images/${req.file.filename}`;
       
       res.json({ 
         success: true, 
@@ -26,16 +82,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Image upload error:', error);
       res.status(500).json({ 
         success: false, 
-        message: "Lỗi khi lưu hình ảnh" 
+        message: "Lỗi khi lưu hình ảnh: " + error.message 
       });
     }
   });
 
-  app.post('/api/admin/upload-banner', (req, res) => {
+  app.post('/api/admin/upload-banner', upload.single('banner'), (req, res) => {
     try {
-      console.log('Upload banner endpoint hit:', req.body);
-      const timestamp = Date.now();
-      const bannerUrl = `/images/banners/banner-${timestamp}.jpg`;
+      console.log('Upload banner endpoint hit, file:', req.file);
+      
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "Không có file được upload"
+        });
+      }
+
+      const bannerUrl = `/uploads/images/${req.file.filename}`;
       
       res.json({ 
         success: true, 
@@ -46,17 +109,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Banner upload error:', error);
       res.status(500).json({ 
         success: false, 
-        message: "Lỗi khi lưu banner" 
+        message: "Lỗi khi lưu banner: " + error.message 
       });
     }
   });
 
   // Video upload endpoint
-  app.post('/api/admin/upload-video', (req, res) => {
+  app.post('/api/admin/upload-video', upload.single('video'), (req, res) => {
     try {
-      console.log('Upload video endpoint hit:', req.body);
-      const timestamp = Date.now();
-      const videoUrl = `/videos/uploaded/video-${timestamp}.mp4`;
+      console.log('Upload video endpoint hit, file:', req.file);
+      
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "Không có file được upload"
+        });
+      }
+
+      const videoUrl = `/uploads/videos/${req.file.filename}`;
       
       res.json({ 
         success: true, 
@@ -67,7 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Video upload error:', error);
       res.status(500).json({ 
         success: false, 
-        message: "Lỗi khi lưu video" 
+        message: "Lỗi khi lưu video: " + error.message 
       });
     }
   });
