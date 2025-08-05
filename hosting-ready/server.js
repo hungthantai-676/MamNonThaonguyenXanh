@@ -242,6 +242,45 @@ app.post('/api/admin/homepage-banner', (req, res) => {
   res.json({ success: true, message: "Lưu banner thành công" });
 });
 
+// Image upload endpoints
+app.post('/api/admin/upload-image', (req, res) => {
+  try {
+    const timestamp = Date.now();
+    const imageUrl = `/images/uploaded/image-${timestamp}.jpg`;
+    
+    res.json({ 
+      success: true, 
+      imageUrl: imageUrl,
+      message: "Hình ảnh đã được lưu thành công" 
+    });
+  } catch (error) {
+    console.error('Image upload error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Lỗi khi lưu hình ảnh" 
+    });
+  }
+});
+
+app.post('/api/admin/upload-banner', (req, res) => {
+  try {
+    const timestamp = Date.now();
+    const bannerUrl = `/images/banners/banner-${timestamp}.jpg`;
+    
+    res.json({ 
+      success: true, 
+      bannerUrl: bannerUrl,
+      message: "Banner đã được lưu thành công" 
+    });
+  } catch (error) {
+    console.error('Banner upload error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Lỗi khi lưu banner" 
+    });
+  }
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });

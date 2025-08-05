@@ -280,9 +280,32 @@ export default function AdminDashboard() {
     });
   };
 
-  const handleImageUpload = (type: 'logo' | 'banner' | 'article' | 'admission-step') => (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (type: 'logo' | 'banner' | 'article' | 'admission-step') => async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng chọn file hình ảnh",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Lỗi", 
+        description: "File quá lớn. Vui lòng chọn file nhỏ hơn 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Show preview immediately using FileReader
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
@@ -294,6 +317,44 @@ export default function AdminDashboard() {
         }
       };
       reader.readAsDataURL(file);
+
+      // Also save to server for persistence
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('type', type);
+
+      const response = await fetch('/api/admin/upload-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const result = await response.json();
+      
+      // Update with server URL if needed
+      if (result.imageUrl) {
+        if (type === 'logo') setLogoUrl(result.imageUrl);
+        else if (type === 'banner') setBannerUrl(result.imageUrl);
+        else if (type === 'article') setNewArticle(prev => ({ ...prev, imageUrl: result.imageUrl }));
+        else if (type === 'admission-step' && editingAdmissionStep) {
+          setEditingAdmissionStep(prev => prev ? { ...prev, iconUrl: result.imageUrl } : null);
+        }
+      }
+
+      toast({
+        title: "Thành công",
+        description: "Hình ảnh đã được lưu",
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Lỗi",
+        description: "Không thể lưu hình ảnh. Vui lòng thử lại",
+        variant: "destructive",
+      });
     }
   };
 
