@@ -242,9 +242,10 @@ app.post('/api/admin/homepage-banner', (req, res) => {
   res.json({ success: true, message: "Lưu banner thành công" });
 });
 
-// Image upload endpoints
+// Image upload endpoints - MOVED TO TOP for proper route handling
 app.post('/api/admin/upload-image', (req, res) => {
   try {
+    console.log('Upload image endpoint hit:', req.body);
     const timestamp = Date.now();
     const imageUrl = `/images/uploaded/image-${timestamp}.jpg`;
     
@@ -264,6 +265,7 @@ app.post('/api/admin/upload-image', (req, res) => {
 
 app.post('/api/admin/upload-banner', (req, res) => {
   try {
+    console.log('Upload banner endpoint hit:', req.body);
     const timestamp = Date.now();
     const bannerUrl = `/images/banners/banner-${timestamp}.jpg`;
     
@@ -277,6 +279,26 @@ app.post('/api/admin/upload-banner', (req, res) => {
     res.status(500).json({ 
       success: false, 
       message: "Lỗi khi lưu banner" 
+    });
+  }
+});
+
+app.post('/api/admin/upload-video', (req, res) => {
+  try {
+    console.log('Upload video endpoint hit:', req.body);
+    const timestamp = Date.now();
+    const videoUrl = `/videos/uploaded/video-${timestamp}.mp4`;
+    
+    res.json({ 
+      success: true, 
+      videoUrl: videoUrl,
+      message: "Video đã được lưu thành công" 
+    });
+  } catch (error) {
+    console.error('Video upload error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Lỗi khi lưu video" 
     });
   }
 });

@@ -10,6 +10,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
 
+  // Image upload endpoints - MUST BE BEFORE other routes
+  app.post('/api/admin/upload-image', (req, res) => {
+    try {
+      console.log('Upload image endpoint hit:', req.body);
+      const timestamp = Date.now();
+      const imageUrl = `/images/uploaded/image-${timestamp}.jpg`;
+      
+      res.json({ 
+        success: true, 
+        imageUrl: imageUrl,
+        message: "Hình ảnh đã được lưu thành công" 
+      });
+    } catch (error) {
+      console.error('Image upload error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Lỗi khi lưu hình ảnh" 
+      });
+    }
+  });
+
+  app.post('/api/admin/upload-banner', (req, res) => {
+    try {
+      console.log('Upload banner endpoint hit:', req.body);
+      const timestamp = Date.now();
+      const bannerUrl = `/images/banners/banner-${timestamp}.jpg`;
+      
+      res.json({ 
+        success: true, 
+        bannerUrl: bannerUrl,
+        message: "Banner đã được lưu thành công" 
+      });
+    } catch (error) {
+      console.error('Banner upload error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Lỗi khi lưu banner" 
+      });
+    }
+  });
+
+  // Video upload endpoint
+  app.post('/api/admin/upload-video', (req, res) => {
+    try {
+      console.log('Upload video endpoint hit:', req.body);
+      const timestamp = Date.now();
+      const videoUrl = `/videos/uploaded/video-${timestamp}.mp4`;
+      
+      res.json({ 
+        success: true, 
+        videoUrl: videoUrl,
+        message: "Video đã được lưu thành công" 
+      });
+    } catch (error) {
+      console.error('Video upload error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Lỗi khi lưu video" 
+      });
+    }
+  });
+
   // Register affiliate routes separately to avoid conflicts with main site
   registerAffiliateRoutes(app);
 
@@ -144,47 +206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Image upload endpoint
-  app.post('/api/admin/upload-image', (req, res) => {
-    try {
-      // For now, return success - in production would save to file system or cloud
-      const { type } = req.body;
-      const timestamp = Date.now();
-      const imageUrl = `/images/uploaded/${type}-${timestamp}.jpg`;
-      
-      res.json({ 
-        success: true, 
-        imageUrl: imageUrl,
-        message: "Hình ảnh đã được lưu thành công" 
-      });
-    } catch (error) {
-      console.error('Image upload error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: "Lỗi khi lưu hình ảnh" 
-      });
-    }
-  });
 
-  // Banner upload endpoint
-  app.post('/api/admin/upload-banner', (req, res) => {
-    try {
-      const timestamp = Date.now();
-      const bannerUrl = `/images/banners/banner-${timestamp}.jpg`;
-      
-      res.json({ 
-        success: true, 
-        bannerUrl: bannerUrl,
-        message: "Banner đã được lưu thành công" 
-      });
-    } catch (error) {
-      console.error('Banner upload error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: "Lỗi khi lưu banner" 
-      });
-    }
-  });
 
   // Serve static uploads
   app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));

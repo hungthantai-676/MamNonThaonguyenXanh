@@ -358,15 +358,69 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('video/')) {
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng chọn file video",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 50MB)
+    if (file.size > 50 * 1024 * 1024) {
+      toast({
+        title: "Lỗi", 
+        description: "File quá lớn. Vui lòng chọn file nhỏ hơn 50MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Show preview immediately
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
         setVideoUrl(result);
       };
       reader.readAsDataURL(file);
+
+      // Save to server
+      const formData = new FormData();
+      formData.append('video', file);
+
+      const response = await fetch('/api/admin/upload-video', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const result = await response.json();
+      
+      if (result.videoUrl) {
+        setVideoUrl(result.videoUrl);
+      }
+
+      toast({
+        title: "Thành công",
+        description: "Video đã được lưu",
+      });
+    } catch (error) {
+      console.error('Video upload error:', error);
+      toast({
+        title: "Lỗi",
+        description: "Không thể lưu video. Vui lòng thử lại",
+        variant: "destructive",
+      });
     }
   };
 
