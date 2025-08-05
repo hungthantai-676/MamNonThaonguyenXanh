@@ -627,48 +627,18 @@ export default function AdminDashboard() {
           <TabsContent value="media">
             <div className="space-y-6">
               {/* Logo và Banner */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>🖼️ Logo và Banner</CardTitle>
-                  <CardDescription>Quản lý logo trường và banner trang chủ</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <Label>🏷️ Logo trường</Label>
-                      <div className="mt-2 space-y-2">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload('logo')}
-                          className="cursor-pointer"
-                        />
-                        {logoUrl && (
-                          <div className="border rounded-lg p-2">
-                            <img src={logoUrl} alt="Logo" className="max-w-full h-20 object-contain" />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <Label>🎨 Banner trang chủ</Label>
-                      <div className="mt-2 space-y-2">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload('banner')}
-                          className="cursor-pointer"
-                        />
-                        {bannerUrl && (
-                          <div className="border rounded-lg p-2">
-                            <img src={bannerUrl} alt="Banner" className="max-w-full h-20 object-cover" />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ImageUpload
+                  currentImageUrl={logoUrl}
+                  onImageChange={setLogoUrl}
+                  title="🏷️ Logo Trường"
+                />
+                <ImageUpload
+                  currentImageUrl={bannerUrl}
+                  onImageChange={setBannerUrl}
+                  title="🎨 Banner Trang Chủ"
+                />
+              </div>
 
               {/* Thư viện ảnh */}
               <Card>
@@ -787,6 +757,13 @@ export default function AdminDashboard() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Video Upload Component */}
+              <VideoUpload
+                currentVideoUrl={videoUrl}
+                onVideoChange={setVideoUrl}
+                title="🎬 Video Giới Thiệu Trường"
+              />
             </div>
           </TabsContent>
 
