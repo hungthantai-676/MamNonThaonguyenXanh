@@ -1,5 +1,4 @@
 import type { Express } from "express";
-import express from "express";
 
 export function registerAffiliateRoutes(app: Express): void {
   // Affiliate login endpoint with proper cookie handling
@@ -18,14 +17,14 @@ export function registerAffiliateRoutes(app: Express): void {
           (username === "testfinal" && req.body.password === "123456")) {
         res.cookie('aff_token', 'demo_token', {
           httpOnly: true,
-          sameSite: 'Lax',
+          sameSite: 'lax',
           secure: false,
           maxAge: 24 * 60 * 60 * 1000
         });
 
         res.cookie('member_code', memberCode, {
           httpOnly: false,
-          sameSite: 'Lax', 
+          sameSite: 'lax', 
           secure: false,
           maxAge: 24 * 60 * 60 * 1000
         });

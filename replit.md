@@ -29,13 +29,15 @@ This is a full-stack web application for "Mầm Non Thảo Nguyên Xanh" (Green 
 - **Database Provider**: Neon Database (@neondatabase/serverless)
 - **Schema Validation**: Zod schemas (shared between frontend and backend)
 - **Session Management**: Connect-pg-simple for PostgreSQL session storage
-- **Module Separation**: Affiliate system isolated in separate routes to prevent conflicts with main site
+- **Module Separation**: COMPLETE ARCHITECTURE SEPARATION (January 2025) - Affiliate system now runs on separate server (port 5001) while main website runs on port 5000 to eliminate all conflicts
 
 ### Project Structure
 - `client/`: Frontend React application (components, pages, lib, hooks)
-- `server/`: Backend Express application with modular architecture
-  - `routes.ts`: Main website routes (clean, stable)
-  - `affiliate-routes.ts`: Isolated affiliate system routes
+- `server/`: Backend Express application with SEPARATED architecture
+  - `routes.ts`: Entry point (delegates to website-routes.ts)
+  - `website-routes.ts`: Complete website functionality (port 5000)
+  - `affiliate-app.ts`: Standalone affiliate server (port 5001)
+  - `affiliate-routes.ts`: Affiliate system routes
   - `storage.ts`: Data persistence layer
   - `vite.ts`: Vite integration
 - `shared/`: Shared TypeScript types and schemas (e.g., database schema, Zod validation)
@@ -52,7 +54,7 @@ This is a full-stack web application for "Mầm Non Thảo Nguyên Xanh" (Green 
 - **State Management**: TanStack Query for server state, React Hook Form for form state, React hooks for UI state.
 
 ### Deployment Strategy
-- **ARCHITECTURE CONVERSION (January 2025)**: Converting from PHP+React hybrid to pure React architecture to resolve affiliate system conflicts
+- **ARCHITECTURE CONVERSION COMPLETE (January 2025)**: Successfully separated affiliate system to independent server (port 5001) while main website remains on port 5000 - conflicts resolved!
 - Supports development (`npm run dev`) and production builds (`npm run build`).
 - Utilizes Drizzle Kit for database migrations.
 - Environment variables: `DATABASE_URL`, `NODE_ENV`.
