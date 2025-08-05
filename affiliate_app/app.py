@@ -504,4 +504,4 @@ if __name__ == '__main__':
     print("🚀 Affiliate System đang chạy...")
     print("📧 Admin: admin@mamnon.com")
     print("🔑 Password: admin123")
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    app.run(debug=True, host='0.0.0.0', port=5002)
