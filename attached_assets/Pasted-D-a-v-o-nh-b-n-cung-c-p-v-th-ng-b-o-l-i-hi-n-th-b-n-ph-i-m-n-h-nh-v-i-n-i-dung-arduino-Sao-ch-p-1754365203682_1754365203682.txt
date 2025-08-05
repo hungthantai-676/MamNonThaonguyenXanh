@@ -1,0 +1,74 @@
+Dựa vào ảnh bạn cung cấp và thông báo lỗi hiển thị bên phải màn hình với nội dung:
+
+arduino
+Sao chép
+Chỉnh sửa
+Lỗi đăng nhập
+500 - "COOKIE 'name'..."  
+Đây là lỗi liên quan đến cookie trong backend, cụ thể có thể là:
+
+Gửi cookie sai định dạng hoặc tên không hợp lệ.
+
+Hệ thống backend (Flask, Django hoặc Express) không xử lý được session/cookie như mong đợi.
+
+Cấu hình server không cho phép thiết lập cookie do thiếu SameSite, Secure, hoặc do conflict giữa client/server domain.
+
+✅ Hướng xử lý triệt để
+Mình cần biết công nghệ bạn đang dùng ở backend: Flask, NodeJS (Express), Next.js, hoặc khác? Tuy nhiên, dưới đây là giải pháp phổ biến cho cả Flask (Python) và Express (NodeJS) – bạn dùng Replit nên khả năng cao là Flask hoặc NodeJS.
+
+🔧 Nếu bạn dùng Flask (Python):
+1. Sửa lỗi "COOKIE 'name'" bằng cách đặt cookie đúng chuẩn:
+python
+Sao chép
+Chỉnh sửa
+from flask import Flask, request, redirect, render_template, make_response
+
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.form['username']
+    password = request.form['password']
+
+    # Giả lập kiểm tra thông tin
+    if username == "admin" and password == "123456":
+        resp = make_response(redirect('/dashboard'))
+        resp.set_cookie('aff_token', 'your_generated_token_here',
+                        httponly=True,
+                        samesite='Lax',  # hoặc 'Strict' / 'None' nếu dùng HTTPS
+                        secure=False)   # Chuyển thành True nếu deploy HTTPS
+        return resp
+    else:
+        return render_template('login.html', error="Sai tài khoản hoặc mật khẩu")
+🔧 Nếu bạn dùng Express (NodeJS):
+javascript
+Sao chép
+Chỉnh sửa
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    if (username === 'admin' && password === '123456') {
+        res.cookie('aff_token', 'your_token_here', {
+            httpOnly: true,
+            sameSite: 'Lax', // hoặc 'Strict' / 'None'
+            secure: false    // Đặt true nếu dùng HTTPS
+        });
+        res.redirect('/dashboard');
+    } else {
+        res.render('login', { error: 'Sai thông tin đăng nhập' });
+    }
+});
+✅ Lưu ý quan trọng để tránh lỗi 500 do cookie:
+Không được để tên cookie trùng ký tự đặc biệt (chỉ dùng ký tự chữ, số, dấu gạch dưới).
+
+Đảm bảo response trả về không bị res.send() hoặc res.render() trùng nhau.
+
+Nếu dùng SameSite=None, bắt buộc phải secure=true (dùng HTTPS).
+
+👉 Đề xuất bổ sung
+Nếu bạn muốn, hãy gửi thêm:
+
+File app.py (Flask) hoặc index.js (Express)
+
+Thông tin stack bạn đang dùng (Flask hay NodeJS)
+
+Toàn bộ nội dung form login hoặc API gọi đến login
+
+Mình sẽ viết lại trọn gói backend + frontend giúp bạn xử lý triệt để từ A-Z.
