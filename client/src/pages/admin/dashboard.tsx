@@ -12,6 +12,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Article, Program, Activity, AdmissionStep, MediaCover, ServiceRegistration } from "@shared/schema";
 import BannerUploader from "@/components/banner-uploader";
+import ImageUpload from "@/components/admin/image-upload";
+import VideoUpload from "@/components/admin/video-upload";
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();

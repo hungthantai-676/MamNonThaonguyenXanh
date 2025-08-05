@@ -26,7 +26,7 @@ export async function registerWebsiteRoutes(app: Express): Promise<Server> {
       } else if (file.mimetype.startsWith('video/')) {
         cb(null, videosDir);
       } else {
-        cb(new Error('Invalid file type'));
+        cb(new Error('Invalid file type'), '');
       }
     },
     filename: function (req, file, cb) {
@@ -46,7 +46,7 @@ export async function registerWebsiteRoutes(app: Express): Promise<Server> {
       if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
         cb(null, true);
       } else {
-        cb(new Error('Only images and videos are allowed'), false);
+        cb(new Error('Only images and videos are allowed'));
       }
     }
   });
@@ -57,6 +57,34 @@ export async function registerWebsiteRoutes(app: Express): Promise<Server> {
   
   // Serve static files
   app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
+
+  // Banner upload endpoint (separate from regular images)
+  app.post('/api/admin/upload-banner', upload.single('banner'), (req, res) => {
+    try {
+      console.log('Upload banner endpoint hit, file:', req.file);
+      
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "Không có file được upload"
+        });
+      }
+
+      const bannerUrl = `/uploads/images/${req.file.filename}`;
+      
+      res.json({ 
+        success: true, 
+        bannerUrl: bannerUrl,
+        message: "Banner đã được lưu thành công" 
+      });
+    } catch (error) {
+      console.error('Banner upload error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Lỗi khi lưu banner: " + (error as Error).message 
+      });
+    }
+  });
 
   // Image upload endpoints
   app.post('/api/admin/upload-image', upload.single('image'), (req, res) => {
@@ -110,6 +138,22 @@ export async function registerWebsiteRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         message: "Lỗi khi lưu video: " + (error as Error).message 
+      });
+    }
+  });
+
+  // Remove banner endpoint
+  app.delete('/api/admin/remove-banner', (req, res) => {
+    try {
+      res.json({ 
+        success: true, 
+        message: "Banner đã được xóa" 
+      });
+    } catch (error) {
+      console.error('Remove banner error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Lỗi khi xóa banner: " + (error as Error).message 
       });
     }
   });

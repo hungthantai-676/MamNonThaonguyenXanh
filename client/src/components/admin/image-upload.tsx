@@ -33,13 +33,29 @@ export default function ImageUpload({ currentImageUrl, onImageChange, title }: I
     setIsLoading(true);
     
     try {
-      // For now, we'll show instructions to use image hosting services
-      toast({
-        title: "Hướng dẫn upload ảnh",
-        description: "Vui lòng upload ảnh lên imgur.com hoặc cloudinary.com rồi copy link vào ô URL",
-        variant: "destructive",
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await fetch('/api/admin/upload-image', {
+        method: 'POST',
+        body: formData,
       });
+
+      const result = await response.json();
+
+      if (result.success) {
+        const fullImageUrl = window.location.origin + result.imageUrl;
+        setImageUrl(fullImageUrl);
+        onImageChange(fullImageUrl);
+        toast({
+          title: "Upload thành công",
+          description: "Ảnh đã được tải lên và lưu trữ",
+        });
+      } else {
+        throw new Error(result.message || 'Upload failed');
+      }
     } catch (error) {
+      console.error('Upload error:', error);
       toast({
         title: "Lỗi upload",
         description: "Không thể upload ảnh. Vui lòng thử lại.",
