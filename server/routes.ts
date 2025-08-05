@@ -13,6 +13,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register affiliate routes separately to avoid conflicts with main site
   registerAffiliateRoutes(app);
 
+  // Admin content management endpoints
+  app.post("/api/admin/homepage-content", async (req, res) => {
+    try {
+      const content = await storage.saveHomepageContent(req.body);
+      res.json({ success: true, content });
+    } catch (error) {
+      console.error("Save homepage content error:", error);
+      res.status(500).json({ error: "Có lỗi xảy ra khi lưu nội dung" });
+    }
+  });
+
+  app.post("/api/admin/homepage-banner", async (req, res) => {
+    try {
+      const banner = await storage.saveHomepageBanner(req.body);
+      res.json({ success: true, banner });
+    } catch (error) {
+      console.error("Save homepage banner error:", error);
+      res.status(500).json({ error: "Có lỗi xảy ra khi lưu banner" });
+    }
+  });
+
+  // Contact form endpoint
+  app.post("/api/contact", async (req, res) => {
+    try {
+      const { name, email, phone, message } = req.body;
+      
+      if (!name || !email || !message) {
+        return res.status(400).json({ error: "Vui lòng điền đầy đủ thông tin" });
+      }
+
+      const contactData = {
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone?.trim() || "",
+        message: message.trim(),
+        createdAt: new Date().toISOString()
+      };
+
+      const contact = await storage.createContact(contactData);
+      res.json({ success: true, message: "Gửi tin nhắn thành công!", contact });
+    } catch (error) {
+      console.error("Contact form error:", error);
+      res.status(500).json({ error: "Có lỗi xảy ra khi gửi tin nhắn" });
+    }
+  });
+
+  // Password reset endpoint
+  app.post("/api/forgot-password", async (req, res) => {
+    try {
+      const { email, username } = req.body;
+      
+      if (!email && !username) {
+        return res.status(400).json({ error: "Vui lòng nhập email hoặc tên đăng nhập" });
+      }
+
+      // For demo, return success message
+      res.json({ 
+        success: true, 
+        message: "Email khôi phục mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư." 
+      });
+    } catch (error) {
+      console.error("Password reset error:", error);
+      res.status(500).json({ error: "Có lỗi xảy ra khi gửi email khôi phục" });
+    }
+  });
+
   // Basic routes for other pages
   app.get("/api/articles", async (req, res) => {
     try {

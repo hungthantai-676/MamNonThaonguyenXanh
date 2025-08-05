@@ -13,8 +13,9 @@ export function registerAffiliateRoutes(app: Express): void {
         });
       }
 
-      // Demo authentication for testfinal/123456
-      if (username === "testfinal" && memberCode === "123456") {
+      // Demo authentication - support both username/memberCode and username/password
+      if ((username === "testfinal" && memberCode === "123456") || 
+          (username === "testfinal" && req.body.password === "123456")) {
         res.cookie('aff_token', 'demo_token', {
           httpOnly: true,
           sameSite: 'Lax',

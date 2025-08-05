@@ -150,6 +150,10 @@ export interface IStorage {
   // Homepage content methods
   getHomepageContent(): Promise<HomepageContent | undefined>;
   saveHomepageContent(content: InsertHomepageContent): Promise<HomepageContent>;
+  getHomepageBanner(): Promise<any>;
+  saveHomepageBanner(banner: any): Promise<any>;
+  getSocialMedia(): Promise<any[]>;
+  createContact(contact: any): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -914,6 +918,67 @@ export class DatabaseStorage implements IStorage {
       
     } catch (error) {
       console.error('Error clearing demo data:', error);
+      throw error;
+    }
+  }
+
+  // Missing methods implementation
+  async getHomepageBanner(): Promise<any> {
+    try {
+      const content = await this.getHomepageContent();
+      return content?.bannerImage ? { bannerImage: content.bannerImage } : {};
+    } catch (error) {
+      return {};
+    }
+  }
+
+  async saveHomepageBanner(banner: any): Promise<any> {
+    try {
+      const existing = await this.getHomepageContent();
+      const bannerData = { bannerImage: banner.bannerImage || banner.imageUrl };
+      
+      if (existing) {
+        await db.update(homepageContent)
+          .set({ ...bannerData, updatedAt: new Date() })
+          .where(eq(homepageContent.id, existing.id));
+      } else {
+        await db.insert(homepageContent)
+          .values({
+            title: 'Mầm Non Thảo Nguyên Xanh',
+            subtitle: 'Giáo dục bằng trái tim',
+            description: 'Nơi nuôi dưỡng tương lai của bé',
+            ...bannerData
+          } as any);
+      }
+      return bannerData;
+    } catch (error) {
+      console.error('Save banner error:', error);
+      throw error;
+    }
+  }
+
+  async getSocialMedia(): Promise<any[]> {
+    try {
+      return await db.select().from(socialMediaLinks).limit(10);
+    } catch (error) {
+      return [];
+    }
+  }
+
+  async createContact(contact: any): Promise<any> {
+    try {
+      const [result] = await db.insert(contactForms)
+        .values({
+          parentName: contact.name,
+          parentEmail: contact.email,
+          parentPhone: contact.phone,
+          message: contact.message,
+          createdAt: new Date()
+        })
+        .returning();
+      return result;
+    } catch (error) {
+      console.error('Create contact error:', error);
       throw error;
     }
   }

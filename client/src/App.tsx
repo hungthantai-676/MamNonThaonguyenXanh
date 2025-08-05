@@ -73,6 +73,8 @@ function Router() {
           <Route path="/test-username-form" component={DebugForm} />
           <Route path="/new-affiliate-form" component={ForceNewForm} />
           <Route path="/affiliate/register" component={AffiliateRegisterSimple} />
+          <Route path="/affiliate-login" component={AffiliateLoginSimple} />
+          <Route path="/admin/affiliate" component={AffiliateAdmin} />
           <Route path="/affiliate/join-old" component={AffiliateJoin} />
           <Route path="/affiliate/test" component={AffiliateTest} />
           <Route path="/affiliate/member" component={AffiliateMemberFull} />
