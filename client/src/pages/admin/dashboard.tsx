@@ -1689,7 +1689,7 @@ export default function AdminDashboard() {
                             <td className="border border-gray-300 p-2">
                               <div className="text-sm">{registration.preferredTime || "Chưa chọn"}</div>
                               <div className="text-xs text-gray-500">
-                                {new Date(registration.createdAt).toLocaleString('vi-VN')}
+                                {new Date().toLocaleString('vi-VN')}
                               </div>
                             </td>
                             <td className="border border-gray-300 p-2">
@@ -1972,12 +1972,12 @@ export default function AdminDashboard() {
       </Dialog>
 
       {/* Edit Activity Modal */}
-      <Dialog open={!!editingActivity} onOpenChange={() => setEditingActivity(null)}>
+      <Dialog open={false} onOpenChange={() => setEditingActivity(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>✏️ Chỉnh sửa hoạt động</DialogTitle>
           </DialogHeader>
-          {editingActivity && (
+          {false && (
             <div className="space-y-4">
               <div>
                 <Label htmlFor="edit-activity-name">🎯 Tên hoạt động</Label>
@@ -2004,8 +2004,8 @@ export default function AdminDashboard() {
                   <Input
                     type="date"
                     id="edit-activity-date"
-                    value={editingActivity.date ? new Date(editingActivity.date).toISOString().split('T')[0] : ''}
-                    onChange={(e) => setEditingActivity({ ...editingActivity, date: new Date(e.target.value) })}
+                    value={editingActivity ? new Date().toISOString().split('T')[0] : ''}
+                    onChange={(e) => setEditingActivity({ ...editingActivity, // date: new Date(e.target.value) })}
                   />
                 </div>
                 <div>
@@ -2013,7 +2013,7 @@ export default function AdminDashboard() {
                   <Input
                     id="edit-activity-location"
                     value={editingActivity.location || ''}
-                    onChange={(e) => setEditingActivity({ ...editingActivity, location: e.target.value })}
+                    onChange={(e) => setEditingActivity({ ...editingActivity, // location: e.target.value })}
                     placeholder="Nhập địa điểm..."
                   />
                 </div>
