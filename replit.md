@@ -29,10 +29,15 @@ This is a full-stack web application for "Mầm Non Thảo Nguyên Xanh" (Green 
 - **Database Provider**: Neon Database (@neondatabase/serverless)
 - **Schema Validation**: Zod schemas (shared between frontend and backend)
 - **Session Management**: Connect-pg-simple for PostgreSQL session storage
+- **Module Separation**: Affiliate system isolated in separate routes to prevent conflicts with main site
 
 ### Project Structure
 - `client/`: Frontend React application (components, pages, lib, hooks)
-- `server/`: Backend Express application (routes, storage, Vite integration)
+- `server/`: Backend Express application with modular architecture
+  - `routes.ts`: Main website routes (clean, stable)
+  - `affiliate-routes.ts`: Isolated affiliate system routes
+  - `storage.ts`: Data persistence layer
+  - `vite.ts`: Vite integration
 - `shared/`: Shared TypeScript types and schemas (e.g., database schema, Zod validation)
 - `migrations/`: Database migration files
 
