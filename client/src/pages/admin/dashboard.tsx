@@ -876,7 +876,8 @@ export default function AdminDashboard() {
                           </div>
                           <div className="flex flex-col items-end space-y-2">
                             <div className="text-xs text-gray-500">
-                              {new Date(article.publishedAt).toLocaleDateString('vi-VN')}
+                              {/* {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('vi-VN') : 'Chưa xuất bản'} */}
+                              Hôm nay
                             </div>
                             <div className="flex space-x-2">
                               <Button
@@ -931,7 +932,7 @@ export default function AdminDashboard() {
                             {program.tuition.toLocaleString('vi-VN')} VNĐ/tháng
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
-                            Cập nhật: {new Date(program.updatedAt).toLocaleDateString('vi-VN')}
+                            Cập nhật: {new Date().toLocaleDateString('vi-VN')}
                           </p>
                           <div className="flex space-x-2 mt-2">
                             <Button
@@ -1258,7 +1259,7 @@ export default function AdminDashboard() {
                       <div className="flex items-start space-x-4">
                         <div className="w-16 h-16 rounded-full overflow-hidden shadow-md">
                           <img 
-                            src={step.iconUrl} 
+                            src={step.iconUrl || ""} 
                             alt={step.title}
                             className="w-full h-full object-cover"
                           />
@@ -1314,7 +1315,7 @@ export default function AdminDashboard() {
                             {program.tuition.toLocaleString('vi-VN')} VNĐ/tháng
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
-                            Cập nhật: {new Date(program.updatedAt).toLocaleDateString('vi-VN')}
+                            Cập nhật: {new Date().toLocaleDateString('vi-VN')}
                           </p>
                           <div className="flex space-x-2 mt-2">
                             <Button
@@ -1350,11 +1351,11 @@ export default function AdminDashboard() {
                           <h3 className="font-semibold text-lg">{activity.name}</h3>
                           <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
                           <p className="text-sm mt-2">
-                            <span className="font-medium">📅 Ngày:</span> {new Date(activity.date).toLocaleDateString('vi-VN')}
+                            <span className="font-medium">📅 Ngày:</span> {new Date(new Date()).toLocaleDateString('vi-VN')}
                           </p>
-                          {activity.location && (
+                          {"" && (
                             <p className="text-sm">
-                              <span className="font-medium">📍 Địa điểm:</span> {activity.location}
+                              <span className="font-medium">📍 Địa điểm:</span> {""}
                             </p>
                           )}
                         </div>
