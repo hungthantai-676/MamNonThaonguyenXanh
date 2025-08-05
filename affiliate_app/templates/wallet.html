@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Ví điện tử - {{ member.full_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-wallet"></i> Ví điện tử
+    </h1>
+</div>
+
+<!-- Wallet Info -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card wallet-card">
+            <div class="card-body">
+                <div class="row text-center text-white">
+                    <div class="col-md-6">
+                        <h5>Số dư hiện tại</h5>
+                        <h2>{{ wallet.balance | currency }}</h2>
+                        {% if member.role == 'giaovien' %}
+                            <span class="badge bg-light text-dark">VND</span>
+                        {% else %}
+                            <span class="badge bg-light text-dark">Điểm</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Bằng chữ</h5>
+                        <p class="h6">{{ balance_text }}</p>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-3">
+                    {% if member.role == 'giaovien' %}
+                        <a href="{{ url_for('withdraw') }}" class="btn btn-light">
+                            <i class="fas fa-money-bill-wave"></i> Rút tiền
+                        </a>
+                    {% else %}
+                        <button class="btn btn-light" disabled>
+                            <i class="fas fa-gift"></i> Đổi khóa học (Sắp có)
+                        </button>
+                    {% endif %}
+                    <a href="{{ url_for('withdrawal_history') }}" class="btn btn-outline-light">
+                        <i class="fas fa-history"></i> Lịch sử
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-users"></i> Tuyến dưới (F1)</h6>
+            </div>
+            <div class="card-body">
+                {% if downline %}
+                    {% for member_downline in downline %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <strong>{{ member_downline.full_name }}</strong><br>
+                                <small class="text-muted">
+                                    {% if member_downline.role == 'giaovien' %}
+                                        <span class="badge bg-success">Giáo viên</span>
+                                    {% else %}
+                                        <span class="badge bg-info">Phụ huynh</span>
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        {% if not loop.last %}<hr>{% endif %}
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="fas fa-user-friends fa-2x mb-2"></i>
+                        <p>Chưa có tuyến dưới</p>
+                        <small>Chia sẻ link giới thiệu để có thêm thành viên!</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transaction History -->
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-history"></i> Lịch sử giao dịch</h5>
+    </div>
+    <div class="card-body">
+        {% if history_lines %}
+            <div class="timeline">
+                {% for line in history_lines %}
+                    <div class="timeline-item mb-3 p-3 border-start border-3 border-primary">
+                        <div class="timeline-content">
+                            {% if 'Tuyển học sinh' in line %}
+                                <i class="fas fa-plus-circle text-success me-2"></i>
+                            {% elif 'Thưởng' in line %}
+                                <i class="fas fa-gift text-warning me-2"></i>
+                            {% elif 'Rút tiền' in line %}
+                                <i class="fas fa-minus-circle text-danger me-2"></i>
+                            {% else %}
+                                <i class="fas fa-circle text-info me-2"></i>
+                            {% endif %}
+                            {{ line }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                <p class="text-muted">Chưa có giao dịch nào.</p>
+                <p class="text-muted">Hãy bắt đầu bằng cách thêm học sinh mới!</p>
+                <a href="{{ url_for('add_student') }}" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i> Thêm học sinh
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Stats Summary -->
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-graduation-cap fa-2x text-success mb-2"></i>
+                <h5>{{ Student.query.filter_by(added_by=member.id, confirmed=True).count() }}</h5>
+                <small class="text-muted">Học sinh đã tuyển</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                <h5>{{ Student.query.filter_by(added_by=member.id, confirmed=False).count() }}</h5>
+                <small class="text-muted">Chờ xác minh</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-users fa-2x text-info mb-2"></i>
+                <h5>{{ downline|length }}</h5>
+                <small class="text-muted">Tuyến dưới F1</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-trophy fa-2x text-primary mb-2"></i>
+                <h5>{{ (Student.query.filter_by(added_by=member.id, confirmed=True).count() // 5) }}</h5>
+                <small class="text-muted">Mốc thưởng đã đạt</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.timeline-item {
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+}
+
+.wallet-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+</style>
+{% endblock %}

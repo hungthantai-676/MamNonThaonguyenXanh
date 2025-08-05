@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Affiliate System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-chart-bar"></i> Admin Dashboard
+        <span class="badge bg-danger">ADMIN</span>
+    </h1>
+    <div class="btn-toolbar">
+        <a href="{{ url_for('admin_students') }}" class="btn btn-warning">
+            <i class="fas fa-exclamation-triangle"></i> 
+            Cần xác minh ({{ pending_students }})
+        </a>
+        <a href="{{ url_for('admin_withdrawals') }}" class="btn btn-info ms-2">
+            <i class="fas fa-clock"></i> 
+            Chờ duyệt ({{ pending_withdrawals }})
+        </a>
+    </div>
+</div>
+
+<!-- Stats Overview -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-2x mb-2"></i>
+                <h3>{{ total_members }}</h3>
+                <small>Tổng thành viên</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-chalkboard-teacher fa-2x mb-2"></i>
+                <h3>{{ total_teachers }}</h3>
+                <small>Giáo viên</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-user-friends fa-2x mb-2"></i>
+                <h3>{{ total_parents }}</h3>
+                <small>Phụ huynh</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body text-center">
+                <i class="fas fa-graduation-cap fa-2x mb-2"></i>
+                <h3>{{ Student.query.filter_by(confirmed=True).count() or 0 }}</h3>
+                <small>Học sinh đã xác minh</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5><i class="fas fa-user-check"></i> Xác minh học sinh</h5>
+            </div>
+            <div class="card-body">
+                {% if pending_students > 0 %}
+                    <div class="alert alert-warning">
+                        <strong>{{ pending_students }}</strong> học sinh chờ xác minh
+                    </div>
+                    <a href="{{ url_for('admin_students') }}" class="btn btn-warning">
+                        <i class="fas fa-eye"></i> Xem danh sách
+                    </a>
+                {% else %}
+                    <p class="text-muted">Không có học sinh nào cần xác minh.</p>
+                    <a href="{{ url_for('admin_students', status='all') }}" class="btn btn-outline-warning">
+                        <i class="fas fa-list"></i> Xem tất cả
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h5><i class="fas fa-credit-card"></i> Duyệt rút tiền</h5>
+            </div>
+            <div class="card-body">
+                {% if pending_withdrawals > 0 %}
+                    <div class="alert alert-info">
+                        <strong>{{ pending_withdrawals }}</strong> yêu cầu chờ duyệt
+                    </div>
+                    <a href="{{ url_for('admin_withdrawals') }}" class="btn btn-info">
+                        <i class="fas fa-eye"></i> Xem danh sách
+                    </a>
+                {% else %}
+                    <p class="text-muted">Không có yêu cầu rút tiền nào.</p>
+                    <a href="{{ url_for('admin_withdrawals', status='all') }}" class="btn btn-outline-info">
+                        <i class="fas fa-list"></i> Xem tất cả
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activities -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-clock"></i> Học sinh mới nhất</h6>
+            </div>
+            <div class="card-body">
+                {% set recent_students = Student.query.order_by(Student.created_at.desc()).limit(5).all() %}
+                {% if recent_students %}
+                    <div class="list-group list-group-flush">
+                        {% for student in recent_students %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ student.name }}</strong><br>
+                                    <small class="text-muted">
+                                        Thêm bởi: ID {{ student.added_by }} - 
+                                        {{ student.created_at.strftime('%d/%m/%Y %H:%M') }}
+                                    </small>
+                                </div>
+                                {% if student.confirmed %}
+                                    <span class="badge bg-success">Đã xác minh</span>
+                                {% elif student.status == 'rejected' %}
+                                    <span class="badge bg-danger">Đã từ chối</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Chờ xác minh</span>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">Chưa có học sinh nào.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-money-bill-wave"></i> Yêu cầu rút tiền mới nhất</h6>
+            </div>
+            <div class="card-body">
+                {% set recent_withdrawals = WithdrawalRequest.query.order_by(WithdrawalRequest.created_at.desc()).limit(5).all() %}
+                {% if recent_withdrawals %}
+                    <div class="list-group list-group-flush">
+                        {% for withdrawal in recent_withdrawals %}
+                            {% set member = Member.query.get(withdrawal.member_id) %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ member.full_name if member else 'Unknown' }}</strong><br>
+                                    <small class="text-muted">
+                                        {{ withdrawal.amount | currency }} VND - 
+                                        {{ withdrawal.created_at.strftime('%d/%m/%Y %H:%M') }}
+                                    </small>
+                                </div>
+                                {% if withdrawal.status == 'approved' %}
+                                    <span class="badge bg-success">Đã duyệt</span>
+                                {% elif withdrawal.status == 'rejected' %}
+                                    <span class="badge bg-danger">Đã từ chối</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Chờ duyệt</span>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">Chưa có yêu cầu rút tiền nào.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Stats -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-chart-pie"></i> Thống kê hệ thống</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-primary">{{ Student.query.count() or 0 }}</h4>
+                        <small class="text-muted">Tổng học sinh</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-success">{{ Student.query.filter_by(confirmed=True).count() or 0 }}</h4>
+                        <small class="text-muted">Đã xác minh</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-warning">{{ Student.query.filter_by(confirmed=False, status='pending').count() or 0 }}</h4>
+                        <small class="text-muted">Chờ xác minh</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-danger">{{ Student.query.filter_by(status='rejected').count() or 0 }}</h4>
+                        <small class="text-muted">Đã từ chối</small>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-info">{{ WithdrawalRequest.query.count() or 0 }}</h4>
+                        <small class="text-muted">Tổng yêu cầu rút tiền</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-success">{{ WithdrawalRequest.query.filter_by(status='approved').count() or 0 }}</h4>
+                        <small class="text-muted">Đã duyệt</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-warning">{{ WithdrawalRequest.query.filter_by(status='pending').count() or 0 }}</h4>
+                        <small class="text-muted">Chờ duyệt</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-danger">{{ WithdrawalRequest.query.filter_by(status='rejected').count() or 0 }}</h4>
+                        <small class="text-muted">Đã từ chối</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Navigation -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-link"></i> Liên kết nhanh</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="{{ url_for('admin_students') }}" class="btn btn-outline-primary w-100 mb-2">
+                            <i class="fas fa-user-check"></i> Quản lý học sinh
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('admin_withdrawals') }}" class="btn btn-outline-success w-100 mb-2">
+                            <i class="fas fa-credit-card"></i> Quản lý rút tiền
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('admin_members') }}" class="btn btn-outline-info w-100 mb-2">
+                            <i class="fas fa-users"></i> Quản lý thành viên
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary w-100 mb-2">
+                            <i class="fas fa-user"></i> Chế độ thành viên
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto refresh dashboard every 2 minutes
+setInterval(function() {
+    if ({{ pending_students }} > 0 || {{ pending_withdrawals }} > 0) {
+        console.log('Checking for admin updates...');
+        // Could implement AJAX update for pending counts
+    }
+}, 120000);
+
+// Add notification sound for new pending items (could be enhanced)
+if ({{ pending_students }} > 0 || {{ pending_withdrawals }} > 0) {
+    document.title = '⚠️ Cần xử lý - Admin Dashboard';
+} else {
+    document.title = 'Admin Dashboard - Affiliate System';
+}
+</script>
+{% endblock %}

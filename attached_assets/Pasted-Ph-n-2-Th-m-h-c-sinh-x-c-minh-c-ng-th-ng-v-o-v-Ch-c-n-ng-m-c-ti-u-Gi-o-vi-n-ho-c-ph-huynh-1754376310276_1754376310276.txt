@@ -1,0 +1,102 @@
+Phần 2: Thêm học sinh – xác minh – cộng thưởng vào ví
+✅ Chức năng mục tiêu:
+Giáo viên hoặc phụ huynh đăng nhập và thêm học sinh mới mà họ giới thiệu.
+
+Học sinh sẽ ở trạng thái "Chờ xác minh".
+
+Admin sẽ vào bảng quản trị → Xác nhận học sinh.
+
+Khi được xác nhận:
+
+✅ Hệ thống sẽ tự cộng tiền hoặc điểm vào ví.
+
+✅ Lưu vào lịch sử ví với tên học sinh, ngày tháng.
+
+✅ Kiểm tra mốc 5 học sinh để cộng thêm 10 triệu / 10.000 điểm.
+
+🔩 Cập nhật cơ sở dữ liệu
+✅ Thêm bảng Student:
+python
+Sao chép
+Chỉnh sửa
+class Student(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    confirmed = db.Column(db.Boolean, default=False)  # Admin xác nhận
+    added_by = db.Column(db.Integer, db.ForeignKey('member.id'), nullable=False)
+✅ Route để thêm học sinh
+📄 Giao diện đơn giản add_student.html:
+html
+Sao chép
+Chỉnh sửa
+<h2>Thêm học sinh mới</h2>
+<form method="POST">
+  <input name="name" placeholder="Tên học sinh" required>
+  <button type="submit">Gửi yêu cầu xác minh</button>
+</form>
+📁 app.py bổ sung:
+python
+Sao chép
+Chỉnh sửa
+@app.route('/add-student/<int:member_id>', methods=['GET', 'POST'])
+def add_student(member_id):
+    member = Member.query.get(member_id)
+    if request.method == 'POST':
+        name = request.form['name']
+        new_student = Student(name=name, added_by=member.id)
+        db.session.add(new_student)
+        db.session.commit()
+        return f"🎓 Đã thêm học sinh {name}, đang chờ admin xác nhận!"
+    return render_template('add_student.html', member=member)
+✅ Bảng quản trị: Admin xác nhận học sinh
+python
+Sao chép
+Chỉnh sửa
+@app.route('/admin/students')
+def admin_students():
+    students = Student.query.filter_by(confirmed=False).all()
+    return render_template('admin_students.html', students=students)
+
+@app.route('/admin/confirm/<int:student_id>')
+def confirm_student(student_id):
+    student = Student.query.get(student_id)
+    if student and not student.confirmed:
+        student.confirmed = True
+        db.session.commit()
+
+        member = Member.query.get(student.added_by)
+        wallet = member.wallet
+        amount = 2000000 if member.role == 'giaovien' else 2000
+        wallet.balance += amount
+
+        # Ghi lịch sử
+        note = f"{datetime.now().strftime('%d/%m/%Y')} - Tuyển học sinh {student.name} - +{amount}\n"
+        wallet.history += note
+
+        # Kiểm tra bonus nếu đủ 5 người
+        count = Student.query.filter_by(added_by=member.id, confirmed=True).count()
+        if count % 5 == 0:
+            bonus = 10000000 if member.role == 'giaovien' else 10000
+            wallet.balance += bonus
+            wallet.history += f"🎉 Thưởng đủ {count} học sinh - +{bonus}\n"
+
+        db.session.commit()
+        return redirect('/admin/students')
+    return "Không tìm thấy học sinh hoặc đã xác nhận"
+📄 Giao diện admin_students.html
+html
+Sao chép
+Chỉnh sửa
+<h2>Danh sách học sinh chờ xác minh</h2>
+<ul>
+{% for s in students %}
+  <li>{{ s.name }} - Người thêm: {{ s.added_by }} 
+    <a href="/admin/confirm/{{ s.id }}">✅ Xác nhận</a>
+  </li>
+{% endfor %}
+</ul>
+✅ Sau xác nhận:
+Ví được cộng tiền / điểm ✅
+Lịch sử ví được cập nhật ✅
+Tự động cộng thêm bonus khi đạt 5 học sinh ✅

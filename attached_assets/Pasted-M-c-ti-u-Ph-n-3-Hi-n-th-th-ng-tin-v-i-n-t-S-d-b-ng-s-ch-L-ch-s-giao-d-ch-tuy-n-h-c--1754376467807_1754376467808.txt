@@ -1,0 +1,83 @@
+Mục tiêu Phần 3
+Hiển thị thông tin ví điện tử:
+
+Số dư (bằng số & chữ)
+
+Lịch sử giao dịch (tuyển học sinh, thưởng bonus)
+
+Hiển thị sơ đồ tuyến dưới:
+
+Danh sách các thành viên mà người dùng giới thiệu
+
+Có thể phân tầng cấp 1 → cấp 2
+
+Giao diện rõ ràng, dễ dùng
+
+🔧 Bổ sung vào models.py
+Thêm quan hệ tuyến dưới cho Member:
+
+python
+Sao chép
+Chỉnh sửa
+class Member(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    full_name = db.Column(db.String(100), nullable=False)
+    phone = db.Column(db.String(20), nullable=False, unique=True)
+    email = db.Column(db.String(100), nullable=False, unique=True)
+    password = db.Column(db.String(200), nullable=False)
+    role = db.Column(db.String(20), nullable=False)  # 'giaovien' | 'phuhuynh'
+    industry = db.Column(db.String(100))
+    address = db.Column(db.String(200))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    wallet = db.relationship('Wallet', backref='member', uselist=False)
+    referrer_id = db.Column(db.Integer, db.ForeignKey('member.id'))  # người giới thiệu
+    referred = db.relationship('Member', backref=db.backref('referrer', remote_side=[id]), lazy='dynamic')
+✅ Hàm chuyển số → chữ tiếng Việt (num2vn)
+python
+Sao chép
+Chỉnh sửa
+def num2vn(n):
+    from num2words import num2words
+    return num2words(n, lang='vi').capitalize() + ' đồng'
+⚠️ Cài thêm thư viện num2words vào requirements.txt
+
+📄 Route hiển thị ví
+python
+Sao chép
+Chỉnh sửa
+@app.route('/wallet/<int:member_id>')
+def view_wallet(member_id):
+    member = Member.query.get(member_id)
+    wallet = member.wallet
+    balance_text = num2vn(wallet.balance)
+    
+    # Lấy danh sách tuyến dưới (cấp 1)
+    downline = Member.query.filter_by(referrer_id=member.id).all()
+
+    return render_template('wallet.html', member=member, wallet=wallet, balance_text=balance_text, downline=downline)
+📄 Template wallet.html
+html
+Sao chép
+Chỉnh sửa
+<h2>👛 Ví cá nhân của {{ member.full_name }}</h2>
+<p><b>Số dư:</b> {{ wallet.balance | format }} VND</p>
+<p><b>Bằng chữ:</b> {{ balance_text }}</p>
+
+<h3>📜 Lịch sử giao dịch:</h3>
+<pre>{{ wallet.history }}</pre>
+
+<h3>🌱 Tuyến dưới (F1):</h3>
+<ul>
+  {% for m in downline %}
+    <li>{{ m.full_name }} ({{ m.role }})</li>
+  {% else %}
+    <li>Chưa có tuyến dưới nào</li>
+  {% endfor %}
+</ul>
+✅ Kết quả đạt được
+ Hiển thị rõ số tiền (bằng số + chữ)
+
+ Hiển thị lịch sử cộng tiền
+
+ Hiển thị danh sách tuyến dưới F1 (có thể mở rộng cấp 2)
+

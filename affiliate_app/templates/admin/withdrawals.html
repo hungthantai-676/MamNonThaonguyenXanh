@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý rút tiền - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-credit-card"></i> Quản lý rút tiền
+        <span class="badge bg-danger">ADMIN</span>
+    </h1>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Quay lại Dashboard
+    </a>
+</div>
+
+<!-- Filter Tabs -->
+<ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+        <a class="nav-link {{ 'active' if status_filter == 'pending' else '' }}" 
+           href="{{ url_for('admin_withdrawals', status='pending') }}">
+            <i class="fas fa-clock"></i> Chờ duyệt 
+            <span class="badge bg-warning ms-1">{{ requests | selectattr('status', 'equalto', 'pending') | list | length }}</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {{ 'active' if status_filter == 'approved' else '' }}" 
+           href="{{ url_for('admin_withdrawals', status='approved') }}">
+            <i class="fas fa-check"></i> Đã duyệt 
+            <span class="badge bg-success ms-1">{{ requests | selectattr('status', 'equalto', 'approved') | list | length }}</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {{ 'active' if status_filter == 'rejected' else '' }}" 
+           href="{{ url_for('admin_withdrawals', status='rejected') }}">
+            <i class="fas fa-times"></i> Đã từ chối 
+            <span class="badge bg-danger ms-1">{{ requests | selectattr('status', 'equalto', 'rejected') | list | length }}</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {{ 'active' if status_filter == 'all' else '' }}" 
+           href="{{ url_for('admin_withdrawals', status='all') }}">
+            <i class="fas fa-list"></i> Tất cả 
+            <span class="badge bg-info ms-1">{{ requests | length }}</span>
+        </a>
+    </li>
+</ul>
+
+{% if requests %}
+    <!-- Summary Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark text-center">
+                <div class="card-body">
+                    <h3>{{ requests | selectattr('status', 'equalto', 'pending') | list | length }}</h3>
+                    <small>Chờ duyệt</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white text-center">
+                <div class="card-body">
+                    <h3>{{ (requests | selectattr('status', 'equalto', 'approved') | map(attribute='amount') | sum) | currency }}</h3>
+                    <small>Đã chi trả (VND)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white text-center">
+                <div class="card-body">
+                    <h3>{{ requests | selectattr('status', 'equalto', 'rejected') | list | length }}</h3>
+                    <small>Đã từ chối</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white text-center">
+                <div class="card-body">
+                    <h3>{{ (requests | selectattr('status', 'equalto', 'pending') | map(attribute='amount') | sum) | currency }}</h3>
+                    <small>Chờ chi trả (VND)</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdrawal Requests Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5>
+                <i class="fas fa-money-bill-wave"></i> 
+                Yêu cầu rút tiền
+                {% if status_filter == 'pending' %}
+                    (Chờ duyệt)
+                {% elif status_filter == 'approved' %}
+                    (Đã duyệt)
+                {% elif status_filter == 'rejected' %}
+                    (Đã từ chối)
+                {% else %}
+                    (Tất cả)
+                {% endif %}
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>STT</th>
+                            <th>Thành viên</th>
+                            <th>Số tiền</th>
+                            <th>Bằng chữ</th>
+                            <th>Ngày yêu cầu</th>
+                            <th>Trạng thái</th>
+                            <th>Xử lý</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in requests %}
+                            {% set member = Member.query.get(request.member_id) %}
+                            {% set wallet = member.wallet if member else None %}
+                            <tr class="{% if request.status == 'approved' %}table-success{% elif request.status == 'rejected' %}table-danger{% endif %}">
+                                <td>{{ loop.index }}</td>
+                                <td>
+                                    {% if member %}
+                                        <strong>{{ member.full_name }}</strong><br>
+                                        <small class="text-muted">
+                                            ID: {{ member.id }} - {{ member.phone }}<br>
+                                            {% if member.role == 'giaovien' %}
+                                                <span class="badge bg-success">Giáo viên</span>
+                                            {% else %}
+                                                <span class="badge bg-info">Phụ huynh</span>
+                                            {% endif %}
+                                        </small>
+                                        {% if wallet %}
+                                            <br><small class="text-info">
+                                                Số dư hiện tại: {{ wallet.balance | currency }} VND
+                                            </small>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">Unknown (ID: {{ request.member_id }})</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong class="text-primary">{{ request.amount | currency }}</strong>
+                                    <small class="text-muted d-block">VND</small>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ request.amount | num2vn }}</small>
+                                </td>
+                                <td>
+                                    <small>
+                                        {{ request.created_at.strftime('%d/%m/%Y') }}<br>
+                                        <span class="text-muted">{{ request.created_at.strftime('%H:%M') }}</span>
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if request.status == 'approved' %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check"></i> Đã duyệt
+                                        </span>
+                                    {% elif request.status == 'rejected' %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times"></i> Đã từ chối
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-clock"></i> Chờ duyệt
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if request.processed_at %}
+                                        <small>
+                                            {{ request.processed_at.strftime('%d/%m/%Y %H:%M') }}<br>
+                                            <span class="text-muted">{{ request.processed_by or 'Unknown' }}</span>
+                                        </small>
+                                    {% else %}
+                                        <small class="text-muted">Chưa xử lý</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if request.status == 'pending' %}
+                                        <div class="btn-group-vertical" role="group">
+                                            <a href="{{ url_for('approve_withdrawal', req_id=request.id) }}" 
+                                               class="btn btn-success btn-sm mb-1"
+                                               onclick="return confirmApproval({{ request.amount }}, '{{ member.full_name if member else 'Unknown' }}', {{ wallet.balance if wallet else 0 }})">
+                                                <i class="fas fa-check"></i> Duyệt
+                                            </a>
+                                            <a href="{{ url_for('reject_withdrawal', req_id=request.id) }}" 
+                                               class="btn btn-danger btn-sm"
+                                               onclick="return confirm('Từ chối yêu cầu rút tiền của {{ member.full_name if member else 'thành viên' }}?')">
+                                                <i class="fas fa-times"></i> Từ chối
+                                            </a>
+                                        </div>
+                                    {% else %}
+                                        <small class="text-muted">Đã xử lý</small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="text-muted">
+                Hiển thị {{ requests | length }} yêu cầu
+                {% if status_filter != 'all' %}
+                    - <a href="{{ url_for('admin_withdrawals', status='all') }}">Xem tất cả</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Requests Alert -->
+    {% set pending_requests = requests | selectattr('status', 'equalto', 'pending') | list %}
+    {% if pending_requests and status_filter == 'pending' %}
+        <div class="card mt-4 border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h6><i class="fas fa-exclamation-triangle"></i> Cần xử lý ngay</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">
+                    Có <strong>{{ pending_requests | length }}</strong> yêu cầu rút tiền chờ duyệt với 
+                    tổng số tiền: <strong>{{ (pending_requests | map(attribute='amount') | sum) | currency }} VND</strong>
+                </p>
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> Quy trình duyệt:</h6>
+                    <ol class="mb-0">
+                        <li>Kiểm tra số dư trong ví thành viên</li>
+                        <li>Xác minh thông tin liên hệ (điện thoại)</li>
+                        <li>Yêu cầu thông tin tài khoản ngân hàng</li>
+                        <li>Chuyển khoản và xác nhận</li>
+                        <li>Nhấn "Duyệt" để trừ tiền và ghi lịch sử</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+{% else %}
+    <!-- Empty State -->
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-money-bill-wave fa-4x text-muted mb-4"></i>
+            <h4 class="text-muted">
+                {% if status_filter == 'pending' %}
+                    Không có yêu cầu nào chờ duyệt
+                {% elif status_filter == 'approved' %}
+                    Chưa có yêu cầu nào được duyệt
+                {% elif status_filter == 'rejected' %}
+                    Chưa có yêu cầu nào bị từ chối
+                {% else %}
+                    Chưa có yêu cầu rút tiền nào
+                {% endif %}
+            </h4>
+            <p class="text-muted">
+                {% if status_filter == 'pending' %}
+                    Tất cả yêu cầu rút tiền đều đã được xử lý.
+                {% else %}
+                    Hệ thống sẽ hiển thị yêu cầu khi thành viên tạo.
+                {% endif %}
+            </p>
+            {% if status_filter != 'all' %}
+                <a href="{{ url_for('admin_withdrawals', status='all') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-list"></i> Xem tất cả yêu cầu
+                </a>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+
+<!-- Guidelines -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h6><i class="fas fa-shield-alt"></i> Nguyên tắc bảo mật</h6>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li>Luôn xác minh số điện thoại trước khi duyệt</li>
+                    <li>Yêu cầu ảnh CCCD + tài khoản ngân hàng</li>
+                    <li>Kiểm tra số dư ví trước khi duyệt</li>
+                    <li>Lưu trữ bằng chứng chuyển khoản</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h6><i class="fas fa-clock"></i> Thời gian xử lý</h6>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li>Yêu cầu < 1 triệu: Xử lý trong ngày</li>
+                    <li>Yêu cầu 1-5 triệu: 1-2 ngày làm việc</li>
+                    <li>Yêu cầu > 5 triệu: 2-3 ngày làm việc</li>
+                    <li>Thông báo kết quả qua SMS/Email</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function confirmApproval(amount, memberName, currentBalance) {
+    if (currentBalance < amount) {
+        alert(`CẢNH BÁO: Số dư trong ví (${currentBalance.toLocaleString()} VND) không đủ để rút ${amount.toLocaleString()} VND!`);
+        return false;
+    }
+    
+    return confirm(`Duyệt yêu cầu rút tiền của ${memberName}?\n\nSố tiền: ${amount.toLocaleString()} VND\nSố dư hiện tại: ${currentBalance.toLocaleString()} VND\nSố dư sau khi rút: ${(currentBalance - amount).toLocaleString()} VND\n\nLưu ý: Tiền sẽ được trừ ngay lập tức và không thể hoàn tác!`);
+}
+
+// Auto refresh every 2 minutes for pending requests
+setInterval(function() {
+    if ('{{ status_filter }}' === 'pending') {
+        const pendingCount = {{ requests | selectattr('status', 'equalto', 'pending') | list | length }};
+        if (pendingCount > 0) {
+            console.log('Checking for withdrawal updates...');
+        }
+    }
+}, 120000);
+
+// Highlight urgent requests (older than 24 hours)
+document.addEventListener('DOMContentLoaded', function() {
+    const rows = document.querySelectorAll('tbody tr');
+    const now = new Date();
+    
+    rows.forEach(row => {
+        const dateCell = row.cells[4]; // Date column
+        if (dateCell) {
+            const dateText = dateCell.textContent.trim();
+            // Simple date parsing - in production use proper date library
+            const requestDate = new Date(dateText.split('\n')[0].split('/').reverse().join('-'));
+            const hoursDiff = (now - requestDate) / (1000 * 60 * 60);
+            
+            if (hoursDiff > 24 && row.classList.contains('table-warning')) {
+                row.classList.add('table-danger');
+                row.style.fontWeight = 'bold';
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

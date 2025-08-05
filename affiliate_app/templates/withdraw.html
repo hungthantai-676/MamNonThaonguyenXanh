@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}Rút tiền - Affiliate System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-money-bill-wave"></i> Yêu cầu rút tiền
+    </h1>
+    <a href="{{ url_for('view_wallet') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-wallet"></i> Quay lại ví
+    </a>
+</div>
+
+<!-- Current Balance -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-wallet"></i> Số dư hiện tại</h5>
+                        <h2>{{ wallet.balance | currency }}</h2>
+                        {% if member.role == 'giaovien' %}
+                            <span class="badge bg-light text-dark">VND</span>
+                        {% else %}
+                            <span class="badge bg-light text-dark">Điểm</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Bằng chữ</h5>
+                        <p>{{ wallet.balance | num2vn }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h6><i class="fas fa-info-circle"></i> Lưu ý</h6>
+            </div>
+            <div class="card-body">
+                {% if member.role == 'giaovien' %}
+                    <small>
+                        • Số tiền tối thiểu: 100,000 VND<br>
+                        • Thời gian xử lý: 1-3 ngày<br>
+                        • Admin sẽ liên hệ xác minh<br>
+                        • Không thể hủy sau khi gửi
+                    </small>
+                {% else %}
+                    <div class="alert alert-info mb-0">
+                        <small>
+                            <i class="fas fa-gift"></i> Phụ huynh chỉ có thể đổi điểm thành khóa học, không rút tiền mặt.
+                        </small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if member.role == 'giaovien' %}
+    {% if wallet.balance >= 100000 %}
+        <!-- Withdrawal Form -->
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-credit-card"></i> Thông tin rút tiền</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" id="withdrawForm">
+                            <div class="mb-4">
+                                <label for="amount" class="form-label">
+                                    <i class="fas fa-dollar-sign"></i> Số tiền muốn rút (VND) <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group input-group-lg">
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="amount" 
+                                           name="amount" 
+                                           min="100000" 
+                                           max="{{ wallet.balance }}" 
+                                           step="50000"
+                                           placeholder="Nhập số tiền"
+                                           required>
+                                    <span class="input-group-text">VND</span>
+                                </div>
+                                <div class="form-text">
+                                    Số tiền tối thiểu: 100,000 VND - Tối đa: {{ wallet.balance | currency }} VND
+                                </div>
+                                <div id="amountText" class="text-muted mt-2"></div>
+                            </div>
+                            
+                            <!-- Quick Amount Buttons -->
+                            <div class="mb-4">
+                                <label class="form-label">Chọn nhanh:</label><br>
+                                {% set quick_amounts = [100000, 500000, 1000000, 2000000, 5000000] %}
+                                {% for amount in quick_amounts %}
+                                    {% if amount <= wallet.balance %}
+                                        <button type="button" class="btn btn-outline-primary me-2 mb-2" onclick="setAmount({{ amount }})">
+                                            {{ amount | currency }} VND
+                                        </button>
+                                    {% endif %}
+                                {% endfor %}
+                                {% if wallet.balance > 0 %}
+                                    <button type="button" class="btn btn-outline-success mb-2" onclick="setAmount({{ wallet.balance }})">
+                                        Tất cả ({{ wallet.balance | currency }} VND)
+                                    </button>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Bank Info Reminder -->
+                            <div class="alert alert-warning">
+                                <h6><i class="fas fa-university"></i> Thông tin nhận tiền</h6>
+                                <p class="mb-0">
+                                    Admin sẽ liên hệ với bạn để xác minh thông tin tài khoản ngân hàng trước khi chuyển tiền. 
+                                    Hãy đảm bảo số điện thoại luôn được bật.
+                                </p>
+                            </div>
+                            
+                            <!-- Confirmation -->
+                            <div class="form-check mb-4">
+                                <input class="form-check-input" type="checkbox" id="confirmTerms" required>
+                                <label class="form-check-label" for="confirmTerms">
+                                    Tôi xác nhận thông tin chính xác và đồng ý với quy trình rút tiền
+                                </label>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-danger btn-lg" id="submitBtn" disabled>
+                                    <i class="fas fa-paper-plane"></i> Gửi yêu cầu rút tiền
+                                </button>
+                                <a href="{{ url_for('view_wallet') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left"></i> Quay lại ví
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Insufficient Balance -->
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card border-warning">
+                    <div class="card-body text-center">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <h5>Số dư không đủ để rút tiền</h5>
+                        <p class="text-muted">
+                            Số dư tối thiểu để rút tiền là <strong>100,000 VND</strong><br>
+                            Bạn hiện có: <strong>{{ wallet.balance | currency }} VND</strong>
+                        </p>
+                        <p class="text-muted">
+                            Hãy tiếp tục thêm học sinh để tăng số dư trong ví!
+                        </p>
+                        <a href="{{ url_for('add_student') }}" class="btn btn-primary">
+                            <i class="fas fa-user-plus"></i> Thêm học sinh mới
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% else %}
+    <!-- Parent Role - Cannot Withdraw -->
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-info-circle fa-3x text-info mb-3"></i>
+                    <h5>Phụ huynh không thể rút tiền mặt</h5>
+                    <p class="text-muted">
+                        Điểm thưởng của bạn có thể được sử dụng để:<br>
+                        • Đăng ký khóa học cho con<br>
+                        • Mua tài liệu học tập<br>
+                        • Tham gia các hoạt động đặc biệt
+                    </p>
+                    <p class="text-muted">
+                        Số điểm hiện tại: <strong>{{ wallet.balance | currency }}</strong>
+                    </p>
+                    <button class="btn btn-info" disabled>
+                        <i class="fas fa-gift"></i> Đổi điểm (Sắp có)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Recent Withdrawal Requests -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-history"></i> Yêu cầu rút tiền gần đây</h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <a href="{{ url_for('withdrawal_history') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-list"></i> Xem lịch sử rút tiền
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Number to Vietnamese text conversion (simple version)
+function numberToVietnamese(num) {
+    if (num === 0) return "Không đồng";
+    
+    const ones = ["", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"];
+    const tens = ["", "mười", "hai mười", "ba mười", "bốn mười", "năm mười", "sáu mười", "bảy mười", "tám mười", "chín mười"];
+    
+    // Simple conversion for demonstration - in production use num2words library
+    if (num >= 1000000) {
+        const millions = Math.floor(num / 1000000);
+        const remainder = num % 1000000;
+        let result = millions + " triệu";
+        if (remainder > 0) {
+            result += " " + numberToVietnamese(remainder);
+        }
+        return result.charAt(0).toUpperCase() + result.slice(1) + " đồng";
+    }
+    
+    // Simplified version - full implementation would be more complex
+    return num.toLocaleString('vi-VN') + " đồng";
+}
+
+function setAmount(amount) {
+    document.getElementById('amount').value = amount;
+    updateAmountText();
+}
+
+function updateAmountText() {
+    const amount = document.getElementById('amount').value;
+    const amountTextDiv = document.getElementById('amountText');
+    
+    if (amount && amount > 0) {
+        amountTextDiv.innerHTML = '<strong>Bằng chữ:</strong> ' + numberToVietnamese(parseInt(amount));
+    } else {
+        amountTextDiv.innerHTML = '';
+    }
+}
+
+// Enable/disable submit button based on checkbox
+document.getElementById('confirmTerms').addEventListener('change', function() {
+    document.getElementById('submitBtn').disabled = !this.checked;
+});
+
+// Update amount text when typing
+document.getElementById('amount').addEventListener('input', updateAmountText);
+
+// Form validation
+document.getElementById('withdrawForm').addEventListener('submit', function(e) {
+    const amount = parseInt(document.getElementById('amount').value);
+    const maxAmount = {{ wallet.balance }};
+    
+    if (amount < 100000) {
+        e.preventDefault();
+        alert('Số tiền tối thiểu là 100,000 VND');
+        return;
+    }
+    
+    if (amount > maxAmount) {
+        e.preventDefault();
+        alert('Số tiền vượt quá số dư hiện có');
+        return;
+    }
+    
+    if (!confirm('Bạn có chắc chắn muốn rút ' + amount.toLocaleString('vi-VN') + ' VND?')) {
+        e.preventDefault();
+    }
+});
+
+// Format number input with thousands separator
+document.getElementById('amount').addEventListener('blur', function() {
+    const value = this.value.replace(/,/g, '');
+    if (value) {
+        this.value = parseInt(value).toLocaleString('vi-VN');
+    }
+});
+
+document.getElementById('amount').addEventListener('focus', function() {
+    this.value = this.value.replace(/,/g, '');
+});
+</script>
+{% endblock %}

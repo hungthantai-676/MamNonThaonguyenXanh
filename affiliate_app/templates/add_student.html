@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Thêm học sinh - Affiliate System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-user-plus"></i> Thêm học sinh mới
+    </h1>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Quay lại Dashboard
+    </a>
+</div>
+
+<!-- Info Card -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5><i class="fas fa-info-circle"></i> Thông tin thưởng</h5>
+            </div>
+            <div class="card-body">
+                {% if session.member_role == 'giaovien' %}
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-money-bill-wave"></i> Thưởng cho Giáo viên:</h6>
+                        <ul class="mb-0">
+                            <li><strong>2,000,000 VND</strong> cho mỗi học sinh được xác minh</li>
+                            <li><strong>10,000,000 VND</strong> thưởng mốc mỗi 5 học sinh</li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-star"></i> Thưởng cho Phụ huynh:</h6>
+                        <ul class="mb-0">
+                            <li><strong>2,000 điểm</strong> cho mỗi học sinh được xác minh</li>
+                            <li><strong>10,000 điểm</strong> thưởng mốc mỗi 5 học sinh</li>
+                            <li>Điểm có thể đổi thành khóa học cho con em</li>
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card bg-warning text-dark">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                <h6>Lưu ý quan trọng</h6>
+                <p class="small mb-0">
+                    Học sinh sẽ ở trạng thái <strong>"Chờ xác minh"</strong> cho đến khi admin xác nhận thực sự nhập học.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Student Form -->
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-graduation-cap"></i> Thông tin học sinh</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-4">
+                        <label for="name" class="form-label">
+                            <i class="fas fa-child"></i> Tên học sinh <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control form-control-lg" 
+                               id="name" 
+                               name="name" 
+                               placeholder="Nhập họ tên đầy đủ của học sinh"
+                               required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="notes" class="form-label">
+                            <i class="fas fa-sticky-note"></i> Ghi chú nội bộ
+                        </label>
+                        <textarea class="form-control" 
+                                  id="notes" 
+                                  name="notes" 
+                                  rows="3" 
+                                  placeholder="Ví dụ: Học sinh được giới thiệu qua hội chợ trường, phụ huynh quan tâm khóa học Montessori..."></textarea>
+                        <div class="form-text">
+                            Ghi chú này sẽ giúp admin hiểu rõ hơn về nguồn gốc học sinh và hỗ trợ quá trình xác minh.
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-light border">
+                        <h6><i class="fas fa-clipboard-check"></i> Quy trình tiếp theo:</h6>
+                        <ol class="mb-0">
+                            <li>Bạn gửi thông tin học sinh</li>
+                            <li>Admin xem xét và xác minh học sinh có thực sự nhập học</li>
+                            <li>Nếu được xác minh: Thưởng sẽ được cộng vào ví của bạn</li>
+                            <li>Bạn có thể theo dõi tiến độ trong mục "Học sinh của tôi"</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-paper-plane"></i> Gửi thông tin học sinh
+                        </button>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Hủy bỏ
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Help Section -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h6><i class="fas fa-question-circle"></i> Câu hỏi thường gặp</h6>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                Mất bao lâu để admin xác minh học sinh?
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Thông thường admin sẽ xác minh trong vòng 1-2 ngày làm việc sau khi học sinh chính thức nhập học và hoàn tất thủ tục.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                Tại sao cần có ghi chú nội bộ?
+                            </button>
+                        </h2>
+                        <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Ghi chú giúp admin hiểu rõ nguồn gốc học sinh, từ đó xác minh chính xác và nhanh chóng hơn. Điều này đảm bảo tính minh bạch trong hệ thống thưởng.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                Có thể thêm nhiều học sinh cùng lúc không?
+                            </button>
+                        </h2>
+                        <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Hiện tại cần thêm từng học sinh một để đảm bảo thông tin chính xác. Bạn có thể quay lại trang này để thêm học sinh tiếp theo.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto focus on name input
+document.getElementById('name').focus();
+
+// Character counter for notes
+const notesTextarea = document.getElementById('notes');
+notesTextarea.addEventListener('input', function() {
+    const length = this.value.length;
+    const maxLength = 500;
+    
+    if (length > maxLength) {
+        this.value = this.value.substring(0, maxLength);
+    }
+});
+</script>
+{% endblock %}

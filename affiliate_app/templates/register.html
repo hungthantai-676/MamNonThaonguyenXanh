@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Đăng ký - Affiliate System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card mt-3">
+                <div class="card-header text-center bg-success text-white">
+                    <h4><i class="fas fa-user-plus"></i> Đăng ký thành viên Affiliate</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="full_name" class="form-label">Họ tên <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="full_name" name="full_name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                                    <input type="tel" class="form-control" id="phone" name="phone" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Mật khẩu <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password" name="password" required>
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
+                                    <i class="fas fa-eye" id="passwordToggle"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="role" class="form-label">Vai trò <span class="text-danger">*</span></label>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="">-- Bạn là --</option>
+                                <option value="giaovien">Giáo viên mầm non (Nhận tiền mặt VND)</option>
+                                <option value="phuhuynh">Phụ huynh đại sứ thương hiệu (Nhận điểm thưởng)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="industry" class="form-label">Ngành nghề (nếu có)</label>
+                            <input type="text" class="form-control" id="industry" name="industry" placeholder="Ví dụ: Giáo viên mầm non, Kinh doanh...">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Địa chỉ (không bắt buộc)</label>
+                            <textarea class="form-control" id="address" name="address" rows="2" placeholder="Địa chỉ liên hệ"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="referrer_id" class="form-label">ID người giới thiệu (nếu có)</label>
+                            <input type="number" class="form-control" id="referrer_id" name="referrer_id" placeholder="Để trống nếu tự đăng ký">
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-user-plus"></i> Đăng ký và tạo ví
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    <small>
+                        Đã có tài khoản? 
+                        <a href="{{ url_for('login') }}" class="text-decoration-none">Đăng nhập ngay</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword() {
+    var passwordInput = document.getElementById("password");
+    var toggleIcon = document.getElementById("passwordToggle");
+    
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        toggleIcon.classList.remove("fa-eye");
+        toggleIcon.classList.add("fa-eye-slash");
+    } else {
+        passwordInput.type = "password";
+        toggleIcon.classList.remove("fa-eye-slash");
+        toggleIcon.classList.add("fa-eye");
+    }
+}
+</script>
+{% endblock %}

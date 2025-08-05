@@ -1,0 +1,131 @@
+Bước 1: Danh sách các thư viện cần cài đặt
+Bạn hãy tạo file requirements.txt với nội dung sau để Replit hoặc Hosting tự động cài:
+
+nginx
+Sao chép
+Chỉnh sửa
+Flask
+Flask_SQLAlchemy
+✅ Bước 2: Tạo cấu trúc thư mục như sau
+arduino
+Sao chép
+Chỉnh sửa
+/affiliate_app/
+├── app.py
+├── templates/
+│   └── register.html
+├── requirements.txt
+✅ Bước 3: Code đầy đủ cho phần đăng ký và tạo ví tự động
+📁 app.py
+python
+Sao chép
+Chỉnh sửa
+from flask import Flask, render_template, request, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///affiliate.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+# ======================= Models ============================
+class Member(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    full_name = db.Column(db.String(100), nullable=False)
+    phone = db.Column(db.String(20), nullable=False, unique=True)
+    email = db.Column(db.String(100), nullable=False, unique=True)
+    password = db.Column(db.String(200), nullable=False)
+    role = db.Column(db.String(20), nullable=False)  # 'giaovien' | 'phuhuynh'
+    industry = db.Column(db.String(100))
+    address = db.Column(db.String(200))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    wallet = db.relationship('Wallet', backref='member', uselist=False)
+
+class Wallet(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    member_id = db.Column(db.Integer, db.ForeignKey('member.id'), nullable=False)
+    balance = db.Column(db.Integer, default=0)  # tiền hoặc điểm
+    history = db.Column(db.Text, default='')
+
+# ======================= Routes ============================
+@app.route('/')
+def home():
+    return redirect(url_for('register'))
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        data = request.form
+        new_member = Member(
+            full_name=data['full_name'],
+            phone=data['phone'],
+            email=data['email'],
+            password=data['password'],
+            role=data['role'],
+            industry=data.get('industry', ''),
+            address=data.get('address', '')
+        )
+        db.session.add(new_member)
+        db.session.commit()
+
+        # Tạo ví tự động
+        wallet = Wallet(member_id=new_member.id)
+        db.session.add(wallet)
+        db.session.commit()
+
+        return redirect(url_for('success', member_id=new_member.id))
+    return render_template('register.html')
+
+@app.route('/success/<int:member_id>')
+def success(member_id):
+    member = Member.query.get(member_id)
+    return f"🎉 Đăng ký thành công cho {member.full_name}! Ví đã được tạo với số dư: 0"
+
+# ======================= Khởi tạo ============================
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)
+📄 templates/register.html (Giao diện đẹp, có hiện/ẩn mật khẩu)
+html
+Sao chép
+Chỉnh sửa
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Đăng ký thành viên</title>
+</head>
+<body>
+  <h2>Đăng ký Affiliate</h2>
+  <form method="POST">
+    <input name="full_name" placeholder="Họ tên" required><br>
+    <input name="phone" placeholder="Số điện thoại" required><br>
+    <input name="email" placeholder="Email" required><br>
+    <input type="password" name="password" id="password" placeholder="Mật khẩu" required>
+    <input type="checkbox" onclick="togglePassword()"> Hiện mật khẩu<br>
+    <select name="role" required>
+      <option value="">-- Bạn là --</option>
+      <option value="giaovien">Giáo viên mầm non</option>
+      <option value="phuhuynh">Phụ huynh đại sứ thương hiệu</option>
+    </select><br>
+    <input name="industry" placeholder="Ngành nghề (nếu có)"><br>
+    <input name="address" placeholder="Địa chỉ (không bắt buộc)"><br>
+    <button type="submit">Đăng ký</button>
+  </form>
+
+  <script>
+    function togglePassword() {
+      var x = document.getElementById("password");
+      x.type = x.type === "password" ? "text" : "password";
+    }
+  </script>
+</body>
+</html>
+✅ Kết quả sau khi chạy:
+Người dùng đăng ký => hệ thống tạo thành viên & ví tự động
+
+Vai trò được xác định ngay từ đầu (giáo viên / phụ huynh)
+
+Chuẩn bị cho phần tính thưởng + sơ đồ cây + ví điện tử + rút tiền phía sau

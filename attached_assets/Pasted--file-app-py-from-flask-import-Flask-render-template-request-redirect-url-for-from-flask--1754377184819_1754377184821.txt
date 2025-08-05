@@ -1,0 +1,151 @@
+# 📁 file: app.py
+from flask import Flask, render_template, request, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+from num2words import num2words
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///affiliate.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = 'super-secret'
+db = SQLAlchemy(app)
+
+# ======================= Models ============================
+class Member(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    full_name = db.Column(db.String(100), nullable=False)
+    phone = db.Column(db.String(20), nullable=False, unique=True)
+    email = db.Column(db.String(100), nullable=False, unique=True)
+    password = db.Column(db.String(200), nullable=False)
+    role = db.Column(db.String(20), nullable=False)  # 'giaovien' | 'phuhuynh'
+    industry = db.Column(db.String(100))
+    address = db.Column(db.String(200))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    referrer_id = db.Column(db.Integer, db.ForeignKey('member.id'))
+    referred = db.relationship('Member', backref=db.backref('referrer', remote_side=[id]), lazy='dynamic')
+    wallet = db.relationship('Wallet', backref='member', uselist=False)
+
+class Wallet(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    member_id = db.Column(db.Integer, db.ForeignKey('member.id'), nullable=False)
+    balance = db.Column(db.Integer, default=0)
+    history = db.Column(db.Text, default='')
+
+class Student(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    confirmed = db.Column(db.Boolean, default=False)
+    added_by = db.Column(db.Integer, db.ForeignKey('member.id'), nullable=False)
+
+class WithdrawalRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    member_id = db.Column(db.Integer, db.ForeignKey('member.id'), nullable=False)
+    amount = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.String(20), default='pending')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+# ======================= Utility ============================
+def num2vn(n):
+    return num2words(n, lang='vi').capitalize() + ' đồng'
+
+# ======================= Routes ============================
+@app.route('/')
+def home():
+    return redirect(url_for('register'))
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        data = request.form
+        new_member = Member(
+            full_name=data['full_name'], phone=data['phone'], email=data['email'],
+            password=data['password'], role=data['role'], industry=data.get('industry', ''),
+            address=data.get('address', ''), referrer_id=data.get('referrer_id')
+        )
+        db.session.add(new_member)
+        db.session.commit()
+        wallet = Wallet(member_id=new_member.id)
+        db.session.add(wallet)
+        db.session.commit()
+        return redirect(url_for('view_wallet', member_id=new_member.id))
+    return render_template('register.html')
+
+@app.route('/wallet/<int:member_id>')
+def view_wallet(member_id):
+    member = Member.query.get(member_id)
+    wallet = member.wallet
+    balance_text = num2vn(wallet.balance)
+    downline = Member.query.filter_by(referrer_id=member.id).all()
+    return render_template('wallet.html', member=member, wallet=wallet, balance_text=balance_text, downline=downline)
+
+@app.route('/add-student/<int:member_id>', methods=['GET', 'POST'])
+def add_student(member_id):
+    if request.method == 'POST':
+        name = request.form['name']
+        student = Student(name=name, added_by=member_id)
+        db.session.add(student)
+        db.session.commit()
+        return "Tuyển sinh thành công, chờ xác nhận từ admin"
+    return render_template('add_student.html', member_id=member_id)
+
+@app.route('/admin/students')
+def admin_students():
+    students = Student.query.filter_by(confirmed=False).all()
+    return render_template('admin_students.html', students=students)
+
+@app.route('/admin/confirm/<int:student_id>')
+def confirm_student(student_id):
+    student = Student.query.get(student_id)
+    if not student.confirmed:
+        student.confirmed = True
+        db.session.commit()
+        member = Member.query.get(student.added_by)
+        wallet = member.wallet
+        amount = 2000000 if member.role == 'giaovien' else 2000
+        wallet.balance += amount
+        wallet.history += f"{datetime.now().strftime('%d/%m/%Y')} - Tuyển {student.name} +{amount}VND\n"
+        count = Student.query.filter_by(added_by=member.id, confirmed=True).count()
+        if count % 5 == 0:
+            bonus = 10000000 if member.role == 'giaovien' else 10000
+            wallet.balance += bonus
+            wallet.history += f"🎉 Thưởng {count} HS +{bonus}VND\n"
+        db.session.commit()
+    return redirect('/admin/students')
+
+@app.route('/withdraw/<int:member_id>', methods=['GET', 'POST'])
+def withdraw(member_id):
+    wallet = Wallet.query.filter_by(member_id=member_id).first()
+    if request.method == 'POST':
+        amount = int(request.form['amount'])
+        if amount > wallet.balance:
+            return "❌ Số dư không đủ"
+        req = WithdrawalRequest(member_id=member_id, amount=amount)
+        db.session.add(req)
+        db.session.commit()
+        return "✅ Đã gửi yêu cầu rút tiền"
+    return render_template('withdraw.html', member_id=member_id, balance=wallet.balance)
+
+@app.route('/admin/withdrawals')
+def admin_withdrawals():
+    requests = WithdrawalRequest.query.filter_by(status='pending').all()
+    return render_template('admin_withdrawals.html', requests=requests)
+
+@app.route('/admin/approve/<int:req_id>')
+def approve_request(req_id):
+    req = WithdrawalRequest.query.get(req_id)
+    if req.status == 'pending':
+        wallet = Wallet.query.filter_by(member_id=req.member_id).first()
+        if wallet.balance >= req.amount:
+            wallet.balance -= req.amount
+            wallet.history += f"{datetime.now().strftime('%d/%m/%Y')} - Rút tiền -{req.amount}VND\n"
+            req.status = 'approved'
+            db.session.commit()
+            return "✅ Duyệt thành công"
+        return "❌ Số dư không đủ"
+    return "❌ Yêu cầu không hợp lệ"
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)

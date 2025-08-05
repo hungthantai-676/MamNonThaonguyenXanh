@@ -1,0 +1,97 @@
+thiết kế lại toàn bộ hệ thống Affiliate module cho Trường Mầm Non Thảo Nguyên Xanh bằng Python + Flask với kiến trúc chuyên nghiệp, dễ triển khai, dễ bảo trì, dễ dùng trên cả Replit lẫn hosting riêng.
+
+🔧 Cấu trúc hệ thống Affiliate mới
+🧱 1. Công nghệ & công cụ
+Thành phần	Lựa chọn	Ghi chú
+Backend	Python + Flask	Dễ triển khai, dễ học, dễ bảo trì
+Frontend	HTML + Bootstrap	Đơn giản, responsive, dễ dùng
+Database	SQLite (hoặc PostgreSQL)	SQLite dev test, PostgreSQL khi deploy
+Authentication	Flask-Login + 2FA	Đăng nhập, bảo mật, xác thực 2 lớp
+Email	SMTP (Gmail API)	Gửi mã xác thực / quên mật khẩu
+Tree tracking	Nested Sets / Adjacency	Sơ đồ cây tuyến dưới
+
+📦 Các module chức năng
+1. Đăng ký thành viên (Form đầy đủ)
+Trường bắt buộc: Họ tên, SĐT, Email, Mật khẩu
+
+Trường không bắt buộc: Địa chỉ, Ngành nghề
+
+Có thể đăng ký với tư cách:
+
+Giáo viên mầm non (Affiliate cấp 1)
+
+Phụ huynh đại sứ thương hiệu (Affiliate cấp 2)
+
+Email được xác thực, nếu quên mật khẩu có thể reset tự động.
+
+Tự động tạo ví điện tử cho thành viên.
+
+2. Hệ thống thưởng 2 cấp
+➤ Giáo viên:
+Tuyển 1 học sinh → +2.000.000đ
+
+Cứ 5 học sinh → +10.000.000đ (bonus)
+
+➤ Phụ huynh:
+Tuyển 1 học sinh → +2.000 điểm (~2tr)
+
+5 học sinh → +10.000 điểm (~10tr)
+
+Điểm dùng đổi khóa học, không quy ra tiền mặt.
+
+3. Ví tiền cá nhân
+Hiển thị số dư (tiền / điểm)
+
+Hiển thị danh sách người giới thiệu tuyến dưới (cây)
+
+Hiển thị lịch sử cộng / trừ tiền
+
+Nút yêu cầu rút tiền:
+
+Nhập số tiền cần rút
+
+Admin sẽ xác nhận thủ công
+
+Khi xác nhận xong thì trừ ví
+
+4. Quản trị hệ thống
+Quản trị phân quyền:
+
+Super Admin: xem toàn bộ thông tin, xác nhận giao dịch
+
+Nhân viên quản lý: xem được danh sách người dùng không thấy số dư
+
+Xem thông tin ví, danh sách thành viên, sơ đồ cây
+
+Giao diện đơn giản, dễ hiểu
+
+5. Tính năng bảo mật
+Đăng nhập xác thực 2 lớp (email code OTP)
+
+Mắt hiện/ẩn mật khẩu khi nhập
+
+Bảo mật mật khẩu bằng mã hóa (bcrypt)
+
+Session tự động hết hạn nếu không hoạt động
+
+🔩 Triển khai kỹ thuật
+Cấu trúc thư mục:
+
+pgsql
+Sao chép
+Chỉnh sửa
+/affiliate_app/
+├── app.py
+├── models.py
+├── routes/
+│   ├── auth.py
+│   ├── dashboard.py
+│   └── admin.py
+├── templates/
+│   ├── login.html
+│   ├── register.html
+│   ├── dashboard.html
+│   └── admin.html
+├── static/
+├── database.db
+└── config.py

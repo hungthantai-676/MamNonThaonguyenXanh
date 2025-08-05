@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý thành viên - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-users"></i> Quản lý thành viên
+        <span class="badge bg-danger">ADMIN</span>
+    </h1>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Quay lại Dashboard
+    </a>
+</div>
+
+<!-- Stats Summary -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white text-center">
+            <div class="card-body">
+                <h3>{{ members | length }}</h3>
+                <small>Tổng thành viên</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white text-center">
+            <div class="card-body">
+                <h3>{{ members | selectattr('role', 'equalto', 'giaovien') | list | length }}</h3>
+                <small>Giáo viên</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white text-center">
+            <div class="card-body">
+                <h3>{{ members | selectattr('role', 'equalto', 'phuhuynh') | list | length }}</h3>
+                <small>Phụ huynh</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark text-center">
+            <div class="card-body">
+                <h3>{{ members | selectattr('is_admin') | list | length }}</h3>
+                <small>Admin</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Members Table -->
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-list"></i> Danh sách thành viên</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Thông tin cá nhân</th>
+                        <th>Vai trò</th>
+                        <th>Ví điện tử</th>
+                        <th>Thống kê</th>
+                        <th>Ngày tham gia</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                        {% set wallet = member.wallet %}
+                        {% set student_count = Student.query.filter_by(added_by=member.id, confirmed=True).count() %}
+                        {% set pending_count = Student.query.filter_by(added_by=member.id, confirmed=False).count() %}
+                        {% set downline_count = Member.query.filter_by(referrer_id=member.id).count() %}
+                        <tr {% if member.is_admin %}class="table-warning"{% endif %}>
+                            <td>
+                                <strong>{{ member.id }}</strong>
+                                {% if member.is_admin %}
+                                    <br><span class="badge bg-danger">ADMIN</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ member.full_name }}</strong><br>
+                                <small class="text-muted">
+                                    <i class="fas fa-phone"></i> {{ member.phone }}<br>
+                                    <i class="fas fa-envelope"></i> {{ member.email }}
+                                </small>
+                                {% if member.industry %}
+                                    <br><small class="text-info">{{ member.industry }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if member.role == 'giaovien' %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-chalkboard-teacher"></i> Giáo viên
+                                    </span>
+                                {% elif member.role == 'phuhuynh' %}
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-user-friends"></i> Phụ huynh
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ member.role }}</span>
+                                {% endif %}
+                                
+                                {% if member.referrer_id %}
+                                    {% set referrer = Member.query.get(member.referrer_id) %}
+                                    <br><small class="text-muted">
+                                        Giới thiệu bởi: 
+                                        {% if referrer %}
+                                            {{ referrer.full_name }} (ID: {{ referrer.id }})
+                                        {% else %}
+                                            ID: {{ member.referrer_id }}
+                                        {% endif %}
+                                    </small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if wallet %}
+                                    <strong class="text-primary">{{ wallet.balance | currency }}</strong>
+                                    {% if member.role == 'giaovien' %}
+                                        <small class="text-muted d-block">VND</small>
+                                    {% else %}
+                                        <small class="text-muted d-block">điểm</small>
+                                    {% endif %}
+                                    
+                                    {% if wallet.balance > 0 %}
+                                        <small class="text-muted d-block">
+                                            {{ wallet.balance | num2vn }}
+                                        </small>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">Chưa có ví</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="small">
+                                    <div class="text-success">
+                                        <i class="fas fa-graduation-cap"></i> {{ student_count }} học sinh
+                                    </div>
+                                    {% if pending_count > 0 %}
+                                        <div class="text-warning">
+                                            <i class="fas fa-clock"></i> {{ pending_count }} chờ xác minh
+                                        </div>
+                                    {% endif %}
+                                    {% if downline_count > 0 %}
+                                        <div class="text-info">
+                                            <i class="fas fa-users"></i> {{ downline_count }} tuyến dưới
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Milestone progress -->
+                                    {% if student_count > 0 %}
+                                        {% set milestone_progress = student_count % 5 %}
+                                        {% set next_milestone = (student_count // 5 + 1) * 5 %}
+                                        <div class="progress mt-1" style="height: 4px;">
+                                            <div class="progress-bar bg-warning" style="width: {{ milestone_progress * 20 }}%"></div>
+                                        </div>
+                                        <small class="text-muted">{{ milestone_progress }}/5 → mốc {{ next_milestone }}</small>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <small>
+                                    {{ member.created_at.strftime('%d/%m/%Y') }}<br>
+                                    <span class="text-muted">{{ member.created_at.strftime('%H:%M') }}</span>
+                                </small>
+                            </td>
+                            <td>
+                                <div class="btn-group-vertical" role="group">
+                                    <button class="btn btn-outline-primary btn-sm" 
+                                            onclick="viewMemberDetails({{ member.id }})">
+                                        <i class="fas fa-eye"></i> Chi tiết
+                                    </button>
+                                    {% if wallet %}
+                                        <button class="btn btn-outline-success btn-sm" 
+                                                onclick="viewWalletHistory({{ member.id }})">
+                                            <i class="fas fa-wallet"></i> Ví
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="text-muted">
+            Tổng cộng: {{ members | length }} thành viên
+        </div>
+    </div>
+</div>
+
+<!-- Top Performers -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white">
+                <h6><i class="fas fa-trophy"></i> Top Giáo viên (theo học sinh)</h6>
+            </div>
+            <div class="card-body">
+                {% set top_teachers = members | selectattr('role', 'equalto', 'giaovien') | list %}
+                {% if top_teachers %}
+                    <div class="list-group list-group-flush">
+                        {% for teacher in top_teachers[:5] %}
+                            {% set student_count = Student.query.filter_by(added_by=teacher.id, confirmed=True).count() %}
+                            {% if student_count > 0 %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ teacher.full_name }}</strong><br>
+                                        <small class="text-muted">ID: {{ teacher.id }}</small>
+                                    </div>
+                                    <span class="badge bg-success">{{ student_count }} HS</span>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">Chưa có dữ liệu</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h6><i class="fas fa-users"></i> Top Phụ huynh (theo điểm)</h6>
+            </div>
+            <div class="card-body">
+                {% set top_parents = members | selectattr('role', 'equalto', 'phuhuynh') | list %}
+                {% if top_parents %}
+                    <div class="list-group list-group-flush">
+                        {% for parent in top_parents[:5] %}
+                            {% if parent.wallet and parent.wallet.balance > 0 %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ parent.full_name }}</strong><br>
+                                        <small class="text-muted">ID: {{ parent.id }}</small>
+                                    </div>
+                                    <span class="badge bg-info">{{ parent.wallet.balance }} điểm</span>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">Chưa có dữ liệu</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Member Details Modal -->
+<div class="modal fade" id="memberModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chi tiết thành viên</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="memberModalBody">
+                <!-- Content loaded via JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function viewMemberDetails(memberId) {
+    // Find member data from the current page
+    const rows = document.querySelectorAll('tbody tr');
+    let memberData = null;
+    
+    rows.forEach(row => {
+        const idCell = row.cells[0];
+        if (idCell.textContent.trim().startsWith(memberId.toString())) {
+            memberData = {
+                id: memberId,
+                name: row.cells[1].querySelector('strong').textContent,
+                phone: row.cells[1].textContent.match(/📞\s*(.+)/)?.[1] || 'N/A',
+                email: row.cells[1].textContent.match(/✉️\s*(.+)/)?.[1] || 'N/A',
+                role: row.cells[2].textContent.trim(),
+                balance: row.cells[3].textContent.trim(),
+                stats: row.cells[4].textContent.trim(),
+                joinDate: row.cells[5].textContent.trim()
+            };
+        }
+    });
+    
+    if (memberData) {
+        document.getElementById('memberModalBody').innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Thông tin cá nhân</h6>
+                    <table class="table table-sm">
+                        <tr><td><strong>ID:</strong></td><td>${memberData.id}</td></tr>
+                        <tr><td><strong>Họ tên:</strong></td><td>${memberData.name}</td></tr>
+                        <tr><td><strong>Điện thoại:</strong></td><td>${memberData.phone}</td></tr>
+                        <tr><td><strong>Email:</strong></td><td>${memberData.email}</td></tr>
+                        <tr><td><strong>Vai trò:</strong></td><td>${memberData.role}</td></tr>
+                        <tr><td><strong>Ngày tham gia:</strong></td><td>${memberData.joinDate}</td></tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h6>Số dư & Thống kê</h6>
+                    <table class="table table-sm">
+                        <tr><td><strong>Số dư ví:</strong></td><td>${memberData.balance}</td></tr>
+                        <tr><td colspan="2"><strong>Thống kê:</strong><br>${memberData.stats}</td></tr>
+                    </table>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <a href="/admin/students?member=${memberId}" class="btn btn-primary">Xem học sinh</a>
+                <a href="/admin/withdrawals?member=${memberId}" class="btn btn-success">Xem rút tiền</a>
+            </div>
+        `;
+        
+        new bootstrap.Modal(document.getElementById('memberModal')).show();
+    }
+}
+
+function viewWalletHistory(memberId) {
+    // Could implement detailed wallet history view
+    alert(`Xem lịch sử ví chi tiết cho thành viên ID: ${memberId}\n\nTính năng sẽ được triển khai trong phiên bản tiếp theo.`);
+}
+
+// Auto refresh every 5 minutes
+setInterval(function() {
+    console.log('Checking for member updates...');
+    // Could implement AJAX update for member stats
+}, 300000);
+
+// Search functionality
+function addSearchBox() {
+    const cardHeader = document.querySelector('.card-header h5');
+    if (cardHeader) {
+        cardHeader.innerHTML += `
+            <div class="float-end">
+                <input type="text" id="memberSearch" class="form-control form-control-sm" 
+                       placeholder="Tìm kiếm thành viên..." style="width: 200px;">
+            </div>
+        `;
+        
+        document.getElementById('memberSearch').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+    }
+}
+
+// Add search box when page loads
+document.addEventListener('DOMContentLoaded', addSearchBox);
+</script>
+{% endblock %}

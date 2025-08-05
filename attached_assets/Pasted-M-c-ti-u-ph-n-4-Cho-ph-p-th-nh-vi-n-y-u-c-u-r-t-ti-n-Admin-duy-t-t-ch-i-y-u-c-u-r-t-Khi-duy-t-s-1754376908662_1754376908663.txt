@@ -1,0 +1,110 @@
+Mục tiêu phần 4
+Cho phép thành viên yêu cầu rút tiền
+
+Admin duyệt/ từ chối yêu cầu rút
+
+Khi duyệt, số tiền tự động trừ trong ví và ghi lịch sử giao dịch
+
+Quản trị phân quyền rõ:
+
+admin có thể xem và xử lý mọi thứ
+
+member chỉ xem ví của mình
+
+🧱 Cập nhật Database
+✅ Tạo bảng yêu cầu rút tiền:
+python
+Sao chép
+Chỉnh sửa
+class WithdrawalRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    member_id = db.Column(db.Integer, db.ForeignKey('member.id'), nullable=False)
+    amount = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.String(20), default='pending')  # pending | approved | rejected
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+📄 Route thành viên tạo yêu cầu rút tiền
+python
+Sao chép
+Chỉnh sửa
+@app.route('/withdraw/<int:member_id>', methods=['GET', 'POST'])
+def withdraw(member_id):
+    member = Member.query.get(member_id)
+    wallet = member.wallet
+    if request.method == 'POST':
+        amount = int(request.form['amount'])
+        if amount <= 0 or amount > wallet.balance:
+            return "❌ Số tiền không hợp lệ!"
+
+        req = WithdrawalRequest(member_id=member.id, amount=amount)
+        db.session.add(req)
+        db.session.commit()
+        return "✅ Đã gửi yêu cầu rút tiền, chờ admin duyệt!"
+    
+    return render_template('withdraw.html', member=member, wallet=wallet)
+📄 Giao diện withdraw.html
+html
+Sao chép
+Chỉnh sửa
+<h2>📤 Yêu cầu rút tiền</h2>
+<p>Số dư hiện tại: {{ wallet.balance }} VND</p>
+<form method="POST">
+  <input name="amount" type="number" placeholder="Số tiền muốn rút" required>
+  <button type="submit">Gửi yêu cầu</button>
+</form>
+📄 Admin duyệt yêu cầu
+python
+Sao chép
+Chỉnh sửa
+@app.route('/admin/withdrawals')
+def admin_withdrawals():
+    requests = WithdrawalRequest.query.filter_by(status='pending').all()
+    return render_template('admin_withdrawals.html', requests=requests)
+
+@app.route('/admin/approve/<int:req_id>')
+def approve_request(req_id):
+    req = WithdrawalRequest.query.get(req_id)
+    if req and req.status == 'pending':
+        wallet = Wallet.query.filter_by(member_id=req.member_id).first()
+        if wallet.balance >= req.amount:
+            wallet.balance -= req.amount
+            wallet.history += f"{datetime.now().strftime('%d/%m/%Y')} - Rút tiền -{req.amount} VND\n"
+            req.status = 'approved'
+            db.session.commit()
+            return "✅ Đã duyệt và trừ tiền trong ví"
+        else:
+            return "❌ Số dư không đủ"
+    return "❌ Yêu cầu không hợp lệ"
+📄 admin_withdrawals.html
+html
+Sao chép
+Chỉnh sửa
+<h2>📥 Danh sách yêu cầu rút tiền</h2>
+<ul>
+  {% for r in requests %}
+    <li>Thành viên: {{ r.member_id }} | Số tiền: {{ r.amount }} VND
+      - <a href="/admin/approve/{{ r.id }}">✅ Duyệt</a>
+    </li>
+  {% endfor %}
+</ul>
+✅ Quản lý phân quyền
+Cách đơn giản trước mắt:
+Giao diện admin chỉ có link riêng /admin/* không ai biết.
+
+Sau này có thể tích hợp Flask-Login + role='admin' để kiểm soát session tốt hơn.
+
+✅ Kiểm soát log & minh bạch
+Mọi lần rút tiền đều được lưu vào bảng WithdrawalRequest
+
+Ví ghi lại lịch sử giao dịch rõ ràng
+
+Admin kiểm tra được từng giao dịch
+
+🎯 Kết quả sau phần 4:
+ Thành viên có thể yêu cầu rút tiền
+
+ Admin duyệt, trừ ví
+
+ Lưu log giao dịch minh bạch
+
+ Quản trị dễ, có thể mở rộng phân quyền mạnh hơn
+
