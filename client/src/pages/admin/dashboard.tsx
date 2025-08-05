@@ -90,6 +90,16 @@ export default function AdminDashboard() {
   const [logoUrl, setLogoUrl] = useState("");
   const [bannerUrl, setBannerUrl] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
+  
+  // Dynamic media lists
+  const [mediaImages, setMediaImages] = useState([
+    { id: 1, url: '/images/default-image-1.jpg', name: 'Ảnh mặc định 1' },
+    { id: 2, url: '/images/default-image-2.jpg', name: 'Ảnh mặc định 2' }
+  ]);
+  const [mediaVideos, setMediaVideos] = useState([
+    { id: 1, url: '/videos/default-video-1.mp4', name: 'Video mặc định 1' },
+    { id: 2, url: '/videos/default-video-2.mp4', name: 'Video mặc định 2' }
+  ]);
 
   // Edit states
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
@@ -424,6 +434,103 @@ export default function AdminDashboard() {
     }
   };
 
+  // Add new image function
+  const addNewImage = async (file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await fetch('/api/admin/upload-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const result = await response.json();
+      
+      if (result.imageUrl) {
+        const newImage = {
+          id: Date.now(),
+          url: result.imageUrl,
+          name: file.name || `Ảnh ${mediaImages.length + 1}`
+        };
+        setMediaImages(prev => [...prev, newImage]);
+        
+        toast({
+          title: "Thành công",
+          description: "Đã thêm ảnh mới",
+        });
+      }
+    } catch (error) {
+      console.error('Add image error:', error);
+      toast({
+        title: "Lỗi",
+        description: "Không thể thêm ảnh mới",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Add new video function
+  const addNewVideo = async (file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('video', file);
+
+      const response = await fetch('/api/admin/upload-video', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const result = await response.json();
+      
+      if (result.videoUrl) {
+        const newVideo = {
+          id: Date.now(),
+          url: result.videoUrl,
+          name: file.name || `Video ${mediaVideos.length + 1}`
+        };
+        setMediaVideos(prev => [...prev, newVideo]);
+        
+        toast({
+          title: "Thành công",
+          description: "Đã thêm video mới",
+        });
+      }
+    } catch (error) {
+      console.error('Add video error:', error);
+      toast({
+        title: "Lỗi",
+        description: "Không thể thêm video mới",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Remove media functions
+  const removeImage = (id: number) => {
+    setMediaImages(prev => prev.filter(img => img.id !== id));
+    toast({
+      title: "Đã xóa",
+      description: "Ảnh đã được xóa",
+    });
+  };
+
+  const removeVideo = (id: number) => {
+    setMediaVideos(prev => prev.filter(vid => vid.id !== id));
+    toast({
+      title: "Đã xóa", 
+      description: "Video đã được xóa",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm border-b">
@@ -517,10 +624,11 @@ export default function AdminDashboard() {
 
           <TabsContent value="media">
             <div className="space-y-6">
+              {/* Logo và Banner */}
               <Card>
                 <CardHeader>
-                  <CardTitle>🖼️ Quản lý ảnh và video</CardTitle>
-                  <CardDescription>Upload ảnh logo, banner và video giới thiệu</CardDescription>
+                  <CardTitle>🖼️ Logo và Banner</CardTitle>
+                  <CardDescription>Quản lý logo trường và banner trang chủ</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-2 gap-6">
@@ -557,24 +665,123 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* Thư viện ảnh */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <div>
-                    <Label>🎬 Video giới thiệu</Label>
-                    <div className="mt-2 space-y-2">
-                      <Input
-                        type="file"
-                        accept="video/*"
-                        onChange={handleVideoUpload}
-                        className="cursor-pointer"
-                      />
-                      {videoUrl && (
-                        <div className="border rounded-lg p-2">
-                          <video controls className="max-w-full h-32">
-                            <source src={videoUrl} type="video/mp4" />
-                            Trình duyệt không hỗ trợ video.
-                          </video>
+                    <CardTitle>📸 Thư viện ảnh ({mediaImages.length})</CardTitle>
+                    <CardDescription>Quản lý tất cả hình ảnh của trường</CardDescription>
+                  </div>
+                  <div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) addNewImage(file);
+                      }}
+                      className="hidden"
+                      id="add-image-input"
+                    />
+                    <Button 
+                      onClick={() => document.getElementById('add-image-input')?.click()}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      ➕ Thêm ảnh mới
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-3 gap-4">
+                    {mediaImages.map((image) => (
+                      <div key={image.id} className="border rounded-lg p-3 space-y-2">
+                        <img 
+                          src={image.url} 
+                          alt={image.name} 
+                          className="w-full h-32 object-cover rounded"
+                        />
+                        <p className="text-sm font-medium truncate">{image.name}</p>
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => navigator.clipboard.writeText(image.url)}
+                          >
+                            📋 Copy URL
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="destructive"
+                            onClick={() => removeImage(image.id)}
+                          >
+                            🗑️ Xóa
+                          </Button>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Thư viện video */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <div>
+                    <CardTitle>🎬 Thư viện video ({mediaVideos.length})</CardTitle>
+                    <CardDescription>Quản lý tất cả video của trường</CardDescription>
+                  </div>
+                  <div>
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) addNewVideo(file);
+                      }}
+                      className="hidden"
+                      id="add-video-input"
+                    />
+                    <Button 
+                      onClick={() => document.getElementById('add-video-input')?.click()}
+                      className="bg-purple-600 hover:bg-purple-700"
+                    >
+                      ➕ Thêm video mới
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4">
+                    {mediaVideos.map((video) => (
+                      <div key={video.id} className="border rounded-lg p-3 space-y-2">
+                        <video 
+                          controls 
+                          className="w-full h-32 rounded"
+                        >
+                          <source src={video.url} type="video/mp4" />
+                          Trình duyệt không hỗ trợ video.
+                        </video>
+                        <p className="text-sm font-medium truncate">{video.name}</p>
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => navigator.clipboard.writeText(video.url)}
+                          >
+                            📋 Copy URL
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="destructive"
+                            onClick={() => removeVideo(video.id)}
+                          >
+                            🗑️ Xóa
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
