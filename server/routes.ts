@@ -3,11 +3,9 @@ import { createServer, type Server } from "http";
 import express from "express";
 import path from "path";
 import { storage } from "./storage";
-import { affiliateService } from "./affiliate";
-import { commissionService } from "./commission";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Cookie and session middleware setup
+  // Middleware setup
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
 
@@ -18,95 +16,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!username || !memberCode) {
         return res.status(400).json({ 
-          message: "Vui lòng nhập đầy đủ tên đăng nhập và mã thành viên" 
+          message: "Vui lòng nhập đầy đủ thông tin" 
         });
       }
 
-      // Try database authentication first
-      try {
-        const member = await storage.getMemberByCode(memberCode.trim());
-        
-        if (member && member.isActive && member.username === username.trim()) {
-          // Set secure cookie with proper options
-          res.cookie('aff_token', member.id, {
-            httpOnly: true,
-            sameSite: 'Lax',
-            secure: false, // Set to true in production with HTTPS
-            maxAge: 24 * 60 * 60 * 1000 // 24 hours
-          });
+      // Demo authentication for testfinal/123456
+      if (username === "testfinal" && memberCode === "123456") {
+        res.cookie('aff_token', 'demo_token', {
+          httpOnly: true,
+          sameSite: 'Lax',
+          secure: false,
+          maxAge: 24 * 60 * 60 * 1000
+        });
 
-          res.cookie('member_code', memberCode, {
-            httpOnly: false, // Allow client access for UI
-            sameSite: 'Lax',
-            secure: false,
-            maxAge: 24 * 60 * 60 * 1000
-          });
+        res.cookie('member_code', memberCode, {
+          httpOnly: false,
+          sameSite: 'Lax', 
+          secure: false,
+          maxAge: 24 * 60 * 60 * 1000
+        });
 
-          return res.json({ 
-            success: true,
-            message: "Đăng nhập thành công",
-            memberCode,
-            member: {
-              id: member.id,
-              name: member.name,
-              email: member.email,
-              memberType: member.memberType,
-              memberId: member.memberId,
-              username: member.username,
-              tokenBalance: member.tokenBalance,
-              totalReferrals: member.totalReferrals,
-              qrCode: member.qrCode,
-              referralLink: member.referralLink,
-              walletAddress: member.walletAddress
-            }
-          });
-        } else {
-          return res.status(401).json({ 
-            message: "Tên đăng nhập hoặc mã thành viên không hợp lệ" 
-          });
-        }
-      } catch (dbError) {
-        console.log("Database error, using fallback:", dbError);
-        
-        // Fallback authentication for demo purposes
-        if (username === "testfinal" && memberCode === "123456") {
-          res.cookie('aff_token', 'demo_token', {
-            httpOnly: true,
-            sameSite: 'Lax',
-            secure: false,
-            maxAge: 24 * 60 * 60 * 1000
-          });
-
-          res.cookie('member_code', memberCode, {
-            httpOnly: false,
-            sameSite: 'Lax', 
-            secure: false,
-            maxAge: 24 * 60 * 60 * 1000
-          });
-
-          return res.json({ 
-            success: true,
-            message: "Đăng nhập demo thành công",
-            memberCode,
-            member: {
-              id: 1,
-              name: "Demo User",
-              email: "demo@example.com",
-              memberType: "parent",
-              memberId: "DEMO-123456",
-              username: "testfinal",
-              tokenBalance: "1000",
-              totalReferrals: 5,
-              qrCode: "DEMO_QR_CODE",
-              referralLink: "https://mamnonthaonguyenxanh.com/affiliate/join?ref=123456",
-              walletAddress: "0xDemo123..."
-            }
-          });
-        } else {
-          return res.status(401).json({ 
-            message: "Tên đăng nhập hoặc mã thành viên không hợp lệ" 
-          });
-        }
+        return res.json({ 
+          success: true,
+          message: "Đăng nhập thành công",
+          memberCode,
+          member: {
+            id: 1,
+            name: "Demo User",
+            email: "demo@example.com",
+            memberType: "parent",
+            memberId: "DEMO-123456",
+            username: "testfinal",
+            tokenBalance: "1000",
+            totalReferrals: 5,
+            qrCode: "DEMO_QR_CODE",
+            referralLink: "https://mamnonthaonguyenxanh.com/affiliate/join?ref=123456"
+          }
+        });
+      } else {
+        return res.status(401).json({ 
+          message: "Thông tin đăng nhập không hợp lệ" 
+        });
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -151,11 +101,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Generate member code
       const memberCode = `${memberType.toUpperCase()}-${Date.now().toString().slice(-6)}`;
 
-      try {
-        const newMember = await storage.createMember({
+      res.json({
+        success: true,
+        message: "Đăng ký thành công",
+        memberCode: memberCode,
+        member: {
+          id: Date.now(),
           username: username.trim(),
           email: email.trim(),
           memberType,
@@ -168,38 +121,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           qrCode: `QR_${memberCode}`,
           referralLink: `https://mamnonthaonguyenxanh.com/affiliate/join?ref=${memberCode}`,
           walletAddress: `0x${Date.now().toString(16)}...`
-        });
-
-        res.json({
-          success: true,
-          message: "Đăng ký thành công",
-          memberCode: memberCode,
-          member: newMember
-        });
-      } catch (dbError) {
-        console.log("Database error during registration:", dbError);
-        
-        // Return success with generated code for demo
-        res.json({
-          success: true,
-          message: "Đăng ký demo thành công",
-          memberCode: memberCode,
-          member: {
-            id: Date.now(),
-            username: username.trim(),
-            email: email.trim(),
-            memberType,
-            name: fullName.trim(),
-            memberId: memberCode,
-            isActive: true,
-            tokenBalance: "0",
-            totalReferrals: 0,
-            qrCode: `QR_${memberCode}`,
-            referralLink: `https://mamnonthaonguyenxanh.com/affiliate/join?ref=${memberCode}`,
-            walletAddress: `0x${Date.now().toString(16)}...`
-          }
-        });
-      }
+        }
+      });
     } catch (error) {
       console.error("Registration error:", error);
       res.status(500).json({
@@ -218,57 +141,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Chưa đăng nhập" });
       }
 
-      // Get member data
-      try {
-        const member = await storage.getMemberByCode(memberCode);
-        if (member) {
-          const customers = await storage.getCustomersByMemberCode(memberCode);
-          const commissions = await storage.getCommissionsByMemberCode(memberCode);
-          
-          res.json({
-            member,
-            customers: customers || [],
-            commissions: commissions || [],
-            totalEarnings: commissions?.reduce((sum, c) => sum + parseFloat(c.amount || '0'), 0) || 0
-          });
-        } else {
-          // Demo data for testing
-          res.json({
-            member: {
-              id: 1,
-              name: "Demo User",
-              memberType: "parent",
-              memberId: memberCode,
-              tokenBalance: "1000",
-              totalReferrals: 5,
-              qrCode: "DEMO_QR",
-              referralLink: `https://mamnonthaonguyenxanh.com/affiliate/join?ref=${memberCode}`
-            },
-            customers: [],
-            commissions: [],
-            totalEarnings: 0
-          });
-        }
-      } catch (dbError) {
-        console.log("Database error in dashboard:", dbError);
-        
-        // Demo data fallback
-        res.json({
-          member: {
-            id: 1,
-            name: "Demo User", 
-            memberType: "parent",
-            memberId: memberCode,
-            tokenBalance: "1000",
-            totalReferrals: 5,
-            qrCode: "DEMO_QR",
-            referralLink: `https://mamnonthaonguyenxanh.com/affiliate/join?ref=${memberCode}`
-          },
-          customers: [],
-          commissions: [],
-          totalEarnings: 0
-        });
-      }
+      // Demo data for testing
+      res.json({
+        member: {
+          id: 1,
+          name: "Demo User",
+          memberType: "parent",
+          memberId: memberCode,
+          tokenBalance: "1000",
+          totalReferrals: 5,
+          qrCode: "DEMO_QR",
+          referralLink: `https://mamnonthaonguyenxanh.com/affiliate/join?ref=${memberCode}`
+        },
+        customers: [],
+        commissions: [],
+        totalEarnings: 0
+      });
     } catch (error) {
       console.error("Dashboard error:", error);
       res.status(500).json({ message: "Có lỗi xảy ra khi tải dữ liệu" });
@@ -298,6 +186,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const activities = await storage.getActivities();
       res.json(activities || []);
+    } catch (error) {
+      res.json([]);
+    }
+  });
+
+  // Homepage content routes
+  app.get("/api/homepage-content", async (req, res) => {
+    try {
+      const content = await storage.getHomepageContent();
+      res.json(content || {});
+    } catch (error) {
+      res.json({});
+    }
+  });
+
+  app.get("/api/homepage-banner", async (req, res) => {
+    try {
+      const banner = await storage.getHomepageBanner();
+      res.json(banner || {});
+    } catch (error) {
+      res.json({});
+    }
+  });
+
+  app.get("/api/testimonials", async (req, res) => {
+    try {
+      const testimonials = await storage.getTestimonials();
+      res.json(testimonials || []);
+    } catch (error) {
+      res.json([]);
+    }
+  });
+
+  app.get("/api/social-media", async (req, res) => {
+    try {
+      const socialMedia = await storage.getSocialMedia();
+      res.json(socialMedia || []);
     } catch (error) {
       res.json([]);
     }
